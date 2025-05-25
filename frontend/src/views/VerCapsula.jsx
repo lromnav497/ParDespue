@@ -24,7 +24,7 @@ const VerCapsula = () => {
     const fetchCapsula = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/api/capsules/${id}`);
+        const res = await fetch(`/api/capsules/${id}`);
         const data = await res.json();
         setCapsula(data);
       } catch (err) {
@@ -38,7 +38,7 @@ const VerCapsula = () => {
   useEffect(() => {
     const fetchArchivos = async () => {
       try {
-        const res = await fetch(`/api/api/contents/capsule/${id}`);
+        const res = await fetch(`/api/contents/capsule/${id}`);
         const data = await res.json();
         setArchivos(data);
       } catch (err) {

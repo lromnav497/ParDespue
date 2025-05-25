@@ -79,7 +79,7 @@ const CrearCapsula = () => {
     const archivo = formData.archivos[index];
     // Elimina del backend
     try {
-      await fetch('/api/api/upload/delete', {
+      await fetch('/api/upload/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filePath: archivo.path }),
@@ -103,7 +103,7 @@ const CrearCapsula = () => {
     formDataFile.append('file', file);
 
     try {
-      const res = await fetch('/api/api/upload', {
+      const res = await fetch('/api/upload', {
         method: 'POST',
         body: formDataFile,
       });
@@ -505,7 +505,7 @@ const CrearCapsula = () => {
       const privacyValue = privacyMap[formData.privacidad] || 'private';
 
       // 1. Crear la cápsula
-      const resCapsule = await fetch('/api/api/capsules', {
+      const resCapsule = await fetch('/api/capsules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -525,7 +525,7 @@ const CrearCapsula = () => {
 
       // 2. Guardar los archivos en Contents
       for (const archivo of formData.archivos) {
-        await fetch('/api/api/contents', {
+        await fetch('/api/contents', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -549,7 +549,7 @@ const CrearCapsula = () => {
       const categoryId = categoryMap[formData.categoria];
 
       if (categoryId) {
-        await fetch('/api/api/capsule-category', {
+        await fetch('/api/capsule-category', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -565,10 +565,10 @@ const CrearCapsula = () => {
         const roleMap = { 'Reader': 2, 'Collaborator': 3 }; // Según tu tabla Roles
         for (const recipient of formData.recipients) {
           // Busca el usuario por email (puedes hacer un fetch al backend para obtener el User_ID)
-          const resUser = await fetch(`/api/api/users/email/${recipient.email}`);
+          const resUser = await fetch(`/api/users/email/${recipient.email}`);
           const userData = await resUser.json();
           if (resUser.ok && userData.User_ID) {
-            await fetch('/api/api/recipients', {
+            await fetch('/api/recipients', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
