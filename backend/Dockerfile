@@ -13,9 +13,6 @@ RUN npm install
 # Copia el resto del código de la aplicación
 COPY . .
 
-# Copia el archivo .env
-COPY .env .env
-
 # Expone el puerto (ajusta si usas otro)
 EXPOSE 3000
 
