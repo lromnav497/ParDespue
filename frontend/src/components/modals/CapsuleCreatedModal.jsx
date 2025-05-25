@@ -25,6 +25,10 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
   const prevIdx = (current - 1 + archivos.length) % archivos.length;
   const nextIdx = (current + 1) % archivos.length;
 
+  const indices = [prevIdx, current, nextIdx].filter(
+    (idx, i, arr) => arr.indexOf(idx) === i
+  );
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
       <div className="bg-[#2E2E7A] rounded-2xl p-8 w-full max-w-2xl relative shadow-2xl border-4 border-[#F5E050]">
@@ -38,7 +42,7 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
         <h2 className="text-3xl font-bold mb-2 text-[#F5E050] passero-font text-center">¡Cápsula creada!</h2>
         <p className="mb-6 text-white text-center">Aquí tienes una muestra de tus archivos:</p>
         <div className="flex items-center justify-center gap-2 relative h-56">
-          {[prevIdx, current, nextIdx].map((idx, i) => {
+          {indices.map((idx) => {
             const archivo = archivos[idx];
             // Tamaño y opacidad según posición
             const isCenter = idx === current;
