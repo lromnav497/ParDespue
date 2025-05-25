@@ -1,0 +1,14 @@
+node_modules
+uploads
+npm-debug.log
+yarn-debug.log
+pnpm-debug.log
+.DS_Store
+.vscode
+.env
+.git
+.gitignore
+docker-compose*
+Dockerfile
+README.md
+mysql_data

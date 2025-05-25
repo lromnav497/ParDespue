@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Passero+One&display=swap');
+
+.passero-font {
+  font-family: 'Passero One', cursive;
+}
+
+.time-capsule {
+  background: radial-gradient(circle at center, #2E2E7A 0%, #1a1a4a 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.icon-highlight {
+  transition: all 0.3s ease;
+}
+
+.icon-highlight:hover {
+  transform: scale(1.2);
+  color: #F5E050;
+}
