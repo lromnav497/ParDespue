@@ -6,6 +6,7 @@ import {
   faEye, 
   faClock 
 } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 const categorias = [
   { id: 'todas', nombre: 'Todas' },
@@ -103,9 +104,11 @@ const Explorar = () => {
             <div className="col-span-3 text-center text-gray-400">No se encontraron cápsulas.</div>
           ) : (
             capsulas.map(capsula => (
-              <div 
+              <Link
                 key={capsula.id}
-                className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:transform hover:scale-105 transition-all"
+                to={`/vercapsula/${capsula.id}`}
+                className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:transform hover:scale-105 transition-all block"
+                style={{ textDecoration: 'none' }}
               >
                 <img 
                   src={capsula.imagen} 
@@ -141,7 +144,7 @@ const Explorar = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </div>
