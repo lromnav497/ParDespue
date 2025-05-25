@@ -20,4 +20,7 @@ router.get('/user/:userId', CapsuleController.findByUser.bind(CapsuleController)
 // Ruta para obtener una cápsula por ID
 router.get('/:id', CapsuleController.findById.bind(CapsuleController));
 
+// Ruta pública con filtros y paginación
+router.get('/public', CapsuleController.getPublicCapsules.bind(CapsuleController));
+
 module.exports = router;

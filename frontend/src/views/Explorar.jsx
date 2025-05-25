@@ -1,39 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
-  faFilter, 
   faHeart, 
   faEye, 
   faClock 
 } from '@fortawesome/free-solid-svg-icons';
 
+const categorias = [
+  { id: 'todas', nombre: 'Todas' },
+  { id: 'recuerdos', nombre: 'Recuerdos' },
+  { id: 'mensajes', nombre: 'Mensajes' },
+  { id: 'celebraciones', nombre: 'Celebraciones' },
+  { id: 'legados', nombre: 'Legados' }
+];
+
+const PAGE_SIZE = 9;
+
 const Explorar = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('todas');
+  const [capsulas, setCapsulas] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  // Datos de ejemplo - Reemplazar con datos reales de la API
-  const capsulas = [
-    {
-      id: 1,
-      titulo: "Memorias de 2023",
-      autor: "Juan Pérez",
-      categoria: "recuerdos",
-      fechaApertura: "2025-01-01",
-      likes: 156,
-      vistas: 302,
-      imagen: "https://picsum.photos/400/300"
-    },
-    // ... más cápsulas
-  ];
+  // Fetch cápsulas públicas con filtros y paginación
+  useEffect(() => {
+    const fetchCapsulas = async () => {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page,
+        pageSize: PAGE_SIZE,
+        category: selectedCategory !== 'todas' ? selectedCategory : '',
+        search: searchTerm
+      });
+      const res = await fetch(`/api/capsules/public?${params.toString()}`);
+      const data = await res.json();
+      setCapsulas(data.capsulas || []);
+      setTotalPages(data.totalPages || 1);
+      setLoading(false);
+    };
+    fetchCapsulas();
+  }, [searchTerm, selectedCategory, page]);
 
-  const categorias = [
-    { id: 'todas', nombre: 'Todas' },
-    { id: 'recuerdos', nombre: 'Recuerdos' },
-    { id: 'mensajes', nombre: 'Mensajes' },
-    { id: 'celebraciones', nombre: 'Celebraciones' },
-    { id: 'legados', nombre: 'Legados' }
-  ];
+  // Handler para el buscador
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
+
+  // Handler para filtro de categoría
+  const handleCategory = (catId) => {
+    setSelectedCategory(catId);
+    setPage(1);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -47,19 +68,18 @@ const Explorar = () => {
             />
             <input
               type="text"
-              placeholder="Buscar cápsulas..."
+              placeholder="Buscar por título, usuario, email, tags, fecha..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearch}
               className="w-full pl-10 pr-4 py-2 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg 
                 text-white focus:outline-none focus:border-[#F5E050]"
             />
           </div>
-
           <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto">
             {categorias.map(cat => (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
+                onClick={() => handleCategory(cat.id)}
                 className={`px-4 py-2 rounded-full whitespace-nowrap
                   ${selectedCategory === cat.id 
                     ? 'bg-[#F5E050] text-[#2E2E7A]' 
@@ -74,55 +94,71 @@ const Explorar = () => {
       </div>
 
       {/* Grid de cápsulas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {capsulas.map(capsula => (
-          <div 
-            key={capsula.id}
-            className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:transform hover:scale-105 transition-all"
-          >
-            <img 
-              src={capsula.imagen} 
-              alt={capsula.titulo}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-4">
-              <h3 className="text-[#F5E050] passero-font text-xl mb-2">
-                {capsula.titulo}
-              </h3>
-              <p className="text-gray-300 text-sm mb-4">
-                Por {capsula.autor}
-              </p>
-              
-              <div className="flex justify-between items-center text-sm text-gray-400">
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center">
-                    <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500" />
-                    {capsula.likes}
-                  </span>
-                  <span className="flex items-center">
-                    <FontAwesomeIcon icon={faEye} className="mr-1" />
-                    {capsula.vistas}
-                  </span>
+      {loading ? (
+        <div className="text-center text-white py-10">Cargando...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {capsulas.length === 0 ? (
+            <div className="col-span-3 text-center text-gray-400">No se encontraron cápsulas.</div>
+          ) : (
+            capsulas.map(capsula => (
+              <div 
+                key={capsula.id}
+                className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:transform hover:scale-105 transition-all"
+              >
+                <img 
+                  src={capsula.imagen} 
+                  alt={capsula.titulo}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="text-[#F5E050] passero-font text-xl mb-2">
+                    {capsula.titulo}
+                  </h3>
+                  <p className="text-gray-300 text-sm mb-4">
+                    Por {capsula.autor} ({capsula.email})
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {capsula.tags?.map(tag => (
+                      <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs">{tag}</span>
+                    ))}
+                  </div>
+                  <div className="flex justify-between items-center text-sm text-gray-400">
+                    <div className="flex items-center gap-4">
+                      <span className="flex items-center">
+                        <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500" />
+                        {capsula.likes}
+                      </span>
+                      <span className="flex items-center">
+                        <FontAwesomeIcon icon={faEye} className="mr-1" />
+                        {capsula.vistas}
+                      </span>
+                    </div>
+                    <span className="flex items-center">
+                      <FontAwesomeIcon icon={faClock} className="mr-1" />
+                      Se abre: {new Date(capsula.fechaApertura).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
-                <span className="flex items-center">
-                  <FontAwesomeIcon icon={faClock} className="mr-1" />
-                  Se abre: {new Date(capsula.fechaApertura).toLocaleDateString()}
-                </span>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
+            ))
+          )}
+        </div>
+      )}
 
       {/* Paginación */}
       <div className="mt-8 flex justify-center gap-2">
-        {[1, 2, 3, 4, 5].map(page => (
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
           <button
-            key={page}
-            className="w-10 h-10 rounded-full flex items-center justify-center
-              bg-[#1a1a4a] text-white hover:bg-[#F5E050] hover:text-[#2E2E7A]"
+            key={pageNum}
+            onClick={() => setPage(pageNum)}
+            className={`w-10 h-10 rounded-full flex items-center justify-center
+              ${pageNum === page
+                ? 'bg-[#F5E050] text-[#2E2E7A]'
+                : 'bg-[#1a1a4a] text-white hover:bg-[#F5E050] hover:text-[#2E2E7A]'
+              }`}
           >
-            {page}
+            {pageNum}
           </button>
         ))}
       </div>
