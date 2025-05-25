@@ -53,7 +53,7 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
                 {archivo.type.startsWith('image') ? (
                   <>
                     <img
-                      src={`http://44.209.31.187:3000/${archivo.path.replace(/^\/?/, '')}`}
+                      src={`/api/${archivo.path.replace(/^\/?/, '')}`}
                       alt={archivo.name}
                       className="object-cover w-full h-full"
                     />
@@ -67,7 +67,7 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
                 ) : archivo.type.startsWith('video') ? (
                   <>
                     <video
-                      src={`http://44.209.31.187:3000/${archivo.path.replace(/^\/?/, '')}`}
+                      src={`/api/${archivo.path.replace(/^\/?/, '')}`}
                       className="object-cover w-full h-full"
                       autoPlay
                       loop
@@ -89,7 +89,7 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
                       </div>
                       {isCenter && (
                         <audio
-                          src={`http://44.209.31.187:3000/${archivo.path.replace(/^\/?/, '')}`}
+                          src={`/api/${archivo.path.replace(/^\/?/, '')}`}
                           autoPlay
                           style={{ display: 'none' }}
                           onLoadedMetadata={e => {

@@ -24,7 +24,7 @@ const VerCapsula = () => {
     const fetchCapsula = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://44.209.31.187:3000/api/capsules/${id}`);
+        const res = await fetch(`/api/api/capsules/${id}`);
         const data = await res.json();
         setCapsula(data);
       } catch (err) {
@@ -38,7 +38,7 @@ const VerCapsula = () => {
   useEffect(() => {
     const fetchArchivos = async () => {
       try {
-        const res = await fetch(`http://44.209.31.187:3000/api/contents/capsule/${id}`);
+        const res = await fetch(`/api/api/contents/capsule/${id}`);
         const data = await res.json();
         setArchivos(data);
       } catch (err) {
@@ -97,13 +97,13 @@ const VerCapsula = () => {
                   >
                     {archivo.Type === 'image' && archivo.Path ? (
                       <img
-                        src={`http://44.209.31.187:3000/${archivo.Path.replace(/^\/?/, '')}`}
+                        src={`/api/${archivo.Path.replace(/^\/?/, '')}`}
                         alt={archivo.Name}
                         className="object-cover w-full h-full"
                       />
                     ) : archivo.Type === 'video' && archivo.Path ? (
                       <video
-                        src={`http://44.209.31.187:3000/${archivo.Path.replace(/^\/?/, '')}`}
+                        src={`/api/${archivo.Path.replace(/^\/?/, '')}`}
                         className="object-cover w-full h-full"
                         controls
                         poster="https://placehold.co/160x160?text=Video"
@@ -112,13 +112,13 @@ const VerCapsula = () => {
                       <div className="flex flex-col items-center justify-center w-full h-full">
                         <FontAwesomeIcon icon={faMusic} className="text-4xl text-[#2E2E7A] mb-2" />
                         <audio controls className="w-full">
-                          <source src={`http://44.209.31.187:3000/${archivo.Path.replace(/^\/?/, '')}`} />
+                          <source src={`/api/${archivo.Path.replace(/^\/?/, '')}`} />
                           Tu navegador no soporta audio.
                         </audio>
                       </div>
                     ) : archivo.Path ? (
                       <a
-                        href={`http://44.209.31.187:3000/${archivo.Path.replace(/^\/?/, '')}`}
+                        href={`/api/${archivo.Path.replace(/^\/?/, '')}`}
                         download
                         className="flex flex-col items-center justify-center w-full h-full"
                       >

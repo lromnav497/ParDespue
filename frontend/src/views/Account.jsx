@@ -146,7 +146,7 @@ const InformacionGeneral = () => {
     try {
       const storedUser = getStoredUser();
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://44.209.31.187:3000/api/users/${storedUser.id}`, {
+      const res = await fetch(`/api/api/users/${storedUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -207,7 +207,7 @@ const InformacionGeneral = () => {
     try {
       const storedUser = getStoredUser();
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://44.209.31.187:3000/api/users/${storedUser.id}/password`, {
+      const res = await fetch(`/api/api/users/${storedUser.id}/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -361,7 +361,7 @@ const MisSuscripciones = () => {
       setError('');
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://44.209.31.187:3000/api/subscriptions/user/${storedUser.id}`, {
+        const res = await fetch(`/api/api/subscriptions/user/${storedUser.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -387,7 +387,7 @@ const MisSuscripciones = () => {
     setRenewError('');
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://44.209.31.187:3000/api/subscriptions/renew/${selectedSubscription.id}`, {
+      const res = await fetch(`/api/api/subscriptions/renew/${selectedSubscription.id}`, {
         method: 'POST',
         headers: { 
           Authorization: `Bearer ${token}`,
