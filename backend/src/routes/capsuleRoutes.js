@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const CapsuleController = require('../controllers/capsuleController');
+const capsuleController = require('../controllers/capsuleController');
 
 router.post('/', CapsuleController.create.bind(CapsuleController));
 
@@ -20,7 +20,7 @@ router.get('/user/:userId', CapsuleController.findByUser.bind(CapsuleController)
 // Ruta para obtener una cápsula por ID
 router.get('/:id', CapsuleController.findById.bind(CapsuleController));
 
-// Ruta pública con filtros y paginación
-router.get('/public', CapsuleController.getPublicCapsules.bind(CapsuleController));
+// Ruta pública paginada y filtrada
+router.get('/public', capsuleController.getPublicCapsules);
 
 module.exports = router;

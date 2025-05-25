@@ -1,9 +1,9 @@
 const GeneralController = require('./generalController');
-const capsuleModel = require('../models/capsuleModel');
+const CapsuleModel = require('../models/capsuleModel');
 
 class CapsuleController extends GeneralController {
     constructor() {
-        super(capsuleModel);
+        super(CapsuleModel);
     }
 
     // Método específico para buscar cápsulas por privacidad
