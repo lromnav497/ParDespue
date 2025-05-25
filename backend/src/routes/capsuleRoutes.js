@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const CapsuleController = require('../controllers/capsuleController'); // <--- ESTA LÍNEA ES OBLIGATORIA
+const CapsuleController = require('../controllers/capsuleController');
 
 router.post('/', CapsuleController.create.bind(CapsuleController));
 
@@ -22,5 +22,6 @@ router.get('/:id', CapsuleController.findById.bind(CapsuleController));
 
 // Ruta pública paginada y filtrada
 router.get('/public', CapsuleController.getPublicCapsules);
+router.get('/:id', CapsuleController.findById.bind(CapsuleController));
 
 module.exports = router;
