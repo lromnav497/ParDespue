@@ -79,7 +79,7 @@ const CrearCapsula = () => {
     const archivo = formData.archivos[index];
     // Elimina del backend
     try {
-      await fetch('http://localhost:3000/api/upload/delete', {
+      await fetch('http://44.209.31.187:3000/api/upload/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filePath: archivo.path }),
@@ -103,7 +103,7 @@ const CrearCapsula = () => {
     formDataFile.append('file', file);
 
     try {
-      const res = await fetch('http://localhost:3000/api/upload', {
+      const res = await fetch('http://44.209.31.187:3000/api/upload', {
         method: 'POST',
         body: formDataFile,
       });
@@ -427,13 +427,13 @@ const CrearCapsula = () => {
               <div key={idx} className="w-24 h-24 bg-[#F5E050] rounded-lg flex items-center justify-center overflow-hidden relative group">
                 {archivo.type.startsWith('image') ? (
                   <img
-                    src={`http://localhost:3000/${archivo.path.replace(/^\/?/, '')}`}
+                    src={`http://44.209.31.187:3000/${archivo.path.replace(/^\/?/, '')}`}
                     alt={archivo.name}
                     className="object-cover w-full h-full"
                   />
                 ) : archivo.type.startsWith('video') ? (
                   <video
-                    src={`http://localhost:3000/${archivo.path.replace(/^\/?/, '')}`}
+                    src={`http://44.209.31.187:3000/${archivo.path.replace(/^\/?/, '')}`}
                     className="object-cover w-full h-full"
                     autoPlay
                     loop
@@ -505,7 +505,7 @@ const CrearCapsula = () => {
       const privacyValue = privacyMap[formData.privacidad] || 'private';
 
       // 1. Crear la cápsula
-      const resCapsule = await fetch('http://localhost:3000/api/capsules', {
+      const resCapsule = await fetch('http://44.209.31.187:3000/api/capsules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -525,7 +525,7 @@ const CrearCapsula = () => {
 
       // 2. Guardar los archivos en Contents
       for (const archivo of formData.archivos) {
-        await fetch('http://localhost:3000/api/contents', {
+        await fetch('http://44.209.31.187:3000/api/contents', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -549,7 +549,7 @@ const CrearCapsula = () => {
       const categoryId = categoryMap[formData.categoria];
 
       if (categoryId) {
-        await fetch('http://localhost:3000/api/capsule-category', {
+        await fetch('http://44.209.31.187:3000/api/capsule-category', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -565,10 +565,10 @@ const CrearCapsula = () => {
         const roleMap = { 'Reader': 2, 'Collaborator': 3 }; // Según tu tabla Roles
         for (const recipient of formData.recipients) {
           // Busca el usuario por email (puedes hacer un fetch al backend para obtener el User_ID)
-          const resUser = await fetch(`http://localhost:3000/api/users/email/${recipient.email}`);
+          const resUser = await fetch(`http://44.209.31.187:3000/api/users/email/${recipient.email}`);
           const userData = await resUser.json();
           if (resUser.ok && userData.User_ID) {
-            await fetch('http://localhost:3000/api/recipients', {
+            await fetch('http://44.209.31.187:3000/api/recipients', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

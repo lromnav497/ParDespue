@@ -23,7 +23,7 @@ const MisCapsulas = () => {
     const fetchCapsulas = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:3000/api/capsules/user/${userId}`);
+        const res = await fetch(`http://44.209.31.187:3000/api/capsules/user/${userId}`);
         const data = await res.json();
         setCapsulas(data);
         console.log('Cápsulas recibidas:', data); // <-- Agrega esto
