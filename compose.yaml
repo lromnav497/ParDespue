@@ -6,10 +6,10 @@ services:
     container_name: des-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: 
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: ParDespue
       MYSQL_USER: root
-      MYSQL_PASSWORD: 
+      MYSQL_PASSWORD:
     ports:
       - "3306:3306"
     volumes:
