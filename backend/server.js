@@ -24,7 +24,8 @@ const swaggerDocument = yaml.load('./src/docs/swagger.yaml');
 const app = express();
 
 // Middleware para parsear JSON
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -47,7 +48,7 @@ app.use('/api/recipients', recipientRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/capsule-category', capsuleCategoryRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Documentación Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

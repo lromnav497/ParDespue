@@ -12,6 +12,13 @@ const UserModel = {
     );
     return result;
   },
+  update: async (id, user) => {
+    const [result] = await pool.query(
+      'UPDATE Users SET Name = ?, Email = ?, Role = ? WHERE id = ?',
+      [user.Name, user.Email, user.Role, id]
+    );
+    return result;
+  },
   // ...otros métodos...
 };
 
