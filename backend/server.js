@@ -26,7 +26,10 @@ const app = express();
 // Middleware para parsear JSON
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173', // Cambia si tu frontend usa otro puerto
+  origin: [
+    'http://localhost:5173',
+    'http://44.209.31.187'
+  ],
   credentials: true
 }));
 
@@ -56,5 +59,5 @@ app.use(errorMiddleware);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
-    console.log(`Documentación disponible en http://localhost:${PORT}/api-docs`);
+    console.log(`Documentación disponible en http://44.209.31.187:${PORT}/api-docs`);
 });
