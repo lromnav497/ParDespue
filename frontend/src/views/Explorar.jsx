@@ -9,10 +9,11 @@ import {
 
 const categorias = [
   { id: 'todas', nombre: 'Todas' },
-  { id: 'recuerdos', nombre: 'Recuerdos' },
-  { id: 'mensajes', nombre: 'Mensajes' },
-  { id: 'celebraciones', nombre: 'Celebraciones' },
-  { id: 'legados', nombre: 'Legados' }
+  { id: 'Family', nombre: 'Familia' },
+  { id: 'Travel', nombre: 'Viajes' },
+  { id: 'Events', nombre: 'Eventos' },
+  { id: 'Memories', nombre: 'Memorias' },
+  { id: 'Others', nombre: 'Otros' }
 ];
 
 const PAGE_SIZE = 9;
