@@ -3,9 +3,7 @@ const router = express.Router();
 const CapsuleController = require('../controllers/capsuleController');
 const capsuleModel = require('../models/capsuleModel');
 
-router.post('/', CapsuleController.create.bind(CapsuleController));
-
-// Ruta específica para buscar cápsulas por privacidad
+router.post('/', (req, res) => CapsuleController.create(req, res));
 router.get('/privacy/:privacy', async (req, res) => {
     try {
         const capsules = await capsuleModel.findByPrivacy(req.params.privacy);
@@ -14,14 +12,8 @@ router.get('/privacy/:privacy', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
-// Ruta para obtener cápsulas por usuario
-router.get('/user/:userId', CapsuleController.findByUser.bind(CapsuleController));
-
-// *** PON ESTA ANTES DE /:id ***
-router.get('/public', CapsuleController.getPublicCapsules);
-
-// Ruta para obtener una cápsula por ID (debe ir al final)
-router.get('/:id', CapsuleController.findById.bind(CapsuleController));
+router.get('/user/:userId', (req, res) => CapsuleController.findByUser(req, res));
+router.get('/public', (req, res) => CapsuleController.getPublicCapsules(req, res));
+router.get('/:id', (req, res) => CapsuleController.findById(req, res));
 
 module.exports = router;
