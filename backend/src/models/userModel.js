@@ -41,6 +41,10 @@ const UserModel = {
     );
     return result;
   },
+  findOne: async (id) => {
+    const [rows] = await pool.query('SELECT * FROM Users WHERE User_ID = ?', [id]);
+    return rows[0];
+  },
   // ...otros métodos...
 };
 
