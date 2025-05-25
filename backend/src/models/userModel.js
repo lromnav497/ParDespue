@@ -13,9 +13,31 @@ const UserModel = {
     return result;
   },
   update: async (id, user) => {
+    // Construye dinámicamente el SET y los valores
+    const fields = [];
+    const values = [];
+    if (user.Name !== undefined) {
+      fields.push('Name = ?');
+      values.push(user.Name);
+    }
+    if (user.Email !== undefined) {
+      fields.push('Email = ?');
+      values.push(user.Email);
+    }
+    if (user.Role !== undefined) {
+      fields.push('Role = ?');
+      values.push(user.Role);
+    }
+    if (user.Password !== undefined) {
+      fields.push('Password = ?');
+      values.push(user.Password);
+    }
+    if (fields.length === 0) throw new Error('No fields to update');
+    values.push(id);
+
     const [result] = await pool.query(
-      'UPDATE Users SET Name = ?, Email = ?, Role = ? WHERE User_ID = ?',
-      [user.Name, user.Email, user.Role, id]
+      `UPDATE Users SET ${fields.join(', ')} WHERE User_ID = ?`,
+      values
     );
     return result;
   },
