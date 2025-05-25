@@ -10,6 +10,19 @@ const UserController = {
       res.status(500).json({ message: 'Error al buscar usuario', error: err.message });
     }
   },
+  update: async (req, res) => {
+    const { id } = req.params;
+    try {
+      await UserModel.update(id, {
+        Name: req.body.name,
+        Email: req.body.email,
+        Role: req.body.role // <-- debe ser 'Role' con mayúscula si así está en la BD
+      });
+      res.json({ message: 'Usuario actualizado correctamente' });
+    } catch (err) {
+      res.status(500).json({ message: 'Error al actualizar usuario', error: err.message });
+    }
+  },
   // ...otros métodos...
 };
 
