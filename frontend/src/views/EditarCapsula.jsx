@@ -47,15 +47,23 @@ const EditarCapsula = () => {
           Privacy: data.Privacy || 'private',
           Tags: Array.isArray(data.Tags) ? data.Tags.join(', ') : (data.Tags || ''),
         });
-        // Unifica todos los archivos en un solo array para mostrar
-        let files = [];
-        if (data.Images) files = files.concat(data.Images.map(f => ({ ...f, type: 'image' })));
-        if (data.Videos) files = files.concat(data.Videos.map(f => ({ ...f, type: 'video' })));
-        if (data.Audios) files = files.concat(data.Audios.map(f => ({ ...f, type: 'audio' })));
-        if (data.Messages) files = files.concat(data.Messages.map(f => ({ ...f, type: 'text' })));
-        setArchivos(files);
+        // Obtén los archivos igual que en VerCapsula
+        const resArchivos = await fetch(`/api/contents/capsule/${id}`);
+        const archivosData = await resArchivos.json();
+        setArchivos(
+          Array.isArray(archivosData)
+            ? archivosData.map(a => ({
+                ...a,
+                id: a.Content_ID,
+                type: a.Type,
+                url: a.Path ? `/api/${a.Path.replace(/^\/?/, '')}` : undefined,
+                name: a.Name,
+              }))
+            : []
+        );
       } catch {
         setCapsula(null);
+        setArchivos([]);
       }
       setLoading(false);
     };
