@@ -34,6 +34,18 @@ const EditarCapsula = () => {
   const [loading, setLoading] = useState(true);
   const [nuevoMensaje, setNuevoMensaje] = useState('');
 
+  // Mapeo para mostrar en el select
+  const privacyMap = {
+    private: 'privada',
+    public: 'publica',
+    group: 'grupos',
+  };
+  const reversePrivacyMap = {
+    privada: 'private',
+    publica: 'public',
+    grupos: 'group',
+  };
+
   // Utilidad para normalizar arrays de contenido
   const normalizeArray = (arr, tipo) => {
     if (!arr) return [];
@@ -73,7 +85,7 @@ const EditarCapsula = () => {
               : '',
             categoria: data.Category?.Name || '',
             categoriaId: data.Category?.Category_ID || '',
-            privacidad: data.Privacy || 'privada', // <-- debe ser el valor exacto de la BD
+            privacidad: privacyMap[data.Privacy] || 'privada', // <-- debe ser el valor exacto de la BD
             notificaciones: !!(data.Notifications ?? false),
             contenido: {
               imagenes: normalizeArray(data.Images, 'imagenes'),
@@ -136,16 +148,36 @@ const EditarCapsula = () => {
   };
 
   // Agregar archivo (imagen, video, audio) a la cápsula
-  const handleAddFile = (e, tipo) => {
+  const handleAddFile = async (e, tipo) => {
     const file = e.target.files[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
+    const user = JSON.parse(localStorage.getItem('user'));
+    const userId = user?.id;
+    const formDataFile = new FormData();
+    formDataFile.append('userId', userId);
+    formDataFile.append('file', file);
+
+    // Sube a carpeta temporal
+    const resUpload = await fetch('/api/upload/tmp', {
+      method: 'POST',
+      body: formDataFile,
+    });
+    const data = await resUpload.json();
+
     setCapsula(prev => ({
       ...prev,
       contenido: {
         ...prev.contenido,
-        [tipo]: [...prev.contenido[tipo], { id: Date.now(), url }]
-      }
+        [tipo]: [
+          ...prev.contenido[tipo],
+          {
+            id: Date.now(),
+            name: file.name,
+            type: file.type,
+            tmpPath: data.filePath,
+          },
+        ],
+      },
     }));
   };
 
@@ -173,7 +205,7 @@ const EditarCapsula = () => {
           Title: capsula.titulo,
           Description: capsula.descripcion,
           Opening_Date: capsula.fechaApertura,
-          Privacy: capsula.privacidad,
+          Privacy: reversePrivacyMap[capsula.privacidad] || 'private',
           Category_ID: capsula.categoriaId, // <-- usa el ID
           Notifications: capsula.notificaciones,
           Images: capsula.contenido.imagenes.map(i => i.url || i),
