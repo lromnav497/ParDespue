@@ -96,29 +96,13 @@ const CrearCapsula = () => {
   };
 
   // Subida de archivos
-  const handleFileChange = async (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const formDataFile = new FormData();
-    formDataFile.append('file', file);
-
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formDataFile,
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setFormData(prev => ({
-          ...prev,
-          archivos: [...prev.archivos, { type: file.type, name: file.name, file }]
-        }));
-      } else {
-        alert(data.message || 'Error al subir el archivo');
-      }
-    } catch (err) {
-      alert('Error de conexión al subir archivo');
-    }
+    setFormData(prev => ({
+      ...prev,
+      archivos: [...prev.archivos, { type: file.type, name: file.name, file }]
+    }));
   };
 
   const nextStep = () => {
@@ -525,7 +509,7 @@ const CrearCapsula = () => {
       // 2. Sube los archivos con userId y capsuleId
       for (const archivo of formData.archivos) {
         const formDataFile = new FormData();
-        formDataFile.append('file', archivo.file); // archivo.file debe ser el File original
+        formDataFile.append('file', archivo.file);
         formDataFile.append('userId', userId);
         formDataFile.append('capsuleId', capsuleId);
 
