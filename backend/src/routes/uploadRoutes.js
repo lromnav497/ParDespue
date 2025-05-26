@@ -85,36 +85,33 @@ router.post('/tmp', uploadTmp.single('file'), (req, res) => {
   });
 });
 
+// POST /api/upload/move
 router.post('/move', async (req, res) => {
-  const { userId, capsuleId, tmpPath } = req.body;
-  if (!userId || !capsuleId || !tmpPath) {
-    return res.status(400).json({ message: 'Faltan datos para mover el archivo.' });
-  }
-  // Quita el prefijo /uploads/ si lo tiene
-  const tmpFileName = tmpPath.replace(/^\/?uploads\//, '');
-  const src = path.join(__dirname, '../../uploads', tmpFileName);
-  const destDir = path.join(__dirname, '../../uploads', String(userId), String(capsuleId));
-  fs.mkdirSync(destDir, { recursive: true });
-  const dest = path.join(destDir, path.basename(src));
   try {
-    fs.renameSync(src, dest);
+    const { userId, capsuleId, tmpPath } = req.body;
+    if (!userId || !capsuleId || !tmpPath) {
+      return res.status(400).json({ error: 'Faltan datos requeridos' });
+    }
 
-    // --- NUEVO: Elimina la carpeta tmp/<userId> si queda vacía ---
-    const tmpUserDir = path.join(__dirname, '../../uploads/tmp', String(userId));
-    // Espera un poco para asegurarse de que todos los archivos se han movido
-    setTimeout(() => {
-      fs.readdir(tmpUserDir, (err, files) => {
-        if (!err && files.length === 0) {
-          fs.rmdir(tmpUserDir, () => {});
-        }
-      });
-    }, 500);
+    // Calcula rutas absolutas
+    const tmpAbsolute = path.join(__dirname, '..', '..', tmpPath);
+    const fileName = path.basename(tmpPath);
+    const destDir = path.join(__dirname, '..', '..', 'uploads', 'capsules', String(capsuleId));
+    const destRelative = path.join('uploads', 'capsules', String(capsuleId), fileName);
+    const destAbsolute = path.join(destDir, fileName);
+
+    // Crea la carpeta destino si no existe
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+
+    // Mueve el archivo
+    fs.renameSync(tmpAbsolute, destAbsolute);
 
     // Devuelve la ruta relativa definitiva
-    const relativePath = `${userId}/${capsuleId}/${path.basename(dest)}`;
-    res.json({ filePath: `/uploads/${relativePath}` });
+    res.json({ filePath: destRelative.replace(/\\/g, '/') });
   } catch (err) {
-    res.status(500).json({ message: 'No se pudo mover el archivo', error: err.message });
+    res.status(500).json({ error: 'No se pudo mover el archivo', details: err.message });
   }
 });
 
