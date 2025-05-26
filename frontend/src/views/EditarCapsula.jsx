@@ -61,20 +61,22 @@ const EditarCapsula = () => {
         const res = await fetch(`/api/capsules/${id}`);
         if (res.ok) {
           const data = await res.json();
+          console.log('DATA CAPSULA:', data); // <-- Para depuración
+
           setCapsula({
-            titulo: data.Title ?? data.titulo ?? '',
-            descripcion: data.Description ?? data.descripcion ?? '',
+            titulo: data.Title ?? data.titulo ?? data.Titulo ?? '',
+            descripcion: data.Description ?? data.descripcion ?? data.Descripcion ?? '',
             fechaApertura: data.Opening_Date
               ? data.Opening_Date.slice(0, 10)
-              : (data.fechaApertura ?? ''),
-            categoria: data.Category ?? data.categoria ?? '',
-            privacidad: data.Privacy ?? data.privacidad ?? 'privada',
-            notificaciones: !!(data.Notifications ?? data.notificaciones),
+              : (data.fechaApertura ?? data.FechaApertura ?? ''),
+            categoria: data.Category ?? data.categoria ?? data.Categoria ?? '',
+            privacidad: data.Privacy ?? data.privacidad ?? data.Privacidad ?? 'privada',
+            notificaciones: !!(data.Notifications ?? data.notificaciones ?? data.Notificaciones),
             contenido: {
-              imagenes: normalizeArray(data.Images ?? data.imagenes, 'imagenes'),
-              videos: normalizeArray(data.Videos ?? data.videos, 'videos'),
-              mensajes: normalizeArray(data.Messages ?? data.mensajes, 'mensajes'),
-              audios: normalizeArray(data.Audios ?? data.audios, 'audios')
+              imagenes: normalizeArray(data.Images ?? data.imagenes ?? data.Imagenes, 'imagenes'),
+              videos: normalizeArray(data.Videos ?? data.videos ?? data.Videos, 'videos'),
+              mensajes: normalizeArray(data.Messages ?? data.mensajes ?? data.Mensajes, 'mensajes'),
+              audios: normalizeArray(data.Audios ?? data.audios ?? data.Audios, 'audios')
             }
           });
         } else {
