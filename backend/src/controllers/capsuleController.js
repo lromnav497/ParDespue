@@ -102,7 +102,11 @@ class CapsuleController extends GeneralController {
 
     async update(req, res) {
         try {
-            const updated = await this.model.update(req.params.id, req.body);
+            const data = { ...req.body };
+            if (data.Privacy !== 'private') {
+                data.Password = null; // o '', según tu modelo
+            }
+            const updated = await this.model.update(req.params.id, data);
             res.json(updated);
         } catch (error) {
             res.status(500).json({ error: error.message });

@@ -134,16 +134,19 @@ const EditarCapsula = () => {
     }
 
     try {
+      // --- LIMPIA LA CONTRASEÑA SI PASA A PUBLICA ---
+      let formToSend = { ...form };
+      if (formToSend.Privacy !== 'private') {
+        formToSend.Password = '';
+      }
+
       // 1. Actualiza los datos principales de la cápsula
       const res = await fetch(`/api/capsules/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...form,
-          // Si el backend espera string separado por coma:
-          Tags: form.Tags,
-          // Si espera array, usa:
-          // Tags: form.Tags.split(',').map(t => t.trim()).filter(Boolean),
+          ...formToSend,
+          Tags: formToSend.Tags,
         }),
       });
       if (!res.ok) throw new Error('Error al actualizar la cápsula');
