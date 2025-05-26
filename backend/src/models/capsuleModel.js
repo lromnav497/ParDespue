@@ -1,4 +1,6 @@
 const db = require('../config/db');
+const GeneralModel = require('./generalModel');
+const capsuleGeneralModel = new GeneralModel('Capsules', 'Capsule_ID');
 
 const CapsuleModel = {
   create: async (capsule) => {
@@ -99,6 +101,14 @@ const CapsuleModel = {
       })),
       totalPages: Math.ceil(total / pageSize)
     };
+  },
+
+  update: async (id, data) => {
+    return capsuleGeneralModel.update(id, data);
+  },
+
+  delete: async (id) => {
+    return capsuleGeneralModel.delete(id);
   }
 };
 

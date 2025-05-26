@@ -58,16 +58,47 @@ const EditarCapsula = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí irá la lógica para guardar los cambios
-    console.log('Guardando cambios:', capsula);
+    try {
+      const res = await fetch(`/api/capsules/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Title: capsula.titulo,
+          Description: capsula.descripcion,
+          Opening_Date: capsula.fechaApertura,
+          // Agrega aquí los demás campos que tu backend acepte
+          // Por ejemplo: Categoria, Privacidad, etc.
+        }),
+      });
+      if (res.ok) {
+        alert('Cápsula actualizada correctamente');
+        navigate('/miscapsulas');
+      } else {
+        const error = await res.json();
+        alert(error.message || 'Error al actualizar la cápsula');
+      }
+    } catch (err) {
+      alert('Error de red');
+    }
   };
 
-  const handleDelete = () => {
-    // Aquí irá la lógica para eliminar la cápsula
-    console.log('Eliminando cápsula:', id);
-    navigate('/capsulas');
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/capsules/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        alert('Cápsula eliminada correctamente');
+        navigate('/miscapsulas');
+      } else {
+        const error = await res.json();
+        alert(error.message || 'Error al eliminar la cápsula');
+      }
+    } catch (err) {
+      alert('Error de red');
+    }
   };
 
   return (

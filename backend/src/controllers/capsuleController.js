@@ -95,6 +95,24 @@ class CapsuleController extends GeneralController {
             res.status(500).json({ error: err.message });
         }
     }
+
+    async update(req, res) {
+        try {
+            const updated = await this.model.update(req.params.id, req.body);
+            res.json(updated);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async delete(req, res) {
+        try {
+            await this.model.delete(req.params.id);
+            res.json({ message: 'Cápsula eliminada correctamente' });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 
 module.exports = new CapsuleController();

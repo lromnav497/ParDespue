@@ -15,5 +15,7 @@ router.get('/privacy/:privacy', async (req, res) => {
 router.get('/user/:userId', (req, res) => CapsuleController.findByUser(req, res));
 router.get('/public', (req, res) => CapsuleController.getPublicCapsules(req, res));
 router.get('/:id', (req, res) => CapsuleController.findById(req, res));
+router.put('/:id', (req, res) => CapsuleController.update(req, res));
+router.delete('/:id', (req, res) => CapsuleController.delete(req, res));
 
 module.exports = router;

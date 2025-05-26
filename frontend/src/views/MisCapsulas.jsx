@@ -52,6 +52,23 @@ const MisCapsulas = () => {
     { value: 'programada', label: 'Programadas' }
   ];
 
+  const handleDelete = async (id) => {
+    try {
+      const res = await fetch(`/api/capsules/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        alert('Cápsula eliminada correctamente');
+        navigate('/miscapsulas');
+      } else {
+        const error = await res.json();
+        alert(error.message || 'Error al eliminar la cápsula');
+      }
+    } catch (err) {
+      alert('Error de red');
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Encabezado */}
@@ -107,7 +124,13 @@ const MisCapsulas = () => {
                     <button className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e]">
                       <FontAwesomeIcon icon={faEdit} />
                     </button>
-                    <button className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e]">
+                    <button 
+                      className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(capsula.Capsule_ID);
+                      }}
+                    >
                       <FontAwesomeIcon icon={faTrash} />
                     </button>
                   </div>
