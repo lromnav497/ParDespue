@@ -101,10 +101,15 @@ const CrearCapsula = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (!userId) {
+      alert('No se detectó el usuario. Por favor, inicia sesión de nuevo.');
+      return;
+    }
+
     // Sube a carpeta temporal
     const formDataFile = new FormData();
     formDataFile.append('file', file);
-    formDataFile.append('userId', userId);
+    formDataFile.append('userId', userId); // SIEMPRE
 
     const resUpload = await fetch('/api/upload/tmp', {
       method: 'POST',

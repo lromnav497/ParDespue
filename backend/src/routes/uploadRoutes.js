@@ -58,6 +58,7 @@ router.delete('/delete', (req, res) => {
 // Configuración de multer para temporal
 const storageTmp = multer.diskStorage({
   destination: function (req, file, cb) {
+    console.log('BODY:', req.body, 'QUERY:', req.query); // <--- agrega esto
     const userId = req.body.userId || req.query.userId;
     if (!userId) return cb(new Error('Falta userId'), null);
     const dir = path.join(__dirname, '../../uploads/tmp', String(userId));
