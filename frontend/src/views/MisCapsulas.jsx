@@ -59,7 +59,7 @@ const MisCapsulas = () => {
       });
       if (res.ok) {
         alert('Cápsula eliminada correctamente');
-        navigate('/miscapsulas');
+        navigate('/capsulas');
       } else {
         const error = await res.json();
         alert(error.message || 'Error al eliminar la cápsula');

@@ -111,7 +111,7 @@ const CrearCapsula = () => {
       if (res.ok) {
         setFormData(prev => ({
           ...prev,
-          archivos: [...prev.archivos, { type: file.type, path: data.filePath, name: file.name }]
+          archivos: [...prev.archivos, { type: file.type, name: file.name, file }]
         }));
       } else {
         alert(data.message || 'Error al subir el archivo');
@@ -520,21 +520,33 @@ const CrearCapsula = () => {
       });
       const capsuleData = await resCapsule.json();
       if (!resCapsule.ok) throw new Error(capsuleData.message || 'Error al crear cápsula');
-
       const capsuleId = capsuleData.Capsule_ID || capsuleData.id;
 
-      // 2. Guardar los archivos en Contents
+      // 2. Sube los archivos con userId y capsuleId
       for (const archivo of formData.archivos) {
-        await fetch('/api/contents', {
+        const formDataFile = new FormData();
+        formDataFile.append('file', archivo.file); // archivo.file debe ser el File original
+        formDataFile.append('userId', userId);
+        formDataFile.append('capsuleId', capsuleId);
+
+        const resUpload = await fetch('/api/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            Type: getTypeFromMime(archivo.type),
-            File_Path: archivo.path,
-            Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-            Capsule_ID: capsuleId,
-          }),
+          body: formDataFile,
         });
+        const data = await resUpload.json();
+        if (resUpload.ok) {
+          // Guarda en Contents
+          await fetch('/api/contents', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              Type: getTypeFromMime(archivo.type),
+              File_Path: data.filePath,
+              Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+              Capsule_ID: capsuleId,
+            }),
+          });
+        }
       }
 
       // Después de obtener capsuleId

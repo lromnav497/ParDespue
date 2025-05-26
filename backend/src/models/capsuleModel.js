@@ -1,6 +1,8 @@
 const db = require('../config/db');
 const GeneralModel = require('./generalModel');
 const capsuleGeneralModel = new GeneralModel('Capsules', 'Capsule_ID');
+const fs = require('fs');
+const path = require('path');
 
 const CapsuleModel = {
   create: async (capsule) => {
@@ -108,13 +110,32 @@ const CapsuleModel = {
   },
 
   delete: async (id) => {
-    // Elimina relaciones en tablas hijas primero
+    // 1. Obtener los paths de los archivos asociados a la cápsula y el id del usuario
+    const [capsule] = await db.execute('SELECT Creator_User_ID FROM Capsules WHERE Capsule_ID = ?', [id]);
+    const userId = capsule[0]?.Creator_User_ID;
+
+    const [contents] = await db.execute('SELECT File_Path FROM Contents WHERE Capsule_ID = ?', [id]);
+    // 2. Eliminar los archivos físicos
+    for (const content of contents) {
+      if (content.File_Path && userId) {
+        // Nuevo path organizado: uploads/<id_usuario>/<id_capsula>/<archivo>
+        const filePath = path.join(__dirname, '../../uploads', String(userId), String(id), content.File_Path);
+        try {
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (err) {
+          console.error('Error eliminando archivo:', filePath, err);
+        }
+      }
+    }
+    // 3. Elimina relaciones en tablas hijas primero
     await db.execute('DELETE FROM Capsule_Category WHERE Capsule_ID = ?', [id]);
     await db.execute('DELETE FROM Contents WHERE Capsule_ID = ?', [id]);
     await db.execute('DELETE FROM Recipients WHERE Capsule_ID = ?', [id]);
     await db.execute('DELETE FROM Comments WHERE Capsule_ID = ?', [id]);
     await db.execute('DELETE FROM Notifications WHERE Capsule_ID = ?', [id]);
-    // Ahora elimina la cápsula
+    // 4. Ahora elimina la cápsula
     return capsuleGeneralModel.delete(id);
   },
 };
