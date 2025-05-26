@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const CapsuleController = require('../controllers/capsuleController');
 const capsuleModel = require('../models/capsuleModel');
-const db = require('../db'); // Ajusta según tu conexión
+const db = require('../config/db');
 
 router.post('/', (req, res) => CapsuleController.create(req, res));
 router.get('/privacy/:privacy', async (req, res) => {
