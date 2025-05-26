@@ -98,13 +98,13 @@ const VerCapsula = () => {
                   >
                     {archivo.Type === 'image' && archivo.Path ? (
                       <img
-                        src={`/api/${archivo.Path.replace(/^\/?/, '')}`}
+                        src={`/api${archivo.Path.startsWith('/') ? archivo.Path : '/' + archivo.Path}`}
                         alt={archivo.Name}
                         className="object-cover w-full h-full"
                       />
                     ) : archivo.Type === 'video' && archivo.Path ? (
                       <video
-                        src={`/api/${archivo.Path.replace(/^\/?/, '')}`}
+                        src={`/api${archivo.Path.startsWith('/') ? archivo.Path : '/' + archivo.Path}`}
                         className="object-cover w-full h-full"
                         controls
                         poster="https://placehold.co/160x160?text=Video"
@@ -113,13 +113,13 @@ const VerCapsula = () => {
                       <div className="flex flex-col items-center justify-center w-full h-full">
                         <FontAwesomeIcon icon={faMusic} className="text-4xl text-[#2E2E7A] mb-2" />
                         <audio controls className="w-full">
-                          <source src={`/api/${archivo.Path.replace(/^\/?/, '')}`} />
+                          <source src={`/api${archivo.Path.startsWith('/') ? archivo.Path : '/' + archivo.Path}`} />
                           Tu navegador no soporta audio.
                         </audio>
                       </div>
                     ) : archivo.Path ? (
                       <a
-                        href={`/api/${archivo.Path.replace(/^\/?/, '')}`}
+                        href={`/api${archivo.Path.startsWith('/') ? archivo.Path : '/' + archivo.Path}`}
                         download
                         className="flex flex-col items-center justify-center w-full h-full"
                       >

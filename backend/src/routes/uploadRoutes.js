@@ -93,23 +93,21 @@ router.post('/move', async (req, res) => {
       return res.status(400).json({ error: 'Faltan datos requeridos' });
     }
 
-    // Rutas absolutas
-    const tmpAbsolute = path.join(__dirname, '../../', tmpPath.replace(/^\/?uploads\//, 'uploads/'));
+    // Quita el prefijo /uploads/ si lo tiene
+    const tmpRelative = tmpPath.replace(/^\/?uploads\//, '');
+    const tmpAbsolute = path.join(__dirname, '../../uploads', tmpRelative);
     const fileName = path.basename(tmpPath);
     const destDir = path.join(__dirname, '../../uploads', String(userId), String(capsuleId));
-    const destRelative = `${userId}/${capsuleId}/${fileName}`;
+    const destRelative = `/uploads/${userId}/${capsuleId}/${fileName}`;
     const destAbsolute = path.join(destDir, fileName);
 
-    // Crea la carpeta destino si no existe
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
 
-    // Mueve el archivo
     fs.renameSync(tmpAbsolute, destAbsolute);
 
-    // Devuelve la ruta relativa definitiva para guardar en la BD
-    res.json({ filePath: `/uploads/${destRelative}` });
+    res.json({ filePath: destRelative });
   } catch (err) {
     res.status(500).json({ error: 'No se pudo mover el archivo', details: err.message });
   }

@@ -56,7 +56,7 @@ const EditarCapsula = () => {
                 ...a,
                 id: a.Content_ID,
                 type: a.Type,
-                url: a.Path ? `/api/${a.Path.replace(/^\/?/, '')}` : undefined,
+                url: a.Path ? `/api${a.Path.startsWith('/') ? a.Path : '/' + a.Path}` : undefined,
                 name: a.Name,
               }))
             : []
