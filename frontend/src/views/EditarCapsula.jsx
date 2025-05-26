@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSave, faTimes, faTrash, faImage, faVideo, faFileAlt, faMusic, faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
+import PasswordModal from '../components/modals/PasswordModal';
 
 const getTypeFromMime = (mime) => {
   if (mime.startsWith('image/')) return 'image';
@@ -31,6 +32,10 @@ const EditarCapsula = () => {
   });
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [pendingAction, setPendingAction] = useState(null); // 'changePrivacy' o 'changePassword'
 
   // Cargar datos de la cápsula y archivos actuales
   useEffect(() => {
@@ -113,9 +118,21 @@ const EditarCapsula = () => {
   };
 
   // Guardar cambios
-  const handleGuardar = async (e) => {
-    e.preventDefault();
+  const handleGuardar = async (e, passwordValidated = false) => {
+    if (e) e.preventDefault();
     setLoading(true);
+
+    // Detectar si se requiere contraseña
+    const cambiandoPrivacidad = capsula.Privacy === 'private' && form.Privacy !== 'private';
+    const cambiandoPassword = capsula.Password && form.Privacy === 'private' && form.Password && form.Password !== capsula.Password;
+
+    if (!passwordValidated && (cambiandoPrivacidad || cambiandoPassword)) {
+      setPendingAction(cambiandoPrivacidad ? 'changePrivacy' : 'changePassword');
+      setShowPasswordModal(true);
+      setLoading(false);
+      return;
+    }
+
     try {
       // 1. Actualiza los datos principales de la cápsula
       const res = await fetch(`/api/capsules/${id}`, {
@@ -286,6 +303,20 @@ const EditarCapsula = () => {
                 placeholder="ej: futuro, familia, trabajo"
               />
             </div>
+            {/* Nueva contraseña */}
+            {form.Privacy === 'private' && (
+              <div>
+                <label className="block text-white mb-2">Nueva contraseña (opcional)</label>
+                <input
+                  type="password"
+                  name="Password"
+                  value={form.Password || ''}
+                  onChange={handleChange}
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                  placeholder="Dejar vacío para no cambiar"
+                />
+              </div>
+            )}
             {/* Archivos actuales */}
             <div>
               <h3 className="text-xl text-[#F5E050] mb-4">Archivos actuales</h3>
@@ -407,6 +438,33 @@ const EditarCapsula = () => {
           </form>
         </div>
       </div>
+      {showPasswordModal && (
+        <PasswordModal
+          isOpen={showPasswordModal}
+          onClose={() => { setShowPasswordModal(false); setPasswordInput(''); setPasswordError(''); }}
+          onSubmit={async (password) => {
+            setPasswordInput(password);
+            // Verifica la contraseña con el backend
+            const res = await fetch(`/api/capsules/${id}/check-password`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ password }),
+            });
+            const data = await res.json();
+            if (data.valid) {
+              setShowPasswordModal(false);
+              setPasswordInput('');
+              setPasswordError('');
+              if (pendingAction === 'changePrivacy' || pendingAction === 'changePassword') {
+                await handleGuardar(null, true); // true = ya validado
+              }
+            } else {
+              setPasswordError('Contraseña incorrecta');
+            }
+          }}
+          error={passwordError}
+        />
+      )}
     </div>
   );
 };
