@@ -17,9 +17,12 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
     try {
+        console.log('Intentando registrar usuario:', email);
+
         // Verifica si el usuario ya existe
         const existingUser = await userModel.findByEmail(email);
         if (existingUser) {
+            console.log('Correo ya registrado:', email);
             return res.status(400).json({ message: 'El correo ya está registrado' });
         }
 
@@ -40,7 +43,8 @@ router.post('/register', async (req, res) => {
         });
 
         // Genera el enlace de verificación
-        const verifyUrl = `http://44.209.31.187:3000/verify-email?token=${verificationToken}`; // Cambia el dominio en producción
+        const verifyUrl = `http://44.209.31.187:3000/verify-email?token=${verificationToken}`;
+        console.log('Enviando correo de verificación a:', email);
 
         // Envía el correo con Mailjet
         await mailjet
@@ -74,8 +78,10 @@ router.post('/register', async (req, res) => {
                 ]
             });
 
+        console.log('Correo enviado correctamente');
         res.status(201).json({ message: 'Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.' });
     } catch (error) {
+        console.error('Error en /register:', error);
         res.status(500).json({ error: error.message });
     }
 });
