@@ -108,8 +108,15 @@ const CapsuleModel = {
   },
 
   delete: async (id) => {
+    // Elimina relaciones en tablas hijas primero
+    await db.execute('DELETE FROM Capsule_Category WHERE Capsule_ID = ?', [id]);
+    await db.execute('DELETE FROM Contents WHERE Capsule_ID = ?', [id]);
+    await db.execute('DELETE FROM Recipients WHERE Capsule_ID = ?', [id]);
+    await db.execute('DELETE FROM Comments WHERE Capsule_ID = ?', [id]);
+    await db.execute('DELETE FROM Notifications WHERE Capsule_ID = ?', [id]);
+    // Ahora elimina la cápsula
     return capsuleGeneralModel.delete(id);
-  }
+  },
 };
 
 module.exports = CapsuleModel;
