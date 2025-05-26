@@ -22,6 +22,7 @@ import PrivateRoute from './components/auth/PrivateRoute';
 import CookiesModal from './components/modals/CookiesModal';
 import VerifyEmail from './views/VerifyEmail';
 import ResendVerification from './views/ResendVerification';
+import ResetPassword from './views/ResetPassword';
 
 function App() {
   const [showCookiesModal, setShowCookiesModal] = useState(false);
@@ -65,6 +66,7 @@ function App() {
           <Route path="/features" element={<Features />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/resend-verification" element={<ResendVerification />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
         <CookiesModal
           isOpen={showCookiesModal}

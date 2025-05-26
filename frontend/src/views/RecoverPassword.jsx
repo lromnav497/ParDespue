@@ -7,10 +7,23 @@ const RecoverPassword = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('Si el correo existe, recibirás instrucciones para recuperar tu contraseña');
-    // Aquí iría la lógica para enviar el correo
+    setMessage('');
+    try {
+      const res = await fetch('/api/auth/recover-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      setMessage(
+        data.message ||
+          'Si el correo existe, recibirás instrucciones para recuperar tu contraseña'
+      );
+    } catch {
+      setMessage('Error de conexión con el servidor');
+    }
   };
 
   return (

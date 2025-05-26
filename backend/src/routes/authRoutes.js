@@ -164,4 +164,71 @@ router.post('/resend-verification', async (req, res) => {
   }
 });
 
+router.post('/recover-password', async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await userModel.findByEmail(email);
+    if (!user) {
+      // No reveles si el correo existe o no
+      return res.json({ message: 'Si el correo existe, recibirás instrucciones para recuperar tu contraseña' });
+    }
+    // Genera un token de recuperación
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpires = new Date(Date.now() + 1000 * 60 * 60); // 1 hora
+
+    // Guarda el token y expiración en la base de datos
+    await pool.query(
+      'UPDATE Users SET ResetToken = ?, ResetTokenExpires = ? WHERE Email = ?',
+      [resetToken, resetTokenExpires, email]
+    );
+
+    // Enlace de recuperación (ajusta la URL a tu frontend)
+    const resetUrl = `http://44.209.31.187/reset-password?token=${resetToken}`;
+
+    // Envía el correo
+    await mailjet.post('send', { version: 'v3.1' }).request({
+      Messages: [
+        {
+          From: { Email: "lromnav497@gmail.com", Name: "ParDespue Team" },
+          To: [{ Email: email, Name: user.Name }],
+          Subject: "Recupera tu contraseña",
+          TextPart: `Haz clic en el siguiente enlace para recuperar tu contraseña: ${resetUrl}`,
+          HTMLPart: `
+            <h3>Recupera tu contraseña</h3>
+            <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+            <a href="${resetUrl}" style="background:#F5E050;color:#2E2E7A;padding:10px 20px;border-radius:5px;text-decoration:none;font-weight:bold;">Restablecer contraseña</a>
+            <p>Si no solicitaste este correo, ignóralo.</p>
+          `
+        }
+      ]
+    });
+
+    res.json({ message: 'Si el correo existe, recibirás instrucciones para recuperar tu contraseña' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+  try {
+    // Busca usuario por token y verifica que no haya expirado
+    const [rows] = await pool.query(
+      'SELECT * FROM Users WHERE ResetToken = ? AND ResetTokenExpires > NOW()',
+      [token]
+    );
+    if (!rows.length) {
+      return res.status(400).json({ message: 'Token inválido o expirado' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await pool.query(
+      'UPDATE Users SET Password = ?, ResetToken = NULL, ResetTokenExpires = NULL WHERE ResetToken = ?',
+      [hashedPassword, token]
+    );
+    res.json({ message: 'Contraseña restablecida correctamente. Ya puedes iniciar sesión.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
