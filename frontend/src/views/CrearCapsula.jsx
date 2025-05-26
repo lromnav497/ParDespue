@@ -559,6 +559,10 @@ const CrearCapsula = () => {
         });
         const data = await resMove.json();
         if (resMove.ok) {
+          // Actualiza el archivo en el array
+          archivo.path = data.filePath;
+          delete archivo.tmpPath;
+
           // Guarda en Contents
           await fetch('/api/contents', {
             method: 'POST',
