@@ -20,6 +20,7 @@ const EditarCapsula = () => {
   const [capsula, setCapsula] = useState(null);
   const [archivos, setArchivos] = useState([]); // archivos actuales
   const [nuevosArchivos, setNuevosArchivos] = useState([]); // archivos nuevos a subir
+  const [archivosParaEliminar, setArchivosParaEliminar] = useState([]);
   const [form, setForm] = useState({
     Title: '',
     Description: '',
@@ -81,6 +82,7 @@ const EditarCapsula = () => {
   // Eliminar archivo actual (solo del frontend, se elimina en el backend al guardar)
   const handleRemoveArchivo = (contentId) => {
     setArchivos(prev => prev.filter(a => a.id !== contentId && a.Content_ID !== contentId));
+    setArchivosParaEliminar(prev => [...prev, contentId]);
   };
 
   // Eliminar archivo nuevo antes de guardar
@@ -121,20 +123,19 @@ const EditarCapsula = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          Tags: form.Tags.split(',').map(t => t.trim()).filter(Boolean),
+          // Si el backend espera string separado por coma:
+          Tags: form.Tags,
+          // Si espera array, usa:
+          // Tags: form.Tags.split(',').map(t => t.trim()).filter(Boolean),
         }),
       });
       if (!res.ok) throw new Error('Error al actualizar la cápsula');
 
       // 2. Elimina archivos marcados para borrar
-      const archivosEliminados = []
-        .concat(capsula.Images || [], capsula.Videos || [], capsula.Audios || [], capsula.Messages || [])
-        .filter(a =>
-          !archivos.some(b => (b.id || b.Content_ID) === (a.id || a.Content_ID))
-        );
-      for (const archivo of archivosEliminados) {
-        await fetch(`/api/contents/${archivo.id || archivo.Content_ID}`, { method: 'DELETE' });
+      for (const contentId of archivosParaEliminar) {
+        await fetch(`/api/contents/${contentId}`, { method: 'DELETE' });
       }
+      setArchivosParaEliminar([]); // Limpia el array
 
       // 3. Sube nuevos archivos y los asocia a la cápsula
       const user = JSON.parse(localStorage.getItem('user'));
