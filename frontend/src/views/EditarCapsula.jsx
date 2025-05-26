@@ -119,7 +119,8 @@ const EditarCapsula = () => {
       if (!res.ok) throw new Error('Error al actualizar la cápsula');
 
       // 2. Elimina archivos marcados para borrar
-      const archivosEliminados = capsula.Images.concat(capsula.Videos, capsula.Audios, capsula.Messages)
+      const archivosEliminados = []
+        .concat(capsula.Images || [], capsula.Videos || [], capsula.Audios || [], capsula.Messages || [])
         .filter(a =>
           !archivos.some(b => (b.id || b.Content_ID) === (a.id || a.Content_ID))
         );
