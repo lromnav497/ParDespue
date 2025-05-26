@@ -32,6 +32,7 @@ const EditarCapsula = () => {
   });
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [nuevoMensaje, setNuevoMensaje] = useState('');
 
   // Utilidad para normalizar arrays de contenido
   const normalizeArray = (arr, tipo) => {
@@ -72,7 +73,7 @@ const EditarCapsula = () => {
               : '',
             categoria: data.Category?.Name || '',
             categoriaId: data.Category?.Category_ID || '',
-            privacidad: data.Privacy ?? 'privada',
+            privacidad: data.Privacy || 'privada', // <-- debe ser el valor exacto de la BD
             notificaciones: !!(data.Notifications ?? false),
             contenido: {
               imagenes: normalizeArray(data.Images, 'imagenes'),
@@ -132,6 +133,33 @@ const EditarCapsula = () => {
         [tipo]: prev.contenido[tipo].filter(item => item.id !== itemId)
       }
     }));
+  };
+
+  // Agregar archivo (imagen, video, audio) a la cápsula
+  const handleAddFile = (e, tipo) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCapsula(prev => ({
+      ...prev,
+      contenido: {
+        ...prev.contenido,
+        [tipo]: [...prev.contenido[tipo], { id: Date.now(), url }]
+      }
+    }));
+  };
+
+  // Agregar nuevo mensaje
+  const handleAddMensaje = () => {
+    if (!nuevoMensaje.trim()) return;
+    setCapsula(prev => ({
+      ...prev,
+      contenido: {
+        ...prev.contenido,
+        mensajes: [...prev.contenido.mensajes, { id: Date.now(), contenido: nuevoMensaje }]
+      }
+    }));
+    setNuevoMensaje('');
   };
 
   // Guardar cambios
@@ -298,60 +326,152 @@ const EditarCapsula = () => {
           <div>
             <h3 className="text-xl text-[#F5E050] mb-4">Contenido actual</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {Object.entries(capsula.contenido).map(([tipo, items]) => (
-                <div key={tipo} className="bg-[#1a1a4a] p-4 rounded-lg">
-                  <h4 className="text-white mb-2 capitalize">{tipo}</h4>
-                  <div className="space-y-2">
-                    {items.length === 0 && (
-                      <div className="text-gray-500 text-sm">Sin contenido</div>
-                    )}
-                    {items.map(item => (
-                      <div
-                        key={item.id}
-                        className="flex justify-between items-center text-gray-300"
+              {/* Imágenes */}
+              <div className="bg-[#1a1a4a] p-4 rounded-lg">
+                <h4 className="text-white mb-2">Imágenes</h4>
+                <div className="flex flex-wrap gap-2">
+                  {capsula.contenido.imagenes.length === 0 && (
+                    <div className="text-gray-500 text-sm">Sin imágenes</div>
+                  )}
+                  {capsula.contenido.imagenes.map(item => (
+                    <div key={item.id} className="relative">
+                      <img
+                        src={item.url}
+                        alt="Imagen cápsula"
+                        className="w-24 h-24 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-400"
+                        onClick={() => handleRemoveContenido('imagenes', item.id)}
+                        title="Eliminar"
                       >
-                        <span>
-                          {tipo === 'mensajes'
-                            ? item.contenido
-                            : <a href={item.url} target="_blank" rel="noopener noreferrer" className="underline">{item.url}</a>
-                          }
-                        </span>
-                        <button
-                          type="button"
-                          className="text-red-500 hover:text-red-400"
-                          onClick={() => handleRemoveContenido(tipo, item.id)}
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+              {/* Videos */}
+              <div className="bg-[#1a1a4a] p-4 rounded-lg">
+                <h4 className="text-white mb-2">Videos</h4>
+                <div className="flex flex-col gap-2">
+                  {capsula.contenido.videos.length === 0 && (
+                    <div className="text-gray-500 text-sm">Sin videos</div>
+                  )}
+                  {capsula.contenido.videos.map(item => (
+                    <div key={item.id} className="relative">
+                      <video src={item.url} controls className="w-full rounded" />
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-400"
+                        onClick={() => handleRemoveContenido('videos', item.id)}
+                        title="Eliminar"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Mensajes */}
+              <div className="bg-[#1a1a4a] p-4 rounded-lg">
+                <h4 className="text-white mb-2">Mensajes</h4>
+                <div className="flex flex-col gap-2">
+                  {capsula.contenido.mensajes.length === 0 && (
+                    <div className="text-gray-500 text-sm">Sin mensajes</div>
+                  )}
+                  {capsula.contenido.mensajes.map(item => (
+                    <div key={item.id} className="relative bg-[#23236a] p-2 rounded">
+                      <span>{item.contenido}</span>
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-400"
+                        onClick={() => handleRemoveContenido('mensajes', item.id)}
+                        title="Eliminar"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Audios */}
+              <div className="bg-[#1a1a4a] p-4 rounded-lg">
+                <h4 className="text-white mb-2">Audios</h4>
+                <div className="flex flex-col gap-2">
+                  {capsula.contenido.audios.length === 0 && (
+                    <div className="text-gray-500 text-sm">Sin audios</div>
+                  )}
+                  {capsula.contenido.audios.map(item => (
+                    <div key={item.id} className="relative">
+                      <audio src={item.url} controls className="w-full" />
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-400"
+                        onClick={() => handleRemoveContenido('audios', item.id)}
+                        title="Eliminar"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Agregar nuevo contenido (solo botones visuales, puedes implementar la lógica) */}
+          {/* Agregar nuevo contenido */}
           <div>
             <h3 className="text-xl text-[#F5E050] mb-4">Agregar contenido</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { icon: faImage, text: 'Imagen' },
-                { icon: faVideo, text: 'Video' },
-                { icon: faFileAlt, text: 'Mensaje' },
-                { icon: faMusic, text: 'Audio' }
-              ].map((item, index) => (
+              {/* Imagen */}
+              <div>
+                <label className="block text-white mb-2">Imagen</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => handleAddFile(e, 'imagenes')}
+                  className="block w-full text-white"
+                />
+              </div>
+              {/* Video */}
+              <div>
+                <label className="block text-white mb-2">Video</label>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={e => handleAddFile(e, 'videos')}
+                  className="block w-full text-white"
+                />
+              </div>
+              {/* Audio */}
+              <div>
+                <label className="block text-white mb-2">Audio</label>
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={e => handleAddFile(e, 'audios')}
+                  className="block w-full text-white"
+                />
+              </div>
+              {/* Mensaje */}
+              <div>
+                <label className="block text-white mb-2">Mensaje</label>
+                <textarea
+                  rows={2}
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                  value={nuevoMensaje}
+                  onChange={e => setNuevoMensaje(e.target.value)}
+                />
                 <button
-                  key={index}
                   type="button"
-                  className="bg-[#1a1a4a] p-4 rounded-lg flex flex-col items-center 
-                    gap-2 hover:bg-[#3d3d9e] transition-colors"
-                  // onClick={...} // Aquí puedes implementar la lógica para agregar contenido
+                  className="mt-2 bg-[#F5E050] text-[#2E2E7A] font-bold px-4 py-1 rounded hover:bg-[#e6d047]"
+                  onClick={handleAddMensaje}
                 >
-                  <FontAwesomeIcon icon={item.icon} className="text-[#F5E050] text-2xl" />
-                  <span className="text-white">{item.text}</span>
+                  Agregar mensaje
                 </button>
-              ))}
+              </div>
             </div>
           </div>
         </form>
