@@ -129,7 +129,13 @@ const MisCapsulas = () => {
                     className="w-full h-48 object-cover"
                   />
                   <div className="absolute top-4 right-4 flex gap-2">
-                    <button className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e]">
+                    <button
+                      className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e]"
+                      onClick={e => {
+                        e.stopPropagation();
+                        navigate(`/editarcapsula/${capsula.Capsule_ID}`); // <-- Navega a la edición
+                      }}
+                    >
                       <FontAwesomeIcon icon={faEdit} />
                     </button>
                     <button 

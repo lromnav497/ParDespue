@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faSave, 
-  faTrash, 
-  faImage, 
+import {
+  faSave,
+  faTrash,
+  faImage,
   faVideo,
   faFileAlt,
   faMusic,
@@ -30,26 +30,44 @@ const EditarCapsula = () => {
       audios: []
     }
   });
+  const [loading, setLoading] = useState(true);
 
+  // Cargar datos reales de la cápsula
   useEffect(() => {
-    // Aquí cargarías los datos de la cápsula desde tu API
-    // Por ahora usamos datos de ejemplo
-    setCapsula({
-      titulo: "Memorias 2024",
-      descripcion: "Una colección de momentos especiales",
-      fechaApertura: "2025-01-01",
-      categoria: "recuerdos",
-      privacidad: "privada",
-      notificaciones: true,
-      contenido: {
-        imagenes: [{ id: 1, url: "https://picsum.photos/400/300" }],
-        videos: [{ id: 2, url: "video.mp4" }],
-        mensajes: [{ id: 3, contenido: "Mensaje especial" }],
-        audios: [{ id: 4, url: "audio.mp3" }]
+    const fetchCapsula = async () => {
+      try {
+        const res = await fetch(`/api/capsules/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setCapsula({
+            titulo: data.Title || '',
+            descripcion: data.Description || '',
+            fechaApertura: data.Opening_Date ? data.Opening_Date.slice(0, 10) : '',
+            categoria: data.Category || '',
+            privacidad: data.Privacy || 'privada',
+            notificaciones: !!data.Notifications,
+            contenido: {
+              imagenes: data.Images || [],
+              videos: data.Videos || [],
+              mensajes: data.Messages || [],
+              audios: data.Audios || []
+            }
+          });
+        } else {
+          alert('No se pudo cargar la cápsula');
+          navigate('/mis-capsulas');
+        }
+      } catch (err) {
+        alert('Error de red');
+        navigate('/mis-capsulas');
+      } finally {
+        setLoading(false);
       }
-    });
-  }, [id]);
+    };
+    fetchCapsula();
+  }, [id, navigate]);
 
+  // Manejar cambios en los campos
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setCapsula(prev => ({
@@ -58,6 +76,18 @@ const EditarCapsula = () => {
     }));
   };
 
+  // Eliminar contenido (imagen, video, mensaje, audio)
+  const handleRemoveContenido = (tipo, itemId) => {
+    setCapsula(prev => ({
+      ...prev,
+      contenido: {
+        ...prev.contenido,
+        [tipo]: prev.contenido[tipo].filter(item => item.id !== itemId)
+      }
+    }));
+  };
+
+  // Guardar cambios
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -68,13 +98,18 @@ const EditarCapsula = () => {
           Title: capsula.titulo,
           Description: capsula.descripcion,
           Opening_Date: capsula.fechaApertura,
-          // Agrega aquí los demás campos que tu backend acepte
-          // Por ejemplo: Categoria, Privacidad, etc.
+          Category: capsula.categoria,
+          Privacy: capsula.privacidad,
+          Notifications: capsula.notificaciones,
+          Images: capsula.contenido.imagenes,
+          Videos: capsula.contenido.videos,
+          Messages: capsula.contenido.mensajes,
+          Audios: capsula.contenido.audios
         }),
       });
       if (res.ok) {
         alert('Cápsula actualizada correctamente');
-        navigate('/miscapsulas');
+        navigate('/mis-capsulas');
       } else {
         const error = await res.json();
         alert(error.message || 'Error al actualizar la cápsula');
@@ -84,6 +119,7 @@ const EditarCapsula = () => {
     }
   };
 
+  // Eliminar cápsula
   const handleDelete = async () => {
     try {
       const res = await fetch(`/api/capsules/${id}`, {
@@ -91,7 +127,7 @@ const EditarCapsula = () => {
       });
       if (res.ok) {
         alert('Cápsula eliminada correctamente');
-        navigate('/miscapsulas');
+        navigate('/mis-capsulas');
       } else {
         const error = await res.json();
         alert(error.message || 'Error al eliminar la cápsula');
@@ -100,6 +136,10 @@ const EditarCapsula = () => {
       alert('Error de red');
     }
   };
+
+  if (loading) {
+    return <div className="text-center text-[#F5E050]">Cargando cápsula...</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -153,6 +193,53 @@ const EditarCapsula = () => {
                   text-white focus:outline-none focus:border-[#F5E050]"
               />
             </div>
+            <div>
+              <label className="block text-white mb-2">Categoría</label>
+              <input
+                type="text"
+                name="categoria"
+                value={capsula.categoria}
+                onChange={handleChange}
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 
+                  text-white focus:outline-none focus:border-[#F5E050]"
+              />
+            </div>
+            <div>
+              <label className="block text-white mb-2">Privacidad</label>
+              <select
+                name="privacidad"
+                value={capsula.privacidad}
+                onChange={handleChange}
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+              >
+                <option value="privada">Privada</option>
+                <option value="publica">Pública</option>
+                <option value="grupos">Grupos</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-white mb-2">Notificaciones</label>
+              <input
+                type="checkbox"
+                name="notificaciones"
+                checked={capsula.notificaciones}
+                onChange={handleChange}
+                className="mr-2"
+              />
+              <span className="text-white">Recibir notificaciones</span>
+            </div>
+          </div>
+
+          {/* Descripción */}
+          <div>
+            <label className="block text-white mb-2">Descripción</label>
+            <textarea
+              name="descripcion"
+              value={capsula.descripcion}
+              onChange={handleChange}
+              className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050]"
+              rows={3}
+            />
           </div>
 
           {/* Contenido actual */}
@@ -164,14 +251,20 @@ const EditarCapsula = () => {
                   <h4 className="text-white mb-2 capitalize">{tipo}</h4>
                   <div className="space-y-2">
                     {items.map(item => (
-                      <div 
+                      <div
                         key={item.id}
                         className="flex justify-between items-center text-gray-300"
                       >
-                        <span>{tipo === 'mensajes' ? item.contenido : item.url}</span>
-                        <button 
+                        <span>
+                          {tipo === 'mensajes'
+                            ? item.contenido
+                            : <a href={item.url} target="_blank" rel="noopener noreferrer" className="underline">{item.url}</a>
+                          }
+                        </span>
+                        <button
+                          type="button"
                           className="text-red-500 hover:text-red-400"
-                          onClick={() => {/* Lógica para eliminar item */}}
+                          onClick={() => handleRemoveContenido(tipo, item.id)}
                         >
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
@@ -183,7 +276,7 @@ const EditarCapsula = () => {
             </div>
           </div>
 
-          {/* Agregar nuevo contenido */}
+          {/* Agregar nuevo contenido (solo botones visuales, puedes implementar la lógica) */}
           <div>
             <h3 className="text-xl text-[#F5E050] mb-4">Agregar contenido</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -198,6 +291,7 @@ const EditarCapsula = () => {
                   type="button"
                   className="bg-[#1a1a4a] p-4 rounded-lg flex flex-col items-center 
                     gap-2 hover:bg-[#3d3d9e] transition-colors"
+                  // onClick={...} // Aquí puedes implementar la lógica para agregar contenido
                 >
                   <FontAwesomeIcon icon={item.icon} className="text-[#F5E050] text-2xl" />
                   <span className="text-white">{item.text}</span>
