@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSave, faTrash, faImage, faVideo, faFileAlt, faMusic, faLock, faUsers, faGlobe, faBell
 } from '@fortawesome/free-solid-svg-icons';
-import Select from 'react-select'; // Si quieres un selector múltiple bonito (opcional)
 
 const privacyMap = {
   private: 'privada',
