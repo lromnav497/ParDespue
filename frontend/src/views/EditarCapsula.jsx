@@ -2,25 +2,29 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faSave,
-  faTrash,
-  faImage,
-  faVideo,
-  faFileAlt,
-  faMusic,
-  faPlus
+  faSave, faTrash, faImage, faVideo, faFileAlt, faMusic, faLock, faUsers, faGlobe, faBell
 } from '@fortawesome/free-solid-svg-icons';
-import DeleteCapsuleModal from '../components/modals/DeleteCapsuleModal';
+import Select from 'react-select'; // Si quieres un selector múltiple bonito (opcional)
+
+const privacyMap = {
+  private: 'privada',
+  public: 'publica',
+  group: 'grupos',
+};
+const reversePrivacyMap = {
+  privada: 'private',
+  publica: 'public',
+  grupos: 'group',
+};
 
 const EditarCapsula = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [capsula, setCapsula] = useState({
     titulo: '',
     descripcion: '',
     fechaApertura: '',
-    categoria: '',
+    categoriaId: '',
     privacidad: 'privada',
     notificaciones: false,
     contenido: {
@@ -31,61 +35,44 @@ const EditarCapsula = () => {
     }
   });
   const [categorias, setCategorias] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [nuevoMensaje, setNuevoMensaje] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [tags, setTags] = useState('');
+  const [grupos, setGrupos] = useState([]); // Lista de grupos disponibles
+  const [destinatarios, setDestinatarios] = useState([]); // IDs seleccionados
 
-  // Mapeo para mostrar en el select
-  const privacyMap = {
-    private: 'privada',
-    public: 'publica',
-    group: 'grupos',
-  };
-  const reversePrivacyMap = {
-    privada: 'private',
-    publica: 'public',
-    grupos: 'group',
-  };
-
-  // Utilidad para normalizar arrays de contenido
+  // Normaliza arrays de contenido
   const normalizeArray = (arr, tipo) => {
     if (!arr) return [];
-    // Si es array de strings (urls o textos)
     if (typeof arr[0] === 'string') {
-      if (tipo === 'mensajes') {
-        return arr.map((contenido, idx) => ({ id: idx, contenido }));
-      }
+      if (tipo === 'mensajes') return arr.map((contenido, idx) => ({ id: idx, contenido }));
       return arr.map((url, idx) => ({ id: idx, url }));
     }
-    // Si ya es array de objetos
     if (typeof arr[0] === 'object') {
       return arr.map((item, idx) => ({
-        id: item.id ?? idx,
-        contenido: item.contenido ?? item.text ?? undefined,
-        url: item.url ?? item.path ?? item.filePath ?? undefined,
+        id: item.id ?? item.Content_ID ?? idx,
+        contenido: item.contenido ?? item.text ?? item.Contenido ?? undefined,
+        url: item.url ?? item.path ?? item.filePath ?? item.Path ?? undefined,
         ...item
       }));
     }
     return [];
   };
 
-  // Cargar datos reales de la cápsula
+  // Cargar datos de la cápsula
   useEffect(() => {
     const fetchCapsula = async () => {
+      setLoading(true);
       try {
         const res = await fetch(`/api/capsules/${id}`);
         if (res.ok) {
           const data = await res.json();
-          console.log('DATA CAPSULA:', data); // <-- Para depuración
-
           setCapsula({
             titulo: data.Title ?? '',
             descripcion: data.Description ?? '',
-            fechaApertura: data.Opening_Date
-              ? data.Opening_Date.slice(0, 10)
-              : '',
-            categoria: data.Category?.Name || '',
-            categoriaId: data.Category?.Category_ID || '',
-            privacidad: privacyMap[data.Privacy] || 'privada', // <-- debe ser el valor exacto de la BD
+            fechaApertura: data.Opening_Date ? data.Opening_Date.slice(0, 10) : '',
+            categoriaId: data.Category_ID || data.Category?.Category_ID || '',
+            privacidad: privacyMap[data.Privacy] || 'privada',
             notificaciones: !!(data.Notifications ?? false),
             contenido: {
               imagenes: normalizeArray(data.Images, 'imagenes'),
@@ -94,40 +81,38 @@ const EditarCapsula = () => {
               audios: normalizeArray(data.Audios, 'audios')
             }
           });
+          setTags(data.Tags ? data.Tags.join(', ') : '');
+          setDestinatarios(data.Recipients || []);
         } else {
           alert('No se pudo cargar la cápsula');
           navigate('/capsulas');
         }
-      } catch (err) {
+      } catch {
         alert('Error de red');
         navigate('/capsulas');
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
     fetchCapsula();
-    // eslint-disable-next-line
   }, [id, navigate]);
 
-  // Cargar categorías para el selector
+  // Cargar categorías
   useEffect(() => {
-    const fetchCategorias = async () => {
-      try {
-        const res = await fetch('/api/categories');
-        if (res.ok) {
-          const data = await res.json();
-          setCategorias(data);
-        } else {
-          console.error('Error al cargar categorías');
-        }
-      } catch (err) {
-        console.error('Error de red al cargar categorías');
-      }
-    };
-    fetchCategorias();
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(setCategorias)
+      .catch(() => setCategorias([]));
   }, []);
 
-  // Manejar cambios en los campos
+  // Cargar grupos (si tienes endpoint de grupos)
+  useEffect(() => {
+    fetch('/api/groups')
+      .then(res => res.json())
+      .then(setGrupos)
+      .catch(() => setGrupos([]));
+  }, []);
+
+  // Cambios en campos
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setCapsula(prev => ({
@@ -136,7 +121,7 @@ const EditarCapsula = () => {
     }));
   };
 
-  // Eliminar contenido (imagen, video, mensaje, audio)
+  // Eliminar contenido
   const handleRemoveContenido = (tipo, itemId) => {
     setCapsula(prev => ({
       ...prev,
@@ -147,7 +132,7 @@ const EditarCapsula = () => {
     }));
   };
 
-  // Agregar archivo (imagen, video, audio) a la cápsula
+  // Subir archivo
   const handleAddFile = async (e, tipo) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -156,14 +141,8 @@ const EditarCapsula = () => {
     const formDataFile = new FormData();
     formDataFile.append('userId', userId);
     formDataFile.append('file', file);
-
-    // Sube a carpeta temporal
-    const resUpload = await fetch('/api/upload/tmp', {
-      method: 'POST',
-      body: formDataFile,
-    });
+    const resUpload = await fetch('/api/upload/tmp', { method: 'POST', body: formDataFile });
     const data = await resUpload.json();
-
     setCapsula(prev => ({
       ...prev,
       contenido: {
@@ -175,13 +154,14 @@ const EditarCapsula = () => {
             name: file.name,
             type: file.type,
             tmpPath: data.filePath,
-          },
-        ],
-      },
+            url: URL.createObjectURL(file)
+          }
+        ]
+      }
     }));
   };
 
-  // Agregar nuevo mensaje
+  // Agregar mensaje
   const handleAddMensaje = () => {
     if (!nuevoMensaje.trim()) return;
     setCapsula(prev => ({
@@ -206,12 +186,14 @@ const EditarCapsula = () => {
           Description: capsula.descripcion,
           Opening_Date: capsula.fechaApertura,
           Privacy: reversePrivacyMap[capsula.privacidad] || 'private',
-          Category_ID: capsula.categoriaId, // <-- usa el ID
+          Category_ID: capsula.categoriaId,
           Notifications: capsula.notificaciones,
-          Images: capsula.contenido.imagenes.map(i => i.url || i),
-          Videos: capsula.contenido.videos.map(i => i.url || i),
+          Images: capsula.contenido.imagenes.map(i => i.url || i.tmpPath || i),
+          Videos: capsula.contenido.videos.map(i => i.url || i.tmpPath || i),
           Messages: capsula.contenido.mensajes.map(i => i.contenido || i),
-          Audios: capsula.contenido.audios.map(i => i.url || i)
+          Audios: capsula.contenido.audios.map(i => i.url || i.tmpPath || i),
+          Tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+          Recipients: destinatarios,
         }),
       });
       if (res.ok) {
@@ -221,62 +203,27 @@ const EditarCapsula = () => {
         const error = await res.json();
         alert(error.message || 'Error al actualizar la cápsula');
       }
-    } catch (err) {
+    } catch {
       alert('Error de red');
     }
   };
 
-  // Eliminar cápsula
-  const handleDelete = async () => {
-    try {
-      const res = await fetch(`/api/capsules/${id}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        alert('Cápsula eliminada correctamente');
-        navigate('/capsulas');
-      } else {
-        const error = await res.json();
-        alert(error.message || 'Error al eliminar la cápsula');
-      }
-    } catch (err) {
-      alert('Error de red');
-    }
-  };
-
-  if (loading) {
-    return <div className="text-center text-[#F5E050]">Cargando cápsula...</div>;
-  }
+  if (loading) return <div className="text-center text-[#F5E050]">Cargando cápsula...</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="bg-[#2E2E7A] rounded-xl p-6 shadow-lg">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl text-[#F5E050] passero-font">
-            Editar Cápsula
-          </h1>
-          <div className="flex gap-4">
-            <button
-              onClick={handleSubmit}
-              className="px-6 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full 
-                hover:bg-[#e6d047] flex items-center gap-2"
-            >
-              <FontAwesomeIcon icon={faSave} />
-              Guardar
-            </button>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="px-6 py-2 bg-red-500 text-white rounded-full 
-                hover:bg-red-600 flex items-center gap-2"
-            >
-              <FontAwesomeIcon icon={faTrash} />
-              Eliminar
-            </button>
-          </div>
+          <h1 className="text-3xl text-[#F5E050] passero-font">Editar Cápsula</h1>
+          <button
+            onClick={handleSubmit}
+            className="px-6 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full hover:bg-[#e6d047] flex items-center gap-2"
+          >
+            <FontAwesomeIcon icon={faSave} />
+            Guardar
+          </button>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Información básica */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-white mb-2">Título</label>
@@ -285,8 +232,7 @@ const EditarCapsula = () => {
                 name="titulo"
                 value={capsula.titulo}
                 onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 
-                  text-white focus:outline-none focus:border-[#F5E050]"
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050]"
               />
             </div>
             <div>
@@ -296,8 +242,7 @@ const EditarCapsula = () => {
                 name="fechaApertura"
                 value={capsula.fechaApertura}
                 onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 
-                  text-white focus:outline-none focus:border-[#F5E050]"
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050]"
               />
             </div>
             <div>
@@ -328,21 +273,19 @@ const EditarCapsula = () => {
                 <option value="publica">Pública</option>
                 <option value="grupos">Grupos</option>
               </select>
-            </div>
-            <div>
-              <label className="block text-white mb-2">Notificaciones</label>
-              <input
-                type="checkbox"
-                name="notificaciones"
-                checked={capsula.notificaciones}
-                onChange={handleChange}
-                className="mr-2"
-              />
-              <span className="text-white">Recibir notificaciones</span>
+              <div className="flex items-center space-x-2 mt-2">
+                <input
+                  type="checkbox"
+                  name="notificaciones"
+                  checked={capsula.notificaciones}
+                  onChange={handleChange}
+                  className="text-[#F5E050] focus:ring-[#F5E050]"
+                />
+                <FontAwesomeIcon icon={faBell} className="text-[#F5E050]" />
+                <span className="text-white">Recibir notificaciones</span>
+              </div>
             </div>
           </div>
-
-          {/* Descripción */}
           <div>
             <label className="block text-white mb-2">Descripción</label>
             <textarea
@@ -353,7 +296,47 @@ const EditarCapsula = () => {
               rows={3}
             />
           </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Tags */}
+            <div>
+              <label className="block text-white mb-2">Tags (separados por coma)</label>
+              <input
+                type="text"
+                value={tags}
+                onChange={e => setTags(e.target.value)}
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050]"
+                placeholder="ej: futuro, familia, trabajo"
+              />
+            </div>
+            {/* Destinatarios (grupos) */}
+            <div>
+              <label className="block text-white mb-2">Destinatarios (grupos)</label>
+              {/* Selector múltiple simple */}
+              <select
+                multiple
+                value={destinatarios}
+                onChange={e =>
+                  setDestinatarios(Array.from(e.target.selectedOptions, opt => opt.value))
+                }
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+              >
+                {grupos.map(grupo => (
+                  <option key={grupo.id} value={grupo.id}>
+                    {grupo.name}
+                  </option>
+                ))}
+              </select>
+              {/* Si usas react-select, reemplaza el select anterior por esto:
+              <Select
+                isMulti
+                options={grupos.map(g => ({ value: g.id, label: g.name }))}
+                value={grupos.filter(g => destinatarios.includes(g.id))}
+                onChange={opts => setDestinatarios(opts.map(o => o.value))}
+                className="text-black"
+              />
+              */}
+            </div>
+          </div>
           {/* Contenido actual */}
           <div>
             <h3 className="text-xl text-[#F5E050] mb-4">Contenido actual</h3>
@@ -406,28 +389,6 @@ const EditarCapsula = () => {
                   ))}
                 </div>
               </div>
-              {/* Mensajes */}
-              <div className="bg-[#1a1a4a] p-4 rounded-lg">
-                <h4 className="text-white mb-2">Mensajes</h4>
-                <div className="flex flex-col gap-2">
-                  {capsula.contenido.mensajes.length === 0 && (
-                    <div className="text-gray-500 text-sm">Sin mensajes</div>
-                  )}
-                  {capsula.contenido.mensajes.map(item => (
-                    <div key={item.id} className="relative bg-[#23236a] p-2 rounded">
-                      <span>{item.contenido}</span>
-                      <button
-                        type="button"
-                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-400"
-                        onClick={() => handleRemoveContenido('mensajes', item.id)}
-                        title="Eliminar"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
               {/* Audios */}
               <div className="bg-[#1a1a4a] p-4 rounded-lg">
                 <h4 className="text-white mb-2">Audios</h4>
@@ -450,9 +411,30 @@ const EditarCapsula = () => {
                   ))}
                 </div>
               </div>
+              {/* Mensajes */}
+              <div className="bg-[#1a1a4a] p-4 rounded-lg col-span-3">
+                <h4 className="text-white mb-2">Mensajes</h4>
+                <div className="flex flex-col gap-2">
+                  {capsula.contenido.mensajes.length === 0 && (
+                    <div className="text-gray-500 text-sm">Sin mensajes</div>
+                  )}
+                  {capsula.contenido.mensajes.map(item => (
+                    <div key={item.id} className="relative bg-[#23236a] p-2 rounded">
+                      <span>{item.contenido}</span>
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-400"
+                        onClick={() => handleRemoveContenido('mensajes', item.id)}
+                        title="Eliminar"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-
           {/* Agregar nuevo contenido */}
           <div>
             <h3 className="text-xl text-[#F5E050] mb-4">Agregar contenido</h3>
@@ -508,13 +490,6 @@ const EditarCapsula = () => {
           </div>
         </form>
       </div>
-
-      <DeleteCapsuleModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleDelete}
-        capsuleName={capsula.titulo}
-      />
     </div>
   );
 };
