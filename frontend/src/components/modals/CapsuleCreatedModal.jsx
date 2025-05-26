@@ -44,6 +44,7 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
         <div className="flex items-center justify-center gap-2 relative h-56">
           {indices.map((idx) => {
             const archivo = archivos[idx];
+            const filePath = archivo.path || archivo.tmpPath;
             // Tamaño y opacidad según posición
             const isCenter = idx === current;
             const size = isCenter ? 'w-48 h-48 z-20 scale-110' : 'w-32 h-32 z-10 opacity-60 scale-90';
@@ -57,7 +58,7 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
                 {archivo.type.startsWith('image') ? (
                   <>
                     <img
-                      src={`/api/${archivo.path.replace(/^\/?/, '')}`}
+                      src={filePath ? `/api/${filePath.replace(/^\/?/, '')}` : ''}
                       alt={archivo.name}
                       className="object-cover w-full h-full"
                     />
@@ -71,7 +72,7 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
                 ) : archivo.type.startsWith('video') ? (
                   <>
                     <video
-                      src={`/api/${archivo.path.replace(/^\/?/, '')}`}
+                      src={filePath ? `/api/${filePath.replace(/^\/?/, '')}` : ''}
                       className="object-cover w-full h-full"
                       autoPlay
                       loop
@@ -93,7 +94,7 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
                       </div>
                       {isCenter && (
                         <audio
-                          src={`/api/${archivo.path.replace(/^\/?/, '')}`}
+                          src={filePath ? `/api/${filePath.replace(/^\/?/, '')}` : ''}
                           autoPlay
                           style={{ display: 'none' }}
                           onLoadedMetadata={e => {
