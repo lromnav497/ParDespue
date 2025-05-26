@@ -434,40 +434,52 @@ const CrearCapsula = () => {
         </h3>
         {formData.archivos.length > 0 ? (
           <div className="flex flex-wrap gap-4">
-            {formData.archivos.map((archivo, idx) => (
-              <div key={idx} className="w-24 h-24 bg-[#F5E050] rounded-lg flex items-center justify-center overflow-hidden relative group">
-                {archivo.type.startsWith('image') ? (
-                  <img
-                    src={`/api/${archivo.path.replace(/^\/?/, '')}`}
-                    alt={archivo.name}
-                    className="object-cover w-full h-full"
-                  />
-                ) : archivo.type.startsWith('video') ? (
-                  <video
-                    src={`/api/${archivo.path.replace(/^\/?/, '')}`}
-                    className="object-cover w-full h-full"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                  />
-                ) : archivo.type.startsWith('audio') ? (
-                  <div className="flex flex-col items-center justify-center w-full h-full">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#2E2E7A] mb-1">
-                      <FontAwesomeIcon icon={faMusic} className="text-[#F5E050] text-xl" />
+            {formData.archivos.map((archivo, idx) => {
+              // Usa path definitivo si existe, si no usa tmpPath, si no usa URL local
+              const filePath = archivo.path || archivo.tmpPath;
+              return (
+                <div key={idx} className="w-24 h-24 bg-[#F5E050] rounded-lg flex items-center justify-center overflow-hidden relative group">
+                  {archivo.type.startsWith('image') ? (
+                    <img
+                      src={
+                        filePath
+                          ? `/api/${filePath.replace(/^\/?/, '')}`
+                          : URL.createObjectURL(archivo.file)
+                      }
+                      alt={archivo.name}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : archivo.type.startsWith('video') ? (
+                    <video
+                      src={
+                        filePath
+                          ? `/api/${filePath.replace(/^\/?/, '')}`
+                          : URL.createObjectURL(archivo.file)
+                      }
+                      className="object-cover w-full h-full"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                    />
+                  ) : archivo.type.startsWith('audio') ? (
+                    <div className="flex flex-col items-center justify-center w-full h-full">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#2E2E7A] mb-1">
+                        <FontAwesomeIcon icon={faMusic} className="text-[#F5E050] text-xl" />
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <span className="text-[#2E2E7A] font-bold">{archivo.name.split('.').pop().toUpperCase()}</span>
-                )}
-                <span
-                  className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-[#2E2E7A] text-[#F5E050] text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10"
-                  style={{ whiteSpace: 'nowrap' }}
-                >
-                  {archivo.name}
-                </span>
-              </div>
-            ))}
+                  ) : (
+                    <span className="text-[#2E2E7A] font-bold">{archivo.name.split('.').pop().toUpperCase()}</span>
+                  )}
+                  <span
+                    className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-[#2E2E7A] text-[#F5E050] text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10"
+                    style={{ whiteSpace: 'nowrap' }}
+                  >
+                    {archivo.name}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <p className="text-gray-400">No hay archivos añadidos.</p>

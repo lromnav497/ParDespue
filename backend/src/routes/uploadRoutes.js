@@ -98,6 +98,18 @@ router.post('/move', async (req, res) => {
   const dest = path.join(destDir, path.basename(src));
   try {
     fs.renameSync(src, dest);
+
+    // --- NUEVO: Elimina la carpeta tmp/<userId> si queda vacía ---
+    const tmpUserDir = path.join(__dirname, '../../uploads/tmp', String(userId));
+    // Espera un poco para asegurarse de que todos los archivos se han movido
+    setTimeout(() => {
+      fs.readdir(tmpUserDir, (err, files) => {
+        if (!err && files.length === 0) {
+          fs.rmdir(tmpUserDir, () => {});
+        }
+      });
+    }, 500);
+
     // Devuelve la ruta relativa definitiva
     const relativePath = `${userId}/${capsuleId}/${path.basename(dest)}`;
     res.json({ filePath: `/uploads/${relativePath}` });
