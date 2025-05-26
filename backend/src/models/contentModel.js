@@ -17,6 +17,14 @@ const ContentModel = {
       [capsuleId]
     );
     return rows;
+  },
+
+  delete: async (contentId) => {
+    const [result] = await db.execute(
+      `DELETE FROM Contents WHERE Content_ID = ?`,
+      [contentId]
+    );
+    return result;
   }
 };
 
