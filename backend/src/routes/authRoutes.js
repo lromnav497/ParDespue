@@ -43,7 +43,7 @@ router.post('/register', async (req, res) => {
         });
 
         // Genera el enlace de verificación
-        const verifyUrl = `http://44.209.31.187:3000/verify-email?token=${verificationToken}`;
+        const verifyUrl = `http://44.209.31.187/verify-email?token=${verificationToken}`;
         console.log('Enviando correo de verificación a:', email);
 
         // Envía el correo con Mailjet
@@ -143,7 +143,7 @@ router.post('/resend-verification', async (req, res) => {
       verificationToken = crypto.randomBytes(32).toString('hex');
       await pool.query('UPDATE Users SET VerificationToken = ? WHERE Email = ?', [verificationToken, email]);
     }
-    const verifyUrl = `http://44.209.31.187:3000/verify-email?token=${verificationToken}`;
+    const verifyUrl = `http://44.209.31.187/verify-email?token=${verificationToken}`;
     await mailjet.post('send', { version: 'v3.1' }).request({
       Messages: [
         {
