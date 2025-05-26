@@ -10,11 +10,15 @@ import {
   faUnlock,
   faBoxArchive
 } from '@fortawesome/free-solid-svg-icons';
+import PasswordModal from '../components/modals/PasswordModal'; // importa el modal
 
 const MisCapsulas = () => {
   const [activeFilter, setActiveFilter] = useState('todas');
   const [capsulas, setCapsulas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [pendingAction, setPendingAction] = useState(null); // { type, capsula }
   const navigate = useNavigate();
   const location = useLocation(); // <-- Hook para leer el state
 
@@ -61,20 +65,71 @@ const MisCapsulas = () => {
     { value: 'programada', label: 'Programadas' }
   ];
 
-  const handleDelete = async (id) => {
-    try {
-      const res = await fetch(`/api/capsules/${id}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        alert('Cápsula eliminada correctamente');
-        navigate('/capsulas');
-      } else {
-        const error = await res.json();
-        alert(error.message || 'Error al eliminar la cápsula');
-      }
-    } catch (err) {
-      alert('Error de red');
+  const handleDelete = async (capsuleId) => {
+    if (!window.confirm('¿Seguro que quieres eliminar esta cápsula?')) return;
+    const user = JSON.parse(localStorage.getItem('user'));
+    const res = await fetch(`/api/capsules/${capsuleId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    });
+    if (res.ok) {
+      setCapsulas(prev => prev.filter(c => c.Capsule_ID !== capsuleId));
+      alert('Cápsula eliminada correctamente');
+    } else {
+      const data = await res.json();
+      alert(data.message || 'No se pudo eliminar');
+    }
+  };
+
+  // Función para verificar contraseña (puedes hacer un endpoint real, aquí es ejemplo)
+  const checkPassword = async (capsula, password) => {
+    // Simula petición al backend
+    const res = await fetch(`/api/capsules/${capsula.Capsule_ID}/check-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data.valid;
+  };
+
+  // Handler general para acciones protegidas
+  const handleProtectedAction = (type, capsula) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    // Si es privada y no es el creador, no dejar pasar
+    if (capsula.Privacy === 'private' && user?.id !== capsula.Creator_User_ID) {
+      alert('Solo el creador puede acceder a esta cápsula privada.');
+      return;
+    }
+    // Si tiene contraseña, pide contraseña
+    if (capsula.Password) {
+      setPendingAction({ type, capsula });
+      setShowPasswordModal(true);
+      setPasswordError('');
+      return;
+    }
+    // Si no, ejecuta la acción directamente
+    ejecutarAccion(type, capsula);
+  };
+
+  // Ejecuta la acción después de validar contraseña
+  const ejecutarAccion = (type, capsula) => {
+    if (type === 'ver') navigate(`/vercapsula/${capsula.Capsule_ID}`);
+    if (type === 'editar') navigate(`/editarcapsula/${capsula.Capsule_ID}`);
+    if (type === 'eliminar') handleDelete(capsula.Capsule_ID);
+  };
+
+  // Cuando el usuario envía la contraseña
+  const handlePasswordSubmit = async (password) => {
+    const { type, capsula } = pendingAction;
+    const ok = await checkPassword(capsula, password);
+    if (ok) {
+      setShowPasswordModal(false);
+      ejecutarAccion(type, capsula);
+    } else {
+      setPasswordError('Contraseña incorrecta');
     }
   };
 
@@ -121,7 +176,10 @@ const MisCapsulas = () => {
               <div
                 key={capsula.Capsule_ID}
                 className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer"
-                onClick={() => navigate(`/vercapsula/${capsula.Capsule_ID}`)}
+                onClick={e => {
+                  e.stopPropagation();
+                  handleProtectedAction('ver', capsula);
+                }}
               >
                 <div className="relative">
                   <img 
@@ -134,20 +192,22 @@ const MisCapsulas = () => {
                       className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e]"
                       onClick={e => {
                         e.stopPropagation();
-                        navigate(`/editarcapsula/${capsula.Capsule_ID}`); // <-- Navega a la edición
+                        handleProtectedAction('editar', capsula);
                       }}
                     >
                       <FontAwesomeIcon icon={faEdit} />
                     </button>
-                    <button 
-                      className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e]"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(capsula.Capsule_ID);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
+                    {capsula.Creator_User_ID === userId && (
+                      <button
+                        className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e]"
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleDelete(capsula.Capsule_ID);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    )}
                   </div>
                 </div>
                 
@@ -177,6 +237,14 @@ const MisCapsulas = () => {
           )}
         </div>
       )}
+
+      {/* Modal de contraseña */}
+      <PasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        onSubmit={handlePasswordSubmit}
+        error={passwordError}
+      />
     </div>
   );
 };

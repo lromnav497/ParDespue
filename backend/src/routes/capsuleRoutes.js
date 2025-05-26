@@ -54,6 +54,29 @@ router.get('/:id', async (req, res) => {
   }
 });
 router.put('/:id', (req, res) => CapsuleController.update(req, res));
-router.delete('/:id', (req, res) => CapsuleController.delete(req, res));
+router.delete('/:id', async (req, res) => {
+  const capsuleId = req.params.id;
+  const userId = req.body.userId || req.headers['x-user-id']; // Ajusta según tu frontend
+
+  // Busca el dueño de la cápsula
+  const [rows] = await db.query('SELECT Creator_User_ID FROM Capsules WHERE Capsule_ID = ?', [capsuleId]);
+  if (!rows.length) return res.status(404).json({ message: 'Cápsula no encontrada' });
+
+  if (rows[0].Creator_User_ID != userId) {
+    return res.status(403).json({ message: 'Solo el creador puede eliminar esta cápsula.' });
+  }
+
+  // Elimina la cápsula
+  await db.query('DELETE FROM Capsules WHERE Capsule_ID = ?', [capsuleId]);
+  res.json({ message: 'Cápsula eliminada correctamente.' });
+});
+router.post('/:id/check-password', async (req, res) => {
+  const { password } = req.body;
+  const capsuleId = req.params.id;
+  const [rows] = await db.query('SELECT Password FROM Capsules WHERE Capsule_ID = ?', [capsuleId]);
+  if (!rows.length) return res.status(404).json({ valid: false });
+  const valid = rows[0].Password === password;
+  res.json({ valid });
+});
 
 module.exports = router;
