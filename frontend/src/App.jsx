@@ -55,6 +55,7 @@ function App() {
           <Route path="/capsulas/:id" element={<VerCapsula />} />
           <Route path="/vercapsula/:id" element={<VerCapsula />} />
           <Route path="/capsulas/:id/editar" element={<EditarCapsula />} />
+          <Route path="/editarcapsula/:id" element={<EditarCapsula />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/about" element={<About />} />
