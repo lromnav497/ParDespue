@@ -167,7 +167,7 @@ const VerCapsula = () => {
                       {isOwner ? (
                         <>
                           <span>
-                            {showPassword ? capsula.Password : '******'}
+                            {showPassword ? '********' : '******'}
                           </span>
                           <button
                             type="button"

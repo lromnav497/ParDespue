@@ -21,7 +21,8 @@ router.get('/:id', async (req, res) => {
   try {
     const [capsuleRows] = await db.query(
       `SELECT c.Capsule_ID, c.Title, c.Description, c.Opening_Date, c.Privacy, c.Tags, c.Creation_Date,
-              c.Category_ID, cat.Name as Category_Name, cat.Description as Category_Description
+              c.Category_ID, cat.Name as Category_Name, cat.Description as Category_Description,
+              c.Password
        FROM Capsules c
        INNER JOIN Categories cat ON c.Category_ID = cat.Category_ID
        WHERE c.Capsule_ID = ?`, [capsuleId]
@@ -39,6 +40,7 @@ router.get('/:id', async (req, res) => {
 
     res.json({
       ...capsule,
+      Password: !!capsule.Password, // <-- Esto devuelve true si tiene contraseña, false si no
       Category: { 
         Category_ID: capsule.Category_ID, 
         Name: capsule.Category_Name, 
