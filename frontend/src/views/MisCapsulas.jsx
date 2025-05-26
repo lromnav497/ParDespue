@@ -7,7 +7,8 @@ import {
   faTrash, 
   faClock, 
   faLock, 
-  faUnlock 
+  faUnlock,
+  faBoxArchive
 } from '@fortawesome/free-solid-svg-icons';
 
 const MisCapsulas = () => {
@@ -163,6 +164,10 @@ const MisCapsulas = () => {
                     <p className="flex items-center gap-2">
                       <FontAwesomeIcon icon={getEstado(capsula) === 'abierta' ? faUnlock : faClock} />
                       Se abre: {new Date(capsula.Opening_Date).toLocaleDateString()}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <FontAwesomeIcon icon={faBoxArchive} />
+                      Categoría: {capsula.Category?.Name || capsula.categoria || 'Sin categoría'}
                     </p>
                     <p className="text-gray-400">{capsula.Content}</p>
                   </div>

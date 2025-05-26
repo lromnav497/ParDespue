@@ -73,6 +73,7 @@ const VerCapsula = () => {
                 <p><span className="text-[#F5E050]">Fecha de apertura:</span> {new Date(capsula.Opening_Date).toLocaleDateString()}</p>
                 <p><span className="text-[#F5E050]">Fecha de creación:</span> {new Date(capsula.Creation_Date).toLocaleDateString()}</p>
                 <p><span className="text-[#F5E050]">Tags:</span> {capsula.Tags || 'Ninguno'}</p>
+                <p><span className="text-[#F5E050]">Categoría:</span> {capsula.Category?.Name || 'Sin categoría'}</p>
               </div>
               <div className="flex flex-col items-center mt-4 md:mt-0">
                 <FontAwesomeIcon icon={faUser} className="text-4xl text-[#F5E050]" />

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faBoxArchive,
@@ -24,7 +24,7 @@ const CrearCapsula = () => {
     nombre: '',
     descripcion: '',
     fechaApertura: '',
-    categoria: '',
+    categoriaId: '',
     archivos: [],
     privacidad: 'privada',
     notificaciones: false,
@@ -38,6 +38,14 @@ const CrearCapsula = () => {
   const fileInputRef = useRef();
   const [showModal, setShowModal] = useState(false);
   const [carruselArchivos, setCarruselArchivos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(setCategorias)
+      .catch(() => setCategorias([]));
+  }, []);
 
   const steps = [
     { id: 0, title: 'Información', icon: faBoxArchive },
@@ -179,18 +187,17 @@ const CrearCapsula = () => {
             <div>
               <label className="block text-white mb-2">Categoría</label>
               <select
-                name="categoria"
-                value={formData.categoria}
+                name="categoriaId"
+                value={formData.categoriaId}
                 onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 
-                  text-white focus:outline-none focus:border-[#F5E050]"
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
               >
                 <option value="">Selecciona una categoría</option>
-                <option value="Family">Familia</option>
-                <option value="travel">Viajes</option>
-                <option value="events">Eventos</option>
-                <option value="memories">Recuerdos</option>
-                <option value="others">Otros</option>
+                {categorias.map(cat => (
+                  <option key={cat.Category_ID} value={cat.Category_ID}>
+                    {cat.Name}
+                  </option>
+                ))}
               </select>
             </div>
             {/* Apartado de tags */}
@@ -421,7 +428,9 @@ const CrearCapsula = () => {
         <p><span className="text-[#F5E050]">Nombre:</span> {formData.nombre}</p>
         <p><span className="text-[#F5E050]">Descripción:</span> {formData.descripcion}</p>
         <p><span className="text-[#F5E050]">Fecha de apertura:</span> {formData.fechaApertura}</p>
-        <p><span className="text-[#F5E050]">Categoría:</span> {formData.categoria}</p>
+        <p><span className="text-[#F5E050]">Categoría:</span> {
+    categorias.find(cat => cat.Category_ID === Number(formData.categoriaId))?.Name || 'Sin categoría'
+  }</p>
         <p>
           <span className="text-[#F5E050]">Tags:</span> {formData.tags && formData.tags.length > 0 ? formData.tags.join(', ') : 'Ninguno'}
         </p>
@@ -518,124 +527,104 @@ const CrearCapsula = () => {
   };
 
   const handleCreateCapsule = async () => {
-    try {
-      // Mapeo de privacidad del frontend al backend
-      const privacyMap = {
-        'privada': 'private',
-        'grupos': 'group',
-        'publica': 'public'
-      };
-      const privacyValue = privacyMap[formData.privacidad] || 'private';
+  try {
+    // Mapeo de privacidad del frontend al backend
+    const privacyMap = {
+      'privada': 'private',
+      'grupos': 'group',
+      'publica': 'public'
+    };
+    const privacyValue = privacyMap[formData.privacidad] || 'private';
 
-      // 1. Crear la cápsula
-      const resCapsule = await fetch('/api/capsules', {
+    // 1. Crear la cápsula
+    const resCapsule = await fetch('/api/capsules', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        Title: formData.nombre,
+        Description: formData.descripcion,
+        Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        Opening_Date: formData.fechaApertura,
+        Privacy: privacyValue,
+        Tags: formData.tags.join(','),
+        Creator_User_ID: userId,
+        Password: privacyValue === 'private' ? formData.password : null,
+        Category_ID: formData.categoriaId // <-- usa el ID seleccionado
+      }),
+    });
+    const capsuleData = await resCapsule.json();
+    if (!resCapsule.ok) throw new Error(capsuleData.message || 'Error al crear cápsula');
+    const capsuleId = capsuleData.Capsule_ID || capsuleData.id;
+
+    // 2. Sube los archivos con userId y capsuleId
+    for (const archivo of formData.archivos) {
+      // Mueve el archivo del tmp al destino final
+      const resMove = await fetch('/api/upload/move', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          Title: formData.nombre,
-          Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-          Opening_Date: formData.fechaApertura,
-          Privacy: privacyValue,
-          Tags: formData.tags.join(','),
-          Creator_User_ID: userId,
-          Password: privacyValue === 'private' ? formData.password : null // <-- solo si es privada
+          userId,
+          capsuleId,
+          tmpPath: archivo.tmpPath // ej: /uploads/tmp/8/12345.jpg
         }),
       });
-      const capsuleData = await resCapsule.json();
-      if (!resCapsule.ok) throw new Error(capsuleData.message || 'Error al crear cápsula');
-      const capsuleId = capsuleData.Capsule_ID || capsuleData.id;
+      const data = await resMove.json();
+      if (resMove.ok) {
+        // Actualiza el archivo en el array
+        archivo.path = data.filePath;
+        delete archivo.tmpPath;
 
-      // 2. Sube los archivos con userId y capsuleId
-      for (const archivo of formData.archivos) {
-        // Mueve el archivo del tmp al destino final
-        const resMove = await fetch('/api/upload/move', {
+        // Guarda en Contents
+        await fetch('/api/contents', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId,
-            capsuleId,
-            tmpPath: archivo.tmpPath // ej: /uploads/tmp/8/12345.jpg
+            Type: getTypeFromMime(archivo.type),
+            File_Path: data.filePath, // nueva ruta definitiva
+            Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            Capsule_ID: capsuleId,
           }),
         });
-        const data = await resMove.json();
-        if (resMove.ok) {
-          // Actualiza el archivo en el array
-          archivo.path = data.filePath;
-          delete archivo.tmpPath;
+      }
+    }
 
-          // Guarda en Contents
-          await fetch('/api/contents', {
+    // 3. Manejo de destinatarios para grupos
+    if (privacyValue === 'group' && formData.recipients && formData.recipients.length > 0) {
+      // Obtén los roles desde el backend o usa IDs fijos si sabes cuáles son
+      const roleMap = { 'Reader': 2, 'Collaborator': 3 }; // Según tu tabla Roles
+      for (const recipient of formData.recipients) {
+        // Busca el usuario por email (puedes hacer un fetch al backend para obtener el User_ID)
+        const resUser = await fetch(`/api/users/email/${recipient.email}`);
+        const userData = await resUser.json();
+        if (resUser.ok && userData.User_ID) {
+          await fetch('/api/recipients', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              Type: getTypeFromMime(archivo.type),
-              File_Path: data.filePath, // nueva ruta definitiva
-              Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+              User_ID: userData.User_ID,
               Capsule_ID: capsuleId,
+              Role_ID: roleMap[recipient.role]
             }),
           });
         }
+        // Si el usuario no existe, puedes mostrar un error o ignorar
       }
-
-      // Después de obtener capsuleId
-      // Debes tener el Category_ID real, no el nombre
-      const categoryMap = {
-        'Family': 1,
-        'travel': 2,
-        'events': 3,
-        'memories': 4,
-        'others': 5
-      };
-      const categoryId = categoryMap[formData.categoria];
-
-      if (categoryId) {
-        await fetch('/api/capsule-category', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            Capsule_ID: capsuleId,
-            Category_ID: categoryId
-          }),
-        });
-      }
-
-      // 3. Manejo de destinatarios para grupos
-      if (privacyValue === 'group' && formData.recipients && formData.recipients.length > 0) {
-        // Obtén los roles desde el backend o usa IDs fijos si sabes cuáles son
-        const roleMap = { 'Reader': 2, 'Collaborator': 3 }; // Según tu tabla Roles
-        for (const recipient of formData.recipients) {
-          // Busca el usuario por email (puedes hacer un fetch al backend para obtener el User_ID)
-          const resUser = await fetch(`/api/users/email/${recipient.email}`);
-          const userData = await resUser.json();
-          if (resUser.ok && userData.User_ID) {
-            await fetch('/api/recipients', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                User_ID: userData.User_ID,
-                Capsule_ID: capsuleId,
-                Role_ID: roleMap[recipient.role]
-              }),
-            });
-          }
-          // Si el usuario no existe, puedes mostrar un error o ignorar
-        }
-      }
-
-      // Mostrar carrusel modal si hay archivos
-      if (formData.archivos.length > 0) {
-        // Selecciona 3 archivos aleatorios
-        const shuffled = [...formData.archivos].sort(() => 0.5 - Math.random());
-        setCarruselArchivos(formData.archivos); // <-- pasa todos los archivos, no solo 3
-        setShowModal(true);
-      }
-
-      alert('¡Cápsula creada con éxito!');
-      // Redirige o limpia el formulario si quieres
-    } catch (err) {
-      alert('Error al crear la cápsula: ' + err.message);
     }
-  };
+
+    // Mostrar carrusel modal si hay archivos
+    if (formData.archivos.length > 0) {
+      // Selecciona 3 archivos aleatorios
+      const shuffled = [...formData.archivos].sort(() => 0.5 - Math.random());
+      setCarruselArchivos(formData.archivos); // <-- pasa todos los archivos, no solo 3
+      setShowModal(true);
+    }
+
+    alert('¡Cápsula creada con éxito!');
+    // Redirige o limpia el formulario si quieres
+  } catch (err) {
+    alert('Error al crear la cápsula: ' + err.message);
+  }
+};
 
   // Función para mapear MIME a ENUM
   function getTypeFromMime(mime) {

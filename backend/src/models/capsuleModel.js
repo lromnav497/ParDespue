@@ -6,11 +6,11 @@ const path = require('path');
 
 const CapsuleModel = {
   create: async (capsule) => {
-    const { Title, Creation_Date, Opening_Date, Privacy, Password = null, Creator_User_ID, Tags } = capsule;
+    const { Title, Description, Creation_Date, Opening_Date, Privacy, Password = null, Creator_User_ID, Tags, Category_ID } = capsule;
     const [result] = await db.execute(
-      `INSERT INTO Capsules (Title, Creation_Date, Opening_Date, Privacy, Password, Creator_User_ID, Tags)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [Title, Creation_Date, Opening_Date, Privacy, Password, Creator_User_ID, Tags]
+      `INSERT INTO Capsules (Title, Description, Creation_Date, Opening_Date, Privacy, Password, Creator_User_ID, Tags, Category_ID)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [Title, Description, Creation_Date, Opening_Date, Privacy, Password, Creator_User_ID, Tags, Category_ID]
     );
     return { Capsule_ID: result.insertId, ...capsule };
   },
@@ -72,13 +72,11 @@ const CapsuleModel = {
         c.Creator_User_ID as creatorId,
         u.Name as autor,
         u.Email as email,
-        GROUP_CONCAT(cat.Name) as categorias
+        cat.Name as categoria
       FROM Capsules c
       JOIN Users u ON c.Creator_User_ID = u.User_ID
-      LEFT JOIN Capsule_Category cc ON c.Capsule_ID = cc.Capsule_ID
-      LEFT JOIN Categories cat ON cc.Category_ID = cat.Category_ID
+      JOIN Categories cat ON c.Category_ID = cat.Category_ID
       ${where}
-      GROUP BY c.Capsule_ID
       ORDER BY c.Opening_Date DESC
       LIMIT ? OFFSET ?`,
       [...params, pageSize, offset]
@@ -89,8 +87,7 @@ const CapsuleModel = {
       `SELECT COUNT(DISTINCT c.Capsule_ID) as total
       FROM Capsules c
       JOIN Users u ON c.Creator_User_ID = u.User_ID
-      LEFT JOIN Capsule_Category cc ON c.Capsule_ID = cc.Capsule_ID
-      LEFT JOIN Categories cat ON cc.Category_ID = cat.Category_ID
+      JOIN Categories cat ON c.Category_ID = cat.Category_ID
       ${where}`,
       params
     );
@@ -99,7 +96,7 @@ const CapsuleModel = {
       capsulas: rows.map(row => ({
         ...row,
         tags: row.tags ? row.tags.split(',').map(t => t.trim()) : [],
-        categorias: row.categorias ? row.categorias.split(',').map(c => c.trim()) : []
+        categoria: row.categoria
       })),
       totalPages: Math.ceil(total / pageSize)
     };
@@ -130,7 +127,6 @@ const CapsuleModel = {
       }
     }
     // 3. Elimina relaciones en tablas hijas primero
-    await db.execute('DELETE FROM Capsule_Category WHERE Capsule_ID = ?', [id]);
     await db.execute('DELETE FROM Contents WHERE Capsule_ID = ?', [id]);
     await db.execute('DELETE FROM Recipients WHERE Capsule_ID = ?', [id]);
     await db.execute('DELETE FROM Comments WHERE Capsule_ID = ?', [id]);

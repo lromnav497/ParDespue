@@ -16,7 +16,6 @@ const errorMiddleware = require('./src/middleware/errorMiddleware');
 const cors = require('cors');
 const uploadRoutes = require('./src/routes/uploadRoutes');
 const path = require('path');
-const capsuleCategoryRoutes = require('./src/routes/capsuleCategoryRoutes');
 
 // Cargar el archivo Swagger
 const swaggerDocument = yaml.load('./src/docs/swagger.yaml');
@@ -47,7 +46,6 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/recipients', recipientRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api/capsule-category', capsuleCategoryRoutes);
 app.use('/api/uploads', express.static(path.resolve(__dirname, 'uploads')));
 
 // Documentación Swagger

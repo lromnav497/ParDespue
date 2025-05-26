@@ -30,6 +30,7 @@ const EditarCapsula = () => {
       audios: []
     }
   });
+  const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Utilidad para normalizar arrays de contenido
@@ -64,19 +65,20 @@ const EditarCapsula = () => {
           console.log('DATA CAPSULA:', data); // <-- Para depuración
 
           setCapsula({
-            titulo: data.Title ?? data.titulo ?? data.Titulo ?? '',
-            descripcion: data.Description ?? data.descripcion ?? data.Descripcion ?? '',
+            titulo: data.Title ?? '',
+            descripcion: data.Description ?? '',
             fechaApertura: data.Opening_Date
               ? data.Opening_Date.slice(0, 10)
-              : (data.fechaApertura ?? data.FechaApertura ?? ''),
-            categoria: data.Category ?? data.categoria ?? data.Categoria ?? '',
-            privacidad: data.Privacy ?? data.privacidad ?? data.Privacidad ?? 'privada',
-            notificaciones: !!(data.Notifications ?? data.notificaciones ?? data.Notificaciones),
+              : '',
+            categoria: data.Category?.Name || '',
+            categoriaId: data.Category?.Category_ID || '',
+            privacidad: data.Privacy ?? 'privada',
+            notificaciones: !!(data.Notifications ?? false),
             contenido: {
-              imagenes: normalizeArray(data.Images ?? data.imagenes ?? data.Imagenes, 'imagenes'),
-              videos: normalizeArray(data.Videos ?? data.videos ?? data.Videos, 'videos'),
-              mensajes: normalizeArray(data.Messages ?? data.mensajes ?? data.Mensajes, 'mensajes'),
-              audios: normalizeArray(data.Audios ?? data.audios ?? data.Audios, 'audios')
+              imagenes: normalizeArray(data.Images, 'imagenes'),
+              videos: normalizeArray(data.Videos, 'videos'),
+              mensajes: normalizeArray(data.Messages, 'mensajes'),
+              audios: normalizeArray(data.Audios, 'audios')
             }
           });
         } else {
@@ -93,6 +95,24 @@ const EditarCapsula = () => {
     fetchCapsula();
     // eslint-disable-next-line
   }, [id, navigate]);
+
+  // Cargar categorías para el selector
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+          const data = await res.json();
+          setCategorias(data);
+        } else {
+          console.error('Error al cargar categorías');
+        }
+      } catch (err) {
+        console.error('Error de red al cargar categorías');
+      }
+    };
+    fetchCategorias();
+  }, []);
 
   // Manejar cambios en los campos
   const handleChange = (e) => {
@@ -125,8 +145,8 @@ const EditarCapsula = () => {
           Title: capsula.titulo,
           Description: capsula.descripcion,
           Opening_Date: capsula.fechaApertura,
-          Category: capsula.categoria,
           Privacy: capsula.privacidad,
+          Category_ID: capsula.categoriaId, // <-- usa el ID
           Notifications: capsula.notificaciones,
           Images: capsula.contenido.imagenes.map(i => i.url || i),
           Videos: capsula.contenido.videos.map(i => i.url || i),
@@ -222,14 +242,19 @@ const EditarCapsula = () => {
             </div>
             <div>
               <label className="block text-white mb-2">Categoría</label>
-              <input
-                type="text"
-                name="categoria"
-                value={capsula.categoria}
+              <select
+                name="categoriaId"
+                value={capsula.categoriaId}
                 onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 
-                  text-white focus:outline-none focus:border-[#F5E050]"
-              />
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+              >
+                <option value="">Selecciona una categoría</option>
+                {categorias.map(cat => (
+                  <option key={cat.Category_ID} value={cat.Category_ID}>
+                    {cat.Name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-white mb-2">Privacidad</label>

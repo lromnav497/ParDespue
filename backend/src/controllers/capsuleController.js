@@ -32,12 +32,14 @@ class CapsuleController extends GeneralController {
         try {
             const {
                 Title,
+                Description, // <-- nuevo
                 Creation_Date,
                 Opening_Date,
                 Privacy,
                 Password = null,
                 Creator_User_ID,
-                Tags
+                Tags,
+                Category_ID // <-- nuevo
             } = req.body;
 
             // Agrega este log:
@@ -54,12 +56,14 @@ class CapsuleController extends GeneralController {
             // Usar el método general de creación
             const newCapsule = await this.model.create({
                 Title,
+                Description, // <-- nuevo
                 Creation_Date,
                 Opening_Date,
                 Privacy,
                 Password,
                 Creator_User_ID,
-                Tags
+                Tags,
+                Category_ID // <-- nuevo
             });
 
             res.status(201).json(newCapsule);
