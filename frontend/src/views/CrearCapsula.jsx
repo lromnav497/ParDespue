@@ -108,8 +108,8 @@ const CrearCapsula = () => {
 
     // Sube a carpeta temporal
     const formDataFile = new FormData();
-    formDataFile.append('file', file);
-    formDataFile.append('userId', userId); // SIEMPRE
+    formDataFile.append('userId', userId); // Primero el userId
+    formDataFile.append('file', file);     // Luego el archivo
 
     const resUpload = await fetch('/api/upload/tmp', {
       method: 'POST',
@@ -263,6 +263,7 @@ const CrearCapsula = () => {
               <p className="text-white">Arrastra archivos aquí o haz clic para seleccionar</p>
               <input
                 type="file"
+                name="file"           // <-- AGREGA ESTO
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
