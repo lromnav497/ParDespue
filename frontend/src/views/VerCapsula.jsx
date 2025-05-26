@@ -27,7 +27,12 @@ const VerCapsula = () => {
     const fetchCapsula = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/capsules/${id}`);
+        const user = JSON.parse(localStorage.getItem('user'));
+        const res = await fetch(`/api/capsules/${id}`, {
+          headers: {
+            'x-user-id': user?.id
+          }
+        });
         const data = await res.json();
         setCapsula(data);
       } catch (err) {
@@ -161,13 +166,13 @@ const VerCapsula = () => {
             {capsula.Privacy === 'private' && (
               <p className="flex items-center gap-2">
                 <span className="text-[#F5E050]">Contraseña:</span>
-                {capsula.Password
+                {(capsula.Password && String(capsula.Password).length > 0)
                   ? (
                     <>
                       {isOwner ? (
                         <>
                           <span>
-                            {showPassword ? '********' : '******'}
+                            {showPassword ? capsula.Password : '******'}
                           </span>
                           <button
                             type="button"

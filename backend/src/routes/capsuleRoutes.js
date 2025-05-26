@@ -18,11 +18,14 @@ router.get('/public', (req, res) => CapsuleController.getPublicCapsules(req, res
 // Obtener cápsula por ID con todos los campos y contenidos
 router.get('/:id', async (req, res) => {
   const capsuleId = req.params.id;
+  // Supón que recibes el userId por cabecera (ajusta según tu auth)
+  const userId = req.headers['x-user-id'];
+
   try {
     const [capsuleRows] = await db.query(
       `SELECT c.Capsule_ID, c.Title, c.Description, c.Opening_Date, c.Privacy, c.Tags, c.Creation_Date,
               c.Category_ID, cat.Name as Category_Name, cat.Description as Category_Description,
-              c.Password
+              c.Password, c.Creator_User_ID
        FROM Capsules c
        INNER JOIN Categories cat ON c.Category_ID = cat.Category_ID
        WHERE c.Capsule_ID = ?`, [capsuleId]
@@ -38,9 +41,17 @@ router.get('/:id', async (req, res) => {
     const audios = contents.filter(c => c.Type === 'audio').map(c => ({ id: c.Content_ID, url: c.File_Path }));
     const messages = contents.filter(c => c.Type === 'text').map(c => ({ id: c.Content_ID, contenido: c.File_Path }));
 
+    // Solo el dueño recibe la contraseña real, los demás solo booleano
+    let passwordField;
+    if (userId && Number(userId) === capsule.Creator_User_ID) {
+      passwordField = capsule.Password || '';
+    } else {
+      passwordField = !!capsule.Password;
+    }
+
     res.json({
       ...capsule,
-      Password: !!capsule.Password, // <-- Esto devuelve true si tiene contraseña, false si no
+      Password: passwordField,
       Category: { 
         Category_ID: capsule.Category_ID, 
         Name: capsule.Category_Name, 
