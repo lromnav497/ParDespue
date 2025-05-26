@@ -35,9 +35,9 @@ const Register = () => {
         setEmail('');
         setPassword('');
         setConfirmPassword('');
-        // Redirige después de 2 segundos
+        // Redirige después de 2 segundos a login y pasa un estado
         setTimeout(() => {
-          navigate('/verify-email');
+          navigate('/login', { state: { showVerifyModal: true } });
         }, 2000);
       }
     } catch (err) {
