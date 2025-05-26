@@ -34,7 +34,7 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
   // Cambia el handler del botón cerrar:
   const handleClose = () => {
     if (onClose) onClose();
-    navigate('/mis-capsulas', { state: { filter: 'programada' } }); // <-- Pasa el filtro por state
+    navigate('/capsulas', { state: { filter: 'programada' } }); // <-- Pasa el filtro por state
   };
 
   return (
