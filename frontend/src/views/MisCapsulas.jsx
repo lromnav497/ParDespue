@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // <-- Importa useLocation
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faPlus, 
@@ -15,8 +15,16 @@ const MisCapsulas = () => {
   const [capsulas, setCapsulas] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation(); // <-- Hook para leer el state
 
-    const user = JSON.parse(localStorage.getItem('user')); // Asegúrate que la clave sea 'user'
+  // Al montar, si viene filtro en location.state, actívalo
+  useEffect(() => {
+    if (location.state?.filter) {
+      setActiveFilter(location.state.filter);
+    }
+  }, [location.state]);
+
+  const user = JSON.parse(localStorage.getItem('user')); // Asegúrate que la clave sea 'user'
   const userId = user?.id; // Esto será 8 si el usuario está logueado
 
   useEffect(() => {

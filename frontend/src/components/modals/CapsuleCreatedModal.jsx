@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // <-- Importa esto
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMusic } from '@fortawesome/free-solid-svg-icons';
 
 const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
   const [current, setCurrent] = useState(0);
+  const navigate = useNavigate(); // <-- Hook para navegar
 
   // Auto-avance cada 3 segundos
   useEffect(() => {
@@ -28,6 +30,12 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
   const indices = [prevIdx, current, nextIdx].filter(
     (idx, i, arr) => arr.indexOf(idx) === i
   );
+
+  // Cambia el handler del botón cerrar:
+  const handleClose = () => {
+    if (onClose) onClose();
+    navigate('/mis-capsulas', { state: { filter: 'programada' } }); // <-- Pasa el filtro por state
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
@@ -133,7 +141,7 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
         <div className="flex justify-center mt-6">
           <button
             className="bg-[#F5E050] text-[#2E2E7A] px-6 py-2 rounded-full font-bold hover:bg-[#e6d047] transition-colors"
-            onClick={onClose}
+            onClick={handleClose}
           >
             Cerrar
           </button>
