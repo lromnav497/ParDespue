@@ -29,7 +29,7 @@ const Register = () => {
       if (!response.ok) {
         setError(data.message || 'Error al registrar');
       } else {
-        setSuccess('¡Registro exitoso! Ahora puedes iniciar sesión.');
+        setSuccess(data.message || '¡Registro exitoso! Revisa tu correo para verificar tu cuenta.');
         setName('');
         setEmail('');
         setPassword('');

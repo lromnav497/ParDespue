@@ -20,6 +20,8 @@ import Suscripciones from './views/Suscripciones';
 import Features from './views/Features';
 import PrivateRoute from './components/auth/PrivateRoute';
 import CookiesModal from './components/modals/CookiesModal';
+import VerifyEmail from './views/VerifyEmail';
+import ResendVerification from './views/ResendVerification';
 
 function App() {
   const [showCookiesModal, setShowCookiesModal] = useState(false);
@@ -61,6 +63,8 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/suscripciones" element={<Suscripciones />} />
           <Route path="/features" element={<Features />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/resend-verification" element={<ResendVerification />} />
         </Routes>
         <CookiesModal
           isOpen={showCookiesModal}

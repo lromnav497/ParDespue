@@ -20,13 +20,16 @@ const Login = () => {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.message || 'Error al iniciar sesión');
+        // Si el backend responde con "Usuario no verificado"
+        if (data.message && data.message.toLowerCase().includes('verific')) {
+          setError('Tu cuenta no está verificada. Revisa tu correo para activarla.');
+        } else {
+          setError(data.message || 'Error al iniciar sesión');
+        }
         return;
       }
-      // Guarda el token en localStorage (o donde prefieras)
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      // Dispara el evento para que el Header se actualice
       window.dispatchEvent(new Event('user-updated'));
       navigate('/explorar');
     } catch (err) {

@@ -2,6 +2,14 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/userModel');
+const pool = require('../config/db');
+const crypto = require('crypto');
+
+// Aquí importa y configura Mailjet usando variables de entorno
+const mailjet = require('node-mailjet').connect(
+  process.env.MAILJET_API_KEY,
+  process.env.MAILJET_API_SECRET
+);
 
 const router = express.Router();
 
@@ -17,15 +25,55 @@ router.post('/register', async (req, res) => {
         // Hashea la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Crea el usuario
-        const user = await userModel.create({
+        // Genera un token de verificación
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+
+        // Crea el usuario con Verified = false
+        await userModel.create({
             Name: name,
             Email: email,
             Password: hashedPassword,
-            Role: 'standard' // Cambiado de 'user' a 'standard'
+            Role: 'standard',
+            Verified: false,
+            VerificationToken: verificationToken
         });
 
-        res.status(201).json({ message: 'Usuario registrado correctamente' });
+        // Genera el enlace de verificación
+        const verifyUrl = `http://44.209.31.187:3000/verify-email?token=${verificationToken}`; // Cambia el dominio en producción
+
+        // Envía el correo con Mailjet
+        await mailjet
+            .post('send', { version: 'v3.1' })
+            .request({
+                Messages: [
+                    {
+                        From: {
+                            Email: "lromnav497@gmail.com",
+                            Name: "ParDespue Team"
+                        },
+                        To: [
+                            {
+                                Email: email,
+                                Name: name
+                            }
+                        ],
+                        Subject: "Verifica tu cuenta",
+                        TextPart: `Haz clic en el siguiente enlace para verificar tu cuenta: ${verifyUrl}`,
+                        HTMLPart: `
+                          <div style="font-family:Arial,sans-serif;background:#f9f9f9;padding:30px;">
+                            <h2 style="color:#2E2E7A;">¡Bienvenido a ParDespue!</h2>
+                            <p>Gracias por registrarte. Para activar tu cuenta, haz clic en el botón:</p>
+                            <a href="${verifyUrl}" style="display:inline-block;background:#F5E050;color:#2E2E7A;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;margin:20px 0;">Verificar cuenta</a>
+                            <p>Si no solicitaste este registro, puedes ignorar este correo.</p>
+                            <hr style="margin:24px 0;">
+                            <small style="color:#888;">ParDespue Team</small>
+                          </div>
+                        `
+                    }
+                ]
+            });
+
+        res.status(201).json({ message: 'Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -37,6 +85,9 @@ router.post('/login', async (req, res) => {
         const user = await userModel.findByEmail(email);
         if (!user) {
             return res.status(400).json({ message: 'Usuario o contraseña incorrectos' });
+        }
+        if (!user.Verified) {
+            return res.status(403).json({ message: 'Usuario no verificado. Revisa tu correo para activarlo.' });
         }
         const valid = await bcrypt.compare(password, user.Password);
         if (!valid) {
@@ -52,6 +103,58 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+});
+
+router.get('/verify/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const [result] = await pool.query(
+      'UPDATE Users SET Verified = true, VerificationToken = NULL WHERE VerificationToken = ?', [token]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Token inválido o expirado' });
+    }
+    res.json({ message: 'Usuario verificado correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/resend-verification', async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await userModel.findByEmail(email);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    if (user.Verified) {
+      return res.status(400).json({ message: 'El usuario ya está verificado.' });
+    }
+    // Si no tiene token, genera uno nuevo
+    let verificationToken = user.VerificationToken;
+    if (!verificationToken) {
+      verificationToken = crypto.randomBytes(32).toString('hex');
+      await pool.query('UPDATE Users SET VerificationToken = ? WHERE Email = ?', [verificationToken, email]);
+    }
+    const verifyUrl = `http://44.209.31.187:3000/verify-email?token=${verificationToken}`;
+    await mailjet.post('send', { version: 'v3.1' }).request({
+      Messages: [
+        {
+          From: { Email: "lromnav497@gmail.com", Name: "ParDespue Team" },
+          To: [{ Email: email, Name: user.Name }],
+          Subject: "Verifica tu cuenta",
+          TextPart: `Haz clic en el siguiente enlace para verificar tu cuenta: ${verifyUrl}`,
+          HTMLPart: `<h3>¡Bienvenido de nuevo!</h3>
+            <p>Haz clic en el siguiente enlace para verificar tu cuenta:</p>
+            <a href="${verifyUrl}" style="background:#F5E050;color:#2E2E7A;padding:10px 20px;border-radius:5px;text-decoration:none;font-weight:bold;">Verificar cuenta</a>
+            <p>Si no solicitaste este correo, ignóralo.</p>`
+        }
+      ]
+    });
+    res.json({ message: 'Correo de verificación reenviado. Revisa tu bandeja de entrada.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;

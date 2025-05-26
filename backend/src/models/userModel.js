@@ -7,8 +7,8 @@ const UserModel = {
   },
   create: async (user) => {
     const [result] = await pool.query(
-      'INSERT INTO Users (Name, Email, Password, Role) VALUES (?, ?, ?, ?)',
-      [user.Name, user.Email, user.Password, user.Role]
+      'INSERT INTO Users (Name, Email, Password, Role, Verified) VALUES (?, ?, ?, ?, ?)',
+      [user.Name, user.Email, user.Password, user.Role, user.Verified ?? false]
     );
     return result;
   },
