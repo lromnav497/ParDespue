@@ -96,12 +96,32 @@ const CrearCapsula = () => {
   };
 
   // Subida de archivos
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Sube a carpeta temporal
+    const formDataFile = new FormData();
+    formDataFile.append('file', file);
+    formDataFile.append('userId', userId);
+
+    const resUpload = await fetch('/api/upload/tmp', {
+      method: 'POST',
+      body: formDataFile,
+    });
+    const data = await resUpload.json();
+
     setFormData(prev => ({
       ...prev,
-      archivos: [...prev.archivos, { type: file.type, name: file.name, file }]
+      archivos: [
+        ...prev.archivos,
+        {
+          type: file.type,
+          name: file.name,
+          file, // para preview local si quieres
+          tmpPath: data.filePath // guarda el path temporal
+        }
+      ]
     }));
   };
 
@@ -508,24 +528,25 @@ const CrearCapsula = () => {
 
       // 2. Sube los archivos con userId y capsuleId
       for (const archivo of formData.archivos) {
-        const formDataFile = new FormData();
-        formDataFile.append('file', archivo.file);
-        formDataFile.append('userId', userId);
-        formDataFile.append('capsuleId', capsuleId);
-
-        const resUpload = await fetch('/api/upload', {
+        // Mueve el archivo del tmp al destino final
+        const resMove = await fetch('/api/upload/move', {
           method: 'POST',
-          body: formDataFile,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            capsuleId,
+            tmpPath: archivo.tmpPath // ej: /uploads/tmp/8/12345.jpg
+          }),
         });
-        const data = await resUpload.json();
-        if (resUpload.ok) {
+        const data = await resMove.json();
+        if (resMove.ok) {
           // Guarda en Contents
           await fetch('/api/contents', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               Type: getTypeFromMime(archivo.type),
-              File_Path: data.filePath,
+              File_Path: data.filePath, // nueva ruta definitiva
               Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
               Capsule_ID: capsuleId,
             }),

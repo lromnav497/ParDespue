@@ -55,4 +55,54 @@ router.delete('/delete', (req, res) => {
   });
 });
 
+// Configuración de multer para temporal
+const storageTmp = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const userId = req.body.userId || req.query.userId;
+    if (!userId) return cb(new Error('Falta userId'), null);
+    const dir = path.join(__dirname, '../../uploads/tmp', String(userId));
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const uploadTmp = multer({ storage: storageTmp });
+
+router.post('/tmp', uploadTmp.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No se subió ningún archivo.' });
+  }
+  const userId = req.body.userId || req.query.userId;
+  const relativePath = `tmp/${userId}/${req.file.filename}`;
+  res.json({
+    filePath: `/uploads/${relativePath}`,
+    originalName: req.file.originalname,
+    mimeType: req.file.mimetype
+  });
+});
+
+router.post('/move', async (req, res) => {
+  const { userId, capsuleId, tmpPath } = req.body;
+  if (!userId || !capsuleId || !tmpPath) {
+    return res.status(400).json({ message: 'Faltan datos para mover el archivo.' });
+  }
+  // Quita el prefijo /uploads/ si lo tiene
+  const tmpFileName = tmpPath.replace(/^\/?uploads\//, '');
+  const src = path.join(__dirname, '../../uploads', tmpFileName);
+  const destDir = path.join(__dirname, '../../uploads', String(userId), String(capsuleId));
+  fs.mkdirSync(destDir, { recursive: true });
+  const dest = path.join(destDir, path.basename(src));
+  try {
+    fs.renameSync(src, dest);
+    // Devuelve la ruta relativa definitiva
+    const relativePath = `${userId}/${capsuleId}/${path.basename(dest)}`;
+    res.json({ filePath: `/uploads/${relativePath}` });
+  } catch (err) {
+    res.status(500).json({ message: 'No se pudo mover el archivo', error: err.message });
+  }
+});
+
 module.exports = router;
