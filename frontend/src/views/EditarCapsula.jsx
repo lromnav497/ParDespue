@@ -32,6 +32,28 @@ const EditarCapsula = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  // Utilidad para normalizar arrays de contenido
+  const normalizeArray = (arr, tipo) => {
+    if (!arr) return [];
+    // Si es array de strings (urls o textos)
+    if (typeof arr[0] === 'string') {
+      if (tipo === 'mensajes') {
+        return arr.map((contenido, idx) => ({ id: idx, contenido }));
+      }
+      return arr.map((url, idx) => ({ id: idx, url }));
+    }
+    // Si ya es array de objetos
+    if (typeof arr[0] === 'object') {
+      return arr.map((item, idx) => ({
+        id: item.id ?? idx,
+        contenido: item.contenido ?? item.text ?? undefined,
+        url: item.url ?? item.path ?? item.filePath ?? undefined,
+        ...item
+      }));
+    }
+    return [];
+  };
+
   // Cargar datos reales de la cápsula
   useEffect(() => {
     const fetchCapsula = async () => {
@@ -40,31 +62,34 @@ const EditarCapsula = () => {
         if (res.ok) {
           const data = await res.json();
           setCapsula({
-            titulo: data.Title || '',
-            descripcion: data.Description || '',
-            fechaApertura: data.Opening_Date ? data.Opening_Date.slice(0, 10) : '',
-            categoria: data.Category || '',
-            privacidad: data.Privacy || 'privada',
-            notificaciones: !!data.Notifications,
+            titulo: data.Title ?? data.titulo ?? '',
+            descripcion: data.Description ?? data.descripcion ?? '',
+            fechaApertura: data.Opening_Date
+              ? data.Opening_Date.slice(0, 10)
+              : (data.fechaApertura ?? ''),
+            categoria: data.Category ?? data.categoria ?? '',
+            privacidad: data.Privacy ?? data.privacidad ?? 'privada',
+            notificaciones: !!(data.Notifications ?? data.notificaciones),
             contenido: {
-              imagenes: data.Images || [],
-              videos: data.Videos || [],
-              mensajes: data.Messages || [],
-              audios: data.Audios || []
+              imagenes: normalizeArray(data.Images ?? data.imagenes, 'imagenes'),
+              videos: normalizeArray(data.Videos ?? data.videos, 'videos'),
+              mensajes: normalizeArray(data.Messages ?? data.mensajes, 'mensajes'),
+              audios: normalizeArray(data.Audios ?? data.audios, 'audios')
             }
           });
         } else {
           alert('No se pudo cargar la cápsula');
-          navigate('/mis-capsulas');
+          navigate('/capsulas');
         }
       } catch (err) {
         alert('Error de red');
-        navigate('/mis-capsulas');
+        navigate('/capsulas');
       } finally {
         setLoading(false);
       }
     };
     fetchCapsula();
+    // eslint-disable-next-line
   }, [id, navigate]);
 
   // Manejar cambios en los campos
@@ -101,15 +126,15 @@ const EditarCapsula = () => {
           Category: capsula.categoria,
           Privacy: capsula.privacidad,
           Notifications: capsula.notificaciones,
-          Images: capsula.contenido.imagenes,
-          Videos: capsula.contenido.videos,
-          Messages: capsula.contenido.mensajes,
-          Audios: capsula.contenido.audios
+          Images: capsula.contenido.imagenes.map(i => i.url || i),
+          Videos: capsula.contenido.videos.map(i => i.url || i),
+          Messages: capsula.contenido.mensajes.map(i => i.contenido || i),
+          Audios: capsula.contenido.audios.map(i => i.url || i)
         }),
       });
       if (res.ok) {
         alert('Cápsula actualizada correctamente');
-        navigate('/mis-capsulas');
+        navigate('/capsulas');
       } else {
         const error = await res.json();
         alert(error.message || 'Error al actualizar la cápsula');
@@ -127,7 +152,7 @@ const EditarCapsula = () => {
       });
       if (res.ok) {
         alert('Cápsula eliminada correctamente');
-        navigate('/mis-capsulas');
+        navigate('/capsulas');
       } else {
         const error = await res.json();
         alert(error.message || 'Error al eliminar la cápsula');
@@ -250,6 +275,9 @@ const EditarCapsula = () => {
                 <div key={tipo} className="bg-[#1a1a4a] p-4 rounded-lg">
                   <h4 className="text-white mb-2 capitalize">{tipo}</h4>
                   <div className="space-y-2">
+                    {items.length === 0 && (
+                      <div className="text-gray-500 text-sm">Sin contenido</div>
+                    )}
                     {items.map(item => (
                       <div
                         key={item.id}
