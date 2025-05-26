@@ -140,14 +140,15 @@ const EditarCapsula = () => {
       const user = JSON.parse(localStorage.getItem('user'));
       const userId = user?.id;
       for (const archivo of nuevosArchivos) {
-        // Sube a carpeta temporal
+        // 1. Sube a temporal
         const formDataFile = new FormData();
         formDataFile.append('userId', userId);
         formDataFile.append('file', archivo.file);
         const resUpload = await fetch('/api/upload/tmp', { method: 'POST', body: formDataFile });
         const data = await resUpload.json();
-        // Mueve a carpeta definitiva y guarda en Contents
-        await fetch('/api/upload/move', {
+
+        // 2. Mueve a definitiva y GUARDA la ruta devuelta
+        const resMove = await fetch('/api/upload/move', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -156,12 +157,15 @@ const EditarCapsula = () => {
             tmpPath: data.filePath
           }),
         });
+        const moveData = await resMove.json();
+
+        // 3. Guarda en Contents usando la ruta definitiva
         await fetch('/api/contents', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             Type: getTypeFromMime(archivo.type),
-            File_Path: data.filePath,
+            File_Path: moveData.filePath, // <--- SIEMPRE la definitiva
             Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
             Capsule_ID: id,
           }),
