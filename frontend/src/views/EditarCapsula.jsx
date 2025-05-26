@@ -1,99 +1,66 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faSave, faTrash, faImage, faVideo, faFileAlt, faMusic, faLock, faUsers, faGlobe, faBell
+  faSave, faTimes, faTrash, faImage, faVideo, faFileAlt, faMusic, faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 
-const privacyMap = {
-  private: 'privada',
-  public: 'publica',
-  group: 'grupos',
-};
-const reversePrivacyMap = {
-  privada: 'private',
-  publica: 'public',
-  grupos: 'group',
+const getTypeFromMime = (mime) => {
+  if (mime.startsWith('image/')) return 'image';
+  if (mime.startsWith('video/')) return 'video';
+  if (mime.startsWith('audio/')) return 'audio';
+  return 'file';
 };
 
 const EditarCapsula = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [capsula, setCapsula] = useState({
-    titulo: '',
-    descripcion: '',
-    fechaApertura: '',
-    categoriaId: '',
-    privacidad: 'privada',
-    notificaciones: false,
-    contenido: {
-      imagenes: [],
-      videos: [],
-      mensajes: [],
-      audios: []
-    }
+  const fileInputRef = useRef();
+
+  const [capsula, setCapsula] = useState(null);
+  const [archivos, setArchivos] = useState([]); // archivos actuales
+  const [nuevosArchivos, setNuevosArchivos] = useState([]); // archivos nuevos a subir
+  const [form, setForm] = useState({
+    Title: '',
+    Description: '',
+    Opening_Date: '',
+    Category_ID: '',
+    Privacy: 'private',
+    Tags: '',
   });
   const [categorias, setCategorias] = useState([]);
-  const [nuevoMensaje, setNuevoMensaje] = useState('');
   const [loading, setLoading] = useState(true);
-  const [tags, setTags] = useState('');
-  const [grupos, setGrupos] = useState([]); // Lista de grupos disponibles
-  const [destinatarios, setDestinatarios] = useState([]); // IDs seleccionados
 
-  // Normaliza arrays de contenido
-  const normalizeArray = (arr, tipo) => {
-    if (!arr) return [];
-    if (typeof arr[0] === 'string') {
-      if (tipo === 'mensajes') return arr.map((contenido, idx) => ({ id: idx, contenido }));
-      return arr.map((url, idx) => ({ id: idx, url }));
-    }
-    if (typeof arr[0] === 'object') {
-      return arr.map((item, idx) => ({
-        id: item.id ?? item.Content_ID ?? idx,
-        contenido: item.contenido ?? item.text ?? item.Contenido ?? undefined,
-        url: item.url ?? item.path ?? item.filePath ?? item.Path ?? undefined,
-        ...item
-      }));
-    }
-    return [];
-  };
-
-  // Cargar datos de la cápsula
+  // Cargar datos de la cápsula y archivos actuales
   useEffect(() => {
     const fetchCapsula = async () => {
       setLoading(true);
       try {
         const res = await fetch(`/api/capsules/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setCapsula({
-            titulo: data.Title ?? '',
-            descripcion: data.Description ?? '',
-            fechaApertura: data.Opening_Date ? data.Opening_Date.slice(0, 10) : '',
-            categoriaId: data.Category_ID || data.Category?.Category_ID || '',
-            privacidad: privacyMap[data.Privacy] || 'privada',
-            notificaciones: !!(data.Notifications ?? false),
-            contenido: {
-              imagenes: normalizeArray(data.Images, 'imagenes'),
-              videos: normalizeArray(data.Videos, 'videos'),
-              mensajes: normalizeArray(data.Messages, 'mensajes'),
-              audios: normalizeArray(data.Audios, 'audios')
-            }
-          });
-          setTags(data.Tags ? data.Tags.join(', ') : '');
-          setDestinatarios(data.Recipients || []);
-        } else {
-          alert('No se pudo cargar la cápsula');
-          navigate('/capsulas');
-        }
+        const data = await res.json();
+        setCapsula(data);
+        setForm({
+          Title: data.Title || '',
+          Description: data.Description || '',
+          Opening_Date: data.Opening_Date ? data.Opening_Date.slice(0, 10) : '',
+          Category_ID: data.Category?.Category_ID || '',
+          Privacy: data.Privacy || 'private',
+          Tags: Array.isArray(data.Tags) ? data.Tags.join(', ') : (data.Tags || ''),
+        });
+        // Unifica todos los archivos en un solo array para mostrar
+        let files = [];
+        if (data.Images) files = files.concat(data.Images.map(f => ({ ...f, type: 'image' })));
+        if (data.Videos) files = files.concat(data.Videos.map(f => ({ ...f, type: 'video' })));
+        if (data.Audios) files = files.concat(data.Audios.map(f => ({ ...f, type: 'audio' })));
+        if (data.Messages) files = files.concat(data.Messages.map(f => ({ ...f, type: 'text' })));
+        setArchivos(files);
       } catch {
-        alert('Error de red');
-        navigate('/capsulas');
+        setCapsula(null);
       }
       setLoading(false);
     };
     fetchCapsula();
-  }, [id, navigate]);
+  }, [id]);
 
   // Cargar categorías
   useEffect(() => {
@@ -103,391 +70,328 @@ const EditarCapsula = () => {
       .catch(() => setCategorias([]));
   }, []);
 
-  // Cargar grupos (si tienes endpoint de grupos)
-  useEffect(() => {
-    fetch('/api/groups')
-      .then(res => res.json())
-      .then(setGrupos)
-      .catch(() => setGrupos([]));
-  }, []);
-
-  // Cambios en campos
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setCapsula(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+  // Eliminar archivo actual (solo del frontend, se elimina en el backend al guardar)
+  const handleRemoveArchivo = (contentId) => {
+    setArchivos(prev => prev.filter(a => a.id !== contentId && a.Content_ID !== contentId));
   };
 
-  // Eliminar contenido
-  const handleRemoveContenido = (tipo, itemId) => {
-    setCapsula(prev => ({
-      ...prev,
-      contenido: {
-        ...prev.contenido,
-        [tipo]: prev.contenido[tipo].filter(item => item.id !== itemId)
-      }
-    }));
+  // Eliminar archivo nuevo antes de guardar
+  const handleRemoveNuevoArchivo = (idx) => {
+    setNuevosArchivos(prev => prev.filter((_, i) => i !== idx));
   };
 
-  // Subir archivo
-  const handleAddFile = async (e, tipo) => {
+  // Subir archivo nuevo (solo frontend, se sube al guardar)
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const user = JSON.parse(localStorage.getItem('user'));
-    const userId = user?.id;
-    const formDataFile = new FormData();
-    formDataFile.append('userId', userId);
-    formDataFile.append('file', file);
-    const resUpload = await fetch('/api/upload/tmp', { method: 'POST', body: formDataFile });
-    const data = await resUpload.json();
-    setCapsula(prev => ({
+    setNuevosArchivos(prev => [
       ...prev,
-      contenido: {
-        ...prev.contenido,
-        [tipo]: [
-          ...prev.contenido[tipo],
-          {
-            id: Date.now(),
-            name: file.name,
-            type: file.type,
-            tmpPath: data.filePath,
-            url: URL.createObjectURL(file)
-          }
-        ]
+      {
+        file,
+        name: file.name,
+        type: file.type,
+        preview: URL.createObjectURL(file),
       }
-    }));
+    ]);
+    e.target.value = '';
   };
 
-  // Agregar mensaje
-  const handleAddMensaje = () => {
-    if (!nuevoMensaje.trim()) return;
-    setCapsula(prev => ({
-      ...prev,
-      contenido: {
-        ...prev.contenido,
-        mensajes: [...prev.contenido.mensajes, { id: Date.now(), contenido: nuevoMensaje }]
-      }
-    }));
-    setNuevoMensaje('');
+  // Cambios en campos de formulario
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   // Guardar cambios
-  const handleSubmit = async (e) => {
+  const handleGuardar = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
+      // 1. Actualiza los datos principales de la cápsula
       const res = await fetch(`/api/capsules/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          Title: capsula.titulo,
-          Description: capsula.descripcion,
-          Opening_Date: capsula.fechaApertura,
-          Privacy: reversePrivacyMap[capsula.privacidad] || 'private',
-          Category_ID: capsula.categoriaId,
-          Notifications: capsula.notificaciones,
-          Images: capsula.contenido.imagenes.map(i => i.url || i.tmpPath || i),
-          Videos: capsula.contenido.videos.map(i => i.url || i.tmpPath || i),
-          Messages: capsula.contenido.mensajes.map(i => i.contenido || i),
-          Audios: capsula.contenido.audios.map(i => i.url || i.tmpPath || i),
-          Tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-          Recipients: destinatarios,
+          ...form,
+          Tags: form.Tags.split(',').map(t => t.trim()).filter(Boolean),
         }),
       });
-      if (res.ok) {
-        alert('Cápsula actualizada correctamente');
-        navigate('/capsulas');
-      } else {
-        const error = await res.json();
-        alert(error.message || 'Error al actualizar la cápsula');
+      if (!res.ok) throw new Error('Error al actualizar la cápsula');
+
+      // 2. Elimina archivos marcados para borrar
+      const archivosEliminados = capsula.Images.concat(capsula.Videos, capsula.Audios, capsula.Messages)
+        .filter(a =>
+          !archivos.some(b => (b.id || b.Content_ID) === (a.id || a.Content_ID))
+        );
+      for (const archivo of archivosEliminados) {
+        await fetch(`/api/contents/${archivo.id || archivo.Content_ID}`, { method: 'DELETE' });
       }
-    } catch {
-      alert('Error de red');
+
+      // 3. Sube nuevos archivos y los asocia a la cápsula
+      const user = JSON.parse(localStorage.getItem('user'));
+      const userId = user?.id;
+      for (const archivo of nuevosArchivos) {
+        // Sube a carpeta temporal
+        const formDataFile = new FormData();
+        formDataFile.append('userId', userId);
+        formDataFile.append('file', archivo.file);
+        const resUpload = await fetch('/api/upload/tmp', { method: 'POST', body: formDataFile });
+        const data = await resUpload.json();
+        // Mueve a carpeta definitiva y guarda en Contents
+        await fetch('/api/upload/move', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            capsuleId: id,
+            tmpPath: data.filePath
+          }),
+        });
+        await fetch('/api/contents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            Type: getTypeFromMime(archivo.type),
+            File_Path: data.filePath,
+            Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            Capsule_ID: id,
+          }),
+        });
+      }
+
+      alert('Cápsula actualizada correctamente');
+      navigate(`/vercapsula/${id}`);
+    } catch (err) {
+      alert('Error al guardar: ' + err.message);
     }
+    setLoading(false);
   };
 
-  if (loading) return <div className="text-center text-[#F5E050]">Cargando cápsula...</div>;
+  // Cancelar edición
+  const handleCancelar = () => {
+    navigate(-1);
+  };
+
+  if (loading) return <div className="text-center text-[#F5E050] py-10">Cargando cápsula...</div>;
+  if (!capsula) return <div className="text-center text-red-500 py-10">No se encontró la cápsula.</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="bg-[#2E2E7A] rounded-xl p-6 shadow-lg">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl text-[#F5E050] passero-font">Editar Cápsula</h1>
-          <button
-            onClick={handleSubmit}
-            className="px-6 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full hover:bg-[#e6d047] flex items-center gap-2"
-          >
-            <FontAwesomeIcon icon={faSave} />
-            Guardar
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-white mb-2">Título</label>
-              <input
-                type="text"
-                name="titulo"
-                value={capsula.titulo}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050]"
-              />
-            </div>
-            <div>
-              <label className="block text-white mb-2">Fecha de apertura</label>
-              <input
-                type="date"
-                name="fechaApertura"
-                value={capsula.fechaApertura}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050]"
-              />
-            </div>
-            <div>
-              <label className="block text-white mb-2">Categoría</label>
-              <select
-                name="categoriaId"
-                value={capsula.categoriaId}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+    <div className="min-h-screen bg-gray-900 py-8">
+      <div className="container mx-auto px-4">
+        <div className="bg-[#2E2E7A] rounded-xl p-8 shadow-lg max-w-3xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl text-[#F5E050] passero-font">Editar Cápsula</h1>
+            <div className="flex gap-2">
+              <button
+                onClick={handleCancelar}
+                className="px-4 py-2 bg-[#1a1a4a] text-white rounded-full hover:bg-[#3d3d9e] flex items-center gap-2"
               >
-                <option value="">Selecciona una categoría</option>
-                {categorias.map(cat => (
-                  <option key={cat.Category_ID} value={cat.Category_ID}>
-                    {cat.Name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-white mb-2">Privacidad</label>
-              <select
-                name="privacidad"
-                value={capsula.privacidad}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                <FontAwesomeIcon icon={faArrowLeft} />
+                Cancelar
+              </button>
+              <button
+                onClick={handleGuardar}
+                className="px-4 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full hover:bg-[#e6d047] flex items-center gap-2"
               >
-                <option value="privada">Privada</option>
-                <option value="publica">Pública</option>
-                <option value="grupos">Grupos</option>
-              </select>
-              <div className="flex items-center space-x-2 mt-2">
+                <FontAwesomeIcon icon={faSave} />
+                Guardar
+              </button>
+            </div>
+          </div>
+          <form onSubmit={handleGuardar} className="space-y-6">
+            {/* Campos principales */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-white mb-2">Título</label>
                 <input
-                  type="checkbox"
-                  name="notificaciones"
-                  checked={capsula.notificaciones}
+                  type="text"
+                  name="Title"
+                  value={form.Title}
                   onChange={handleChange}
-                  className="text-[#F5E050] focus:ring-[#F5E050]"
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
                 />
-                <FontAwesomeIcon icon={faBell} className="text-[#F5E050]" />
-                <span className="text-white">Recibir notificaciones</span>
+              </div>
+              <div>
+                <label className="block text-white mb-2">Fecha de apertura</label>
+                <input
+                  type="date"
+                  name="Opening_Date"
+                  value={form.Opening_Date}
+                  onChange={handleChange}
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-white mb-2">Categoría</label>
+                <select
+                  name="Category_ID"
+                  value={form.Category_ID}
+                  onChange={handleChange}
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                >
+                  <option value="">Selecciona una categoría</option>
+                  {categorias.map(cat => (
+                    <option key={cat.Category_ID} value={cat.Category_ID}>
+                      {cat.Name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-white mb-2">Privacidad</label>
+                <select
+                  name="Privacy"
+                  value={form.Privacy}
+                  onChange={handleChange}
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                >
+                  <option value="private">Privada</option>
+                  <option value="public">Pública</option>
+                  <option value="group">Grupos</option>
+                </select>
               </div>
             </div>
-          </div>
-          <div>
-            <label className="block text-white mb-2">Descripción</label>
-            <textarea
-              name="descripcion"
-              value={capsula.descripcion}
-              onChange={handleChange}
-              className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050]"
-              rows={3}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Tags */}
+            <div>
+              <label className="block text-white mb-2">Descripción</label>
+              <textarea
+                name="Description"
+                value={form.Description}
+                onChange={handleChange}
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                rows={3}
+              />
+            </div>
             <div>
               <label className="block text-white mb-2">Tags (separados por coma)</label>
               <input
                 type="text"
-                value={tags}
-                onChange={e => setTags(e.target.value)}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050]"
+                name="Tags"
+                value={form.Tags}
+                onChange={handleChange}
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
                 placeholder="ej: futuro, familia, trabajo"
               />
             </div>
-            {/* Destinatarios (grupos) */}
+            {/* Archivos actuales */}
             <div>
-              <label className="block text-white mb-2">Destinatarios (grupos)</label>
-              {/* Selector múltiple simple */}
-              <select
-                multiple
-                value={destinatarios}
-                onChange={e =>
-                  setDestinatarios(Array.from(e.target.selectedOptions, opt => opt.value))
-                }
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
-              >
-                {grupos.map(grupo => (
-                  <option key={grupo.id} value={grupo.id}>
-                    {grupo.name}
-                  </option>
-                ))}
-              </select>
-              {/* Si usas react-select, reemplaza el select anterior por esto:
-              <Select
-                isMulti
-                options={grupos.map(g => ({ value: g.id, label: g.name }))}
-                value={grupos.filter(g => destinatarios.includes(g.id))}
-                onChange={opts => setDestinatarios(opts.map(o => o.value))}
-                className="text-black"
-              />
-              */}
-            </div>
-          </div>
-          {/* Contenido actual */}
-          <div>
-            <h3 className="text-xl text-[#F5E050] mb-4">Contenido actual</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Imágenes */}
-              <div className="bg-[#1a1a4a] p-4 rounded-lg">
-                <h4 className="text-white mb-2">Imágenes</h4>
-                <div className="flex flex-wrap gap-2">
-                  {capsula.contenido.imagenes.length === 0 && (
-                    <div className="text-gray-500 text-sm">Sin imágenes</div>
-                  )}
-                  {capsula.contenido.imagenes.map(item => (
-                    <div key={item.id} className="relative">
+              <h3 className="text-xl text-[#F5E050] mb-4">Archivos actuales</h3>
+              <div className="flex flex-wrap gap-6">
+                {archivos.length === 0 && (
+                  <div className="text-gray-400">No hay archivos en esta cápsula.</div>
+                )}
+                {archivos.map((archivo, idx) => (
+                  <div
+                    key={archivo.id || archivo.Content_ID || idx}
+                    className="w-40 h-40 bg-[#F5E050] rounded-lg flex flex-col items-center justify-center overflow-hidden relative group shadow"
+                  >
+                    {archivo.type === 'image' && archivo.url && (
                       <img
-                        src={item.url}
-                        alt="Imagen cápsula"
-                        className="w-24 h-24 object-cover rounded"
+                        src={archivo.url}
+                        alt={archivo.Name || archivo.name}
+                        className="object-cover w-full h-full"
                       />
-                      <button
-                        type="button"
-                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-400"
-                        onClick={() => handleRemoveContenido('imagenes', item.id)}
-                        title="Eliminar"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* Videos */}
-              <div className="bg-[#1a1a4a] p-4 rounded-lg">
-                <h4 className="text-white mb-2">Videos</h4>
-                <div className="flex flex-col gap-2">
-                  {capsula.contenido.videos.length === 0 && (
-                    <div className="text-gray-500 text-sm">Sin videos</div>
-                  )}
-                  {capsula.contenido.videos.map(item => (
-                    <div key={item.id} className="relative">
-                      <video src={item.url} controls className="w-full rounded" />
-                      <button
-                        type="button"
-                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-400"
-                        onClick={() => handleRemoveContenido('videos', item.id)}
-                        title="Eliminar"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* Audios */}
-              <div className="bg-[#1a1a4a] p-4 rounded-lg">
-                <h4 className="text-white mb-2">Audios</h4>
-                <div className="flex flex-col gap-2">
-                  {capsula.contenido.audios.length === 0 && (
-                    <div className="text-gray-500 text-sm">Sin audios</div>
-                  )}
-                  {capsula.contenido.audios.map(item => (
-                    <div key={item.id} className="relative">
-                      <audio src={item.url} controls className="w-full" />
-                      <button
-                        type="button"
-                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-400"
-                        onClick={() => handleRemoveContenido('audios', item.id)}
-                        title="Eliminar"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* Mensajes */}
-              <div className="bg-[#1a1a4a] p-4 rounded-lg col-span-3">
-                <h4 className="text-white mb-2">Mensajes</h4>
-                <div className="flex flex-col gap-2">
-                  {capsula.contenido.mensajes.length === 0 && (
-                    <div className="text-gray-500 text-sm">Sin mensajes</div>
-                  )}
-                  {capsula.contenido.mensajes.map(item => (
-                    <div key={item.id} className="relative bg-[#23236a] p-2 rounded">
-                      <span>{item.contenido}</span>
-                      <button
-                        type="button"
-                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-400"
-                        onClick={() => handleRemoveContenido('mensajes', item.id)}
-                        title="Eliminar"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                    )}
+                    {archivo.type === 'video' && archivo.url && (
+                      <video
+                        src={archivo.url}
+                        className="object-cover w-full h-full"
+                        controls
+                        poster="https://placehold.co/160x160?text=Video"
+                      />
+                    )}
+                    {archivo.type === 'audio' && archivo.url && (
+                      <div className="flex flex-col items-center justify-center w-full h-full">
+                        <FontAwesomeIcon icon={faMusic} className="text-4xl text-[#2E2E7A] mb-2" />
+                        <audio controls className="w-full">
+                          <source src={archivo.url} />
+                          Tu navegador no soporta audio.
+                        </audio>
+                      </div>
+                    )}
+                    {archivo.type === 'text' && (
+                      <div className="flex flex-col items-center justify-center w-full h-full">
+                        <FontAwesomeIcon icon={faFileAlt} className="text-4xl text-[#2E2E7A] mb-2" />
+                        <span className="text-xs text-[#2E2E7A]">{archivo.contenido || archivo.File_Path}</span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 hover:bg-red-400"
+                      onClick={() => handleRemoveArchivo(archivo.id || archivo.Content_ID)}
+                      title="Eliminar"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-          {/* Agregar nuevo contenido */}
-          <div>
-            <h3 className="text-xl text-[#F5E050] mb-4">Agregar contenido</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {/* Imagen */}
-              <div>
-                <label className="block text-white mb-2">Imagen</label>
+            {/* Subir nuevos archivos */}
+            <div>
+              <h3 className="text-xl text-[#F5E050] mb-4 mt-8">Agregar nuevos archivos</h3>
+              <div
+                className="border-2 border-dashed border-[#3d3d9e] rounded-lg p-8 text-center cursor-pointer"
+                onClick={() => fileInputRef.current.click()}
+              >
+                <FontAwesomeIcon icon={faFileAlt} className="text-[#F5E050] text-4xl mb-4" />
+                <p className="text-white">Arrastra archivos aquí o haz clic para seleccionar</p>
                 <input
                   type="file"
-                  accept="image/*"
-                  onChange={e => handleAddFile(e, 'imagenes')}
-                  className="block w-full text-white"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
                 />
               </div>
-              {/* Video */}
-              <div>
-                <label className="block text-white mb-2">Video</label>
-                <input
-                  type="file"
-                  accept="video/*"
-                  onChange={e => handleAddFile(e, 'videos')}
-                  className="block w-full text-white"
-                />
-              </div>
-              {/* Audio */}
-              <div>
-                <label className="block text-white mb-2">Audio</label>
-                <input
-                  type="file"
-                  accept="audio/*"
-                  onChange={e => handleAddFile(e, 'audios')}
-                  className="block w-full text-white"
-                />
-              </div>
-              {/* Mensaje */}
-              <div>
-                <label className="block text-white mb-2">Mensaje</label>
-                <textarea
-                  rows={2}
-                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
-                  value={nuevoMensaje}
-                  onChange={e => setNuevoMensaje(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="mt-2 bg-[#F5E050] text-[#2E2E7A] font-bold px-4 py-1 rounded hover:bg-[#e6d047]"
-                  onClick={handleAddMensaje}
-                >
-                  Agregar mensaje
-                </button>
+              {/* Mostrar archivos nuevos */}
+              <div className="flex flex-wrap gap-6 mt-4">
+                {nuevosArchivos.map((archivo, idx) => (
+                  <div
+                    key={idx}
+                    className="w-40 h-40 bg-[#F5E050] rounded-lg flex flex-col items-center justify-center overflow-hidden relative group shadow"
+                  >
+                    {archivo.type.startsWith('image') && (
+                      <img
+                        src={archivo.preview}
+                        alt={archivo.name}
+                        className="object-cover w-full h-full"
+                      />
+                    )}
+                    {archivo.type.startsWith('video') && (
+                      <video
+                        src={archivo.preview}
+                        className="object-cover w-full h-full"
+                        controls
+                        poster="https://placehold.co/160x160?text=Video"
+                      />
+                    )}
+                    {archivo.type.startsWith('audio') && (
+                      <div className="flex flex-col items-center justify-center w-full h-full">
+                        <FontAwesomeIcon icon={faMusic} className="text-4xl text-[#2E2E7A] mb-2" />
+                        <audio controls className="w-full">
+                          <source src={archivo.preview} />
+                          Tu navegador no soporta audio.
+                        </audio>
+                      </div>
+                    )}
+                    {!archivo.type.startsWith('image') && !archivo.type.startsWith('video') && !archivo.type.startsWith('audio') && (
+                      <span className="text-[#2E2E7A] font-bold text-xs text-center px-2">
+                        {archivo.name.split('.').pop().toUpperCase()}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 hover:bg-red-400"
+                      onClick={() => handleRemoveNuevoArchivo(idx)}
+                      title="Eliminar"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
