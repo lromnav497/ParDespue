@@ -18,6 +18,7 @@ import CapsuleCreatedModal from '../components/modals/CapsuleCreatedModal';
 const CrearCapsula = () => {
   const user = JSON.parse(localStorage.getItem('user')); // Asegúrate que la clave sea 'user'
   const userId = user?.id; // Esto será 8 si el usuario está logueado
+  console.log('userId:', userId); // Debe mostrar un número o string válido
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     nombre: '',
