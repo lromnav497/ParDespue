@@ -11,7 +11,9 @@ import {
   faBoxArchive,
   faDownload,
   faImage,
-  faVideo
+  faVideo,
+  faEye,
+  faEyeSlash
 } from '@fortawesome/free-solid-svg-icons';
 
 const VerCapsula = () => {
@@ -19,6 +21,7 @@ const VerCapsula = () => {
   const [capsula, setCapsula] = useState(null);
   const [archivos, setArchivos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const fetchCapsula = async () => {
@@ -55,6 +58,10 @@ const VerCapsula = () => {
   if (!capsula) {
     return <div className="text-center text-red-500 py-10">No se encontró la cápsula.</div>;
   }
+
+  // Obtén el usuario actual
+  const user = JSON.parse(localStorage.getItem('user'));
+  const isOwner = user && capsula && user.id === capsula.Creator_User_ID;
 
   return (
     <div className="min-h-screen bg-gray-900 py-8">
@@ -152,7 +159,33 @@ const VerCapsula = () => {
             </h3>
             <p><span className="text-[#F5E050]">Privacidad:</span> {capsula.Privacy}</p>
             {capsula.Privacy === 'private' && (
-              <p><span className="text-[#F5E050]">Contraseña:</span> {capsula.Password ? '******' : 'No establecida'}</p>
+              <p className="flex items-center gap-2">
+                <span className="text-[#F5E050]">Contraseña:</span>
+                {capsula.Password
+                  ? (
+                    <>
+                      {isOwner ? (
+                        <>
+                          <span>
+                            {showPassword ? capsula.Password : '******'}
+                          </span>
+                          <button
+                            type="button"
+                            className="ml-2 text-[#F5E050] hover:text-[#e6d047] focus:outline-none"
+                            onClick={() => setShowPassword(v => !v)}
+                            title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                          >
+                            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                          </button>
+                        </>
+                      ) : (
+                        '******'
+                      )}
+                    </>
+                  )
+                  : 'No establecida'
+                }
+              </p>
             )}
             {/* Puedes agregar destinatarios, notificaciones, etc. aquí */}
           </div>
