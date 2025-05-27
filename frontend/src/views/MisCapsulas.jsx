@@ -233,7 +233,12 @@ const MisCapsulas = () => {
                     </p>
                     <p className="flex items-center gap-2">
                       <FontAwesomeIcon icon={faBoxArchive} />
-                      Categoría: {capsula.Category?.Name || capsula.Category || capsula.Category_Name || 'Sin categoría'}
+                      Categoría: {
+                        (capsula.Category && typeof capsula.Category === 'object' && capsula.Category.Name) ||
+                        (typeof capsula.Category === 'string' && capsula.Category) ||
+                        capsula.Category_Name ||
+                        'Sin categoría'
+                      }
                     </p>
                     <p className="text-gray-400">{capsula.Content}</p>
                   </div>
