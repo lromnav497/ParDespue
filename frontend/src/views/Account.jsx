@@ -9,6 +9,7 @@ import {
   faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
 import RenewSubscriptionModal from '../components/modals/RenewSubscriptionModal';
+import MisCapsulas from './MisCapsulas'; // Asegúrate de que la ruta es correcta
 
 const Account = () => {
   const [activeSection, setActiveSection] = useState('general');
@@ -44,7 +45,7 @@ const Account = () => {
       case 'suscripciones':
         return <MisSuscripciones />;
       case 'capsulas':
-        return <MisCapsulas />;
+        return <MisCapsulas />; // Usa el componente real aquí
       case 'configuracion':
         return <Configuracion />;
       default:
