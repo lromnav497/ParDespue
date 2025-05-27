@@ -12,10 +12,11 @@ const SubscriptionModel = {
     // Convierte a formato amigable para el frontend
     const planDb = rows[0]?.plan || 'basic';
     if (planDb === 'premium') return 'Premium';
-    return 'Básico';
+    if (planDb === 'basic') return 'Básico';
+    return planDb.charAt(0).toUpperCase() + planDb.slice(1); // Para enterprise u otros
   },
 
-  // Cambia el plan del usuario (simulado)
+  // Cambia el plan del usuario
   setUserPlan: async (userId, plan) => {
     // Convierte el plan a minúsculas para que coincida con el ENUM de la base de datos
     const planDb = plan.toLowerCase();
