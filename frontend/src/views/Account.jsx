@@ -477,27 +477,6 @@ const MisSuscripciones = () => {
   );
 };
 
-const MisCapsulas = () => (
-  <div className="text-white">
-    <h3 className="text-2xl passero-font text-[#F5E050] mb-6">Mis Cápsulas</h3>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {[1, 2, 3].map(i => (
-        <div key={i} className="bg-[#1a1a4a] p-6 rounded-lg">
-          <div className="flex justify-between items-center">
-            <div>
-              <h4 className="text-xl font-semibold">Cápsula #{i}</h4>
-              <p className="text-gray-400">Creada: 01/01/2024</p>
-            </div>
-            <button className="text-[#F5E050] hover:text-[#e6d047]">
-              <FontAwesomeIcon icon={faBoxArchive} className="text-2xl" />
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
 const Configuracion = () => (
   <div className="text-white">
     <h3 className="text-2xl passero-font text-[#F5E050] mb-6">Configuración</h3>
