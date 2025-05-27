@@ -86,7 +86,7 @@ const Suscripciones = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify({ plan: plan.name })
+          body: JSON.stringify({ plan: plan.name.toLowerCase() })
         });
         if (res.ok) {
           setMensaje(`¡Has adquirido el plan ${plan.name} (${billing === 'monthly' ? 'Mensual' : 'Anual'}) correctamente!`);

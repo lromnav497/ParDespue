@@ -15,7 +15,8 @@ const SubscriptionController = {
     try {
       const userId = req.user.id;
       const { plan } = req.body;
-      if (!['Básico', 'Premium'].includes(plan)) {
+      const validPlans = ['basic', 'premium'];
+      if (!validPlans.includes(plan.toLowerCase())) {
         return res.status(400).json({ message: 'Plan no válido' });
       }
       await SubscriptionModel.setUserPlan(userId, plan);
