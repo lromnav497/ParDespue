@@ -56,11 +56,9 @@ const MisCapsulas = () => {
       const token = user?.token;
       if (!token) return;
       const res = await fetch('/api/subscriptions/my-plan', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      console.log('Plan recibido:', data); // <-- Agrega esto
-      setPlan(data.plan || 'Básico');
+        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('user')).token}` }
+      }).then(r => r.json()).then(console.log);
+      setPlan(res.plan || 'Básico');
     };
     fetchPlan();
   }, []);
