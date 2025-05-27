@@ -51,7 +51,7 @@ const Header = () => {
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center gap-8">
           <Link to="/" className="text-[#F5E050] passero-font text-2xl">
-            TimeCapsule
+            ParDespue
           </Link>
           
           <ul className="hidden md:flex space-x-6">
