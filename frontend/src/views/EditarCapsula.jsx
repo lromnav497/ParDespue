@@ -55,7 +55,7 @@ const EditarCapsula = () => {
           Title: data.Title || '',
           Description: data.Description || '',
           Opening_Date: data.Opening_Date ? data.Opening_Date.slice(0, 10) : '',
-          Category_ID: data.Category?.Category_ID || '',
+          Category_ID: data.Category_ID || data.Category?.Category_ID || '',
           Privacy: data.Privacy || 'private',
           Tags: Array.isArray(data.Tags) ? data.Tags.join(', ') : (data.Tags || ''),
         });
