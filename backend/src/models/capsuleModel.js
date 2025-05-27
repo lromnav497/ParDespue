@@ -28,10 +28,21 @@ const CapsuleModel = {
 
   findById: async (id) => {
     const [rows] = await db.execute(
-        `SELECT * FROM Capsules WHERE Capsule_ID = ? LIMIT 1`,
+        `SELECT c.*, cat.Name as Category_Name, cat.Description as Category_Description, cat.Category_ID as Category_ID
+         FROM Capsules c
+         LEFT JOIN Categories cat ON c.Category_ID = cat.Category_ID
+         WHERE c.Capsule_ID = ? LIMIT 1`,
         [id]
     );
-    return rows[0] || null;
+    const capsule = rows[0];
+    if (capsule) {
+      capsule.Category = {
+        Category_ID: capsule.Category_ID,
+        Name: capsule.Category_Name,
+        Description: capsule.Category_Description
+      };
+    }
+    return capsule;
   },
 
   findPublicPaginated: async ({ page, pageSize, category, search }) => {
