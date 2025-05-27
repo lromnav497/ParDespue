@@ -3,8 +3,10 @@ const SubscriptionModel = require('../models/subscriptionModel');
 const SubscriptionController = {
   getUserPlan: async (req, res) => {
     try {
+      console.log('userId recibido:', req.user.id); // <-- Agrega esto
       const userId = req.user.id;
       const plan = await SubscriptionModel.getUserPlan(userId);
+      console.log('plan encontrado:', plan); // <-- Y esto
       res.json({ plan });
     } catch (error) {
       res.status(500).json({ error: error.message });

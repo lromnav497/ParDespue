@@ -9,11 +9,10 @@ const SubscriptionModel = {
       `SELECT Type as plan FROM Subscriptions WHERE User_ID = ? AND Status = 'active' ORDER BY End_Date DESC LIMIT 1`,
       [userId]
     );
-    // Convierte a formato amigable para el frontend
     const planDb = rows[0]?.plan || 'basic';
     if (planDb === 'premium') return 'Premium';
     if (planDb === 'basic') return 'Básico';
-    return planDb.charAt(0).toUpperCase() + planDb.slice(1); // Para enterprise u otros
+    return planDb.charAt(0).toUpperCase() + planDb.slice(1);
   },
 
   // Cambia el plan del usuario
