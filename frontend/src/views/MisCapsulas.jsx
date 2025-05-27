@@ -209,7 +209,7 @@ const MisCapsulas = () => {
                     className="w-full h-48 object-cover"
                   />
                   <div className="absolute top-4 right-4 flex gap-2">
-                    {getEstado(capsula) === 'programada' && plan !== 'Básico' && (
+                    {getEstado(capsula) === 'programada' && plan === 'Premium' && (
                       <button
                         className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e]"
                         onClick={e => {
