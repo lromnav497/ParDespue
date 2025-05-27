@@ -122,6 +122,15 @@ const EditarCapsula = () => {
     if (e) e.preventDefault();
     setLoading(true);
 
+    // VALIDACIÓN DE FECHAS
+    const fechaCreacion = new Date(capsula.Creation_Date);
+    const fechaApertura = new Date(form.Opening_Date);
+    if (fechaApertura <= fechaCreacion) {
+      alert('La fecha de apertura debe ser posterior a la fecha de creación.');
+      setLoading(false);
+      return;
+    }
+
     // Detectar si se requiere contraseña
     const cambiandoPrivacidad = capsula.Privacy === 'private' && form.Privacy !== 'private';
     const cambiandoPassword = capsula.Password && form.Privacy === 'private' && form.Password && form.Password !== capsula.Password;

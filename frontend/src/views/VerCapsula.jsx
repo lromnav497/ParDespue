@@ -64,6 +64,18 @@ const VerCapsula = () => {
     return <div className="text-center text-red-500 py-10">No se encontró la cápsula.</div>;
   }
 
+  // Validación de fecha de apertura
+  const ahora = new Date();
+  const apertura = new Date(capsula.Opening_Date);
+  if (apertura > ahora) {
+    return (
+      <div className="text-center text-[#F5E050] py-10">
+        Esta cápsula aún no está disponible.<br />
+        Fecha de apertura: <b>{apertura.toLocaleDateString()}</b>
+      </div>
+    );
+  }
+
   // Obtén el usuario actual
   const user = JSON.parse(localStorage.getItem('user'));
   const isOwner = user && capsula && user.id === capsula.Creator_User_ID;

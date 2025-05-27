@@ -107,6 +107,14 @@ const Explorar = () => {
               <Link
                 key={capsula.id}
                 to={`/vercapsula/${capsula.id}`}
+                onClick={e => {
+                  const ahora = new Date();
+                  const apertura = new Date(capsula.fechaApertura);
+                  if (apertura > ahora) {
+                    e.preventDefault();
+                    alert(`Esta cápsula aún no está disponible. Fecha de apertura: ${apertura.toLocaleDateString()}`);
+                  }
+                }}
                 className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:transform hover:scale-105 transition-all block"
                 style={{ textDecoration: 'none' }}
               >

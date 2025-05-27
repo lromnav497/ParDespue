@@ -97,6 +97,12 @@ const MisCapsulas = () => {
 
   // Handler general para acciones protegidas
   const handleProtectedAction = (type, capsula) => {
+    const ahora = new Date();
+    const apertura = new Date(capsula.Opening_Date);
+    if (type === 'ver' && apertura > ahora) {
+      alert(`Esta cápsula aún no está disponible. Fecha de apertura: ${apertura.toLocaleDateString()}`);
+      return;
+    }
     const user = JSON.parse(localStorage.getItem('user'));
     // Si es privada y no es el creador, no dejar pasar
     if (capsula.Privacy === 'private' && user?.id !== capsula.Creator_User_ID) {
@@ -227,7 +233,7 @@ const MisCapsulas = () => {
                     </p>
                     <p className="flex items-center gap-2">
                       <FontAwesomeIcon icon={faBoxArchive} />
-                      Categoría: {capsula.Category?.Name || capsula.categoria || 'Sin categoría'}
+                      Categoría: {capsula.Category?.Name || capsula.Category || capsula.Category_Name || 'Sin categoría'}
                     </p>
                     <p className="text-gray-400">{capsula.Content}</p>
                   </div>

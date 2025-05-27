@@ -49,6 +49,12 @@ router.get('/:id', async (req, res) => {
       passwordField = !!capsule.Password;
     }
 
+    const ahora = new Date();
+    const apertura = new Date(capsule.Opening_Date);
+    if (apertura > ahora) {
+      return res.status(403).json({ message: 'Esta cápsula aún no está disponible.' });
+    }
+
     res.json({
       ...capsule,
       Password: passwordField,

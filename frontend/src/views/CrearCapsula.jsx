@@ -536,6 +536,14 @@ const CrearCapsula = () => {
     };
     const privacyValue = privacyMap[formData.privacidad] || 'private';
 
+    // VALIDACIÓN DE FECHAS
+    const fechaCreacion = new Date();
+    const fechaApertura = new Date(formData.fechaApertura);
+    if (fechaApertura <= fechaCreacion) {
+      alert('La fecha de apertura debe ser posterior a la fecha de creación.');
+      return;
+    }
+
     // 1. Crear la cápsula
     const resCapsule = await fetch('/api/capsules', {
       method: 'POST',

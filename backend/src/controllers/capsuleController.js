@@ -32,14 +32,14 @@ class CapsuleController extends GeneralController {
         try {
             const {
                 Title,
-                Description, // <-- nuevo
+                Description,
                 Creation_Date,
                 Opening_Date,
                 Privacy,
                 Password = null,
                 Creator_User_ID,
                 Tags,
-                Category_ID // <-- nuevo
+                Category_ID
             } = req.body;
 
             // Agrega este log:
@@ -52,18 +52,21 @@ class CapsuleController extends GeneralController {
             if (!['private', 'group', 'public'].includes(Privacy)) {
                 return res.status(400).json({ message: 'Valor de privacidad inválido.' });
             }
+            if (new Date(Opening_Date) <= new Date(Creation_Date)) {
+                return res.status(400).json({ message: 'La fecha de apertura debe ser posterior a la de creación.' });
+            }
 
             // Usar el método general de creación
             const newCapsule = await this.model.create({
                 Title,
-                Description, // <-- nuevo
+                Description,
                 Creation_Date,
                 Opening_Date,
                 Privacy,
                 Password,
                 Creator_User_ID,
                 Tags,
-                Category_ID // <-- nuevo
+                Category_ID
             });
 
             res.status(201).json(newCapsule);
@@ -105,6 +108,9 @@ class CapsuleController extends GeneralController {
             const data = { ...req.body };
             if (data.Privacy !== 'private') {
                 data.Password = null; // o '', según tu modelo
+            }
+            if (new Date(Opening_Date) <= new Date(data.Creation_Date)) {
+                return res.status(400).json({ message: 'La fecha de apertura debe ser posterior a la de creación.' });
             }
             const updated = await this.model.update(req.params.id, data);
             res.json(updated);
