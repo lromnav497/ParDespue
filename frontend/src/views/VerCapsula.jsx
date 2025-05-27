@@ -33,6 +33,16 @@ const VerCapsula = () => {
             'x-user-id': user?.id
           }
         });
+        if (!res.ok) {
+          const data = await res.json();
+          if (res.status === 403) {
+            setCapsula({ error: 'forbidden', message: data.message });
+          } else {
+            setCapsula(null);
+          }
+          setLoading(false);
+          return;
+        }
         const data = await res.json();
         setCapsula(data);
       } catch (err) {
@@ -62,6 +72,14 @@ const VerCapsula = () => {
 
   if (!capsula) {
     return <div className="text-center text-red-500 py-10">No se encontró la cápsula.</div>;
+  }
+
+  if (capsula && capsula.error === 'forbidden') {
+    return (
+      <div className="text-center text-[#F5E050] py-10">
+        {capsula.message || 'Esta cápsula aún no está disponible.'}
+      </div>
+    );
   }
 
   // Validación de fecha de apertura
