@@ -37,6 +37,7 @@ const EditarCapsula = () => {
   const [passwordError, setPasswordError] = useState('');
   const [pendingAction, setPendingAction] = useState(null); // 'changePrivacy' o 'changePassword'
   const [error, setError] = useState(null);
+  const [plan, setPlan] = useState(null);
 
   // Cargar datos de la cápsula y archivos actuales
   useEffect(() => {
@@ -96,6 +97,25 @@ const EditarCapsula = () => {
       .then(setCategorias)
       .catch(() => setCategorias([]));
   }, []);
+
+  // Verificar plan del usuario
+  useEffect(() => {
+    const fetchPlan = async () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const token = localStorage.getItem('token') || user?.token;
+      if (!token) return;
+      const res = await fetch('/api/subscriptions/my-plan', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setPlan(data.plan);
+      if (data.plan !== 'Premium') {
+        alert('Solo los usuarios Premium pueden editar cápsulas.');
+        navigate('/capsulas');
+      }
+    };
+    fetchPlan();
+  }, [navigate]);
 
   // Eliminar archivo actual (solo del frontend, se elimina en el backend al guardar)
   const handleRemoveArchivo = (contentId) => {

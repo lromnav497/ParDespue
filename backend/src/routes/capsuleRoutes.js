@@ -3,6 +3,8 @@ const router = express.Router();
 const CapsuleController = require('../controllers/capsuleController');
 const capsuleModel = require('../models/capsuleModel');
 const db = require('../config/db');
+const requirePremium = require('../middleware/premiumMiddleware');
+const { authMiddleware } = require('../middleware/authMiddleware');
 
 router.post('/', (req, res) => CapsuleController.create(req, res));
 router.get('/privacy/:privacy', async (req, res) => {
@@ -37,15 +39,15 @@ router.get('/:id', async (req, res) => {
   }
 });
 // Para editar la cápsula (solo el dueño, siempre)
-router.get('/:id/edit', async (req, res) => {
+router.get('/:id/edit', authMiddleware, requirePremium, async (req, res) => {
   const capsuleId = req.params.id;
-  const userId = req.headers['x-user-id'];
+  const userId = req.user.id;
   try {
     const capsule = await capsuleModel.findById(capsuleId);
     if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
 
     // Solo el dueño puede editar
-    if (!userId || Number(userId) !== capsule.Creator_User_ID) {
+    if (Number(userId) !== capsule.Creator_User_ID) {
       return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
     }
 
