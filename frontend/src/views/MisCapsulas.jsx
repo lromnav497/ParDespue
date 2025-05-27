@@ -19,6 +19,7 @@ const MisCapsulas = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [pendingAction, setPendingAction] = useState(null); // { type, capsula }
+  const [plan, setPlan] = useState('Básico');
   const navigate = useNavigate();
   const location = useLocation(); // <-- Hook para leer el state
 
@@ -47,6 +48,21 @@ const MisCapsulas = () => {
     };
     fetchCapsulas();
   }, [userId]);
+
+  // Efecto para obtener el plan del usuario
+  useEffect(() => {
+    const fetchPlan = async () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const token = user?.token;
+      if (!token) return;
+      const res = await fetch('/api/subscriptions/my-plan', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setPlan(data.plan || 'Básico');
+    };
+    fetchPlan();
+  }, []);
 
   function getEstado(capsula) {
     const ahora = new Date();
@@ -139,9 +155,6 @@ const MisCapsulas = () => {
     }
   };
 
-  // Obtener el plan del usuario (simulado aquí, deberías obtenerlo de tu API o contexto)
-  const plan = user?.plan || 'Gratuito';
-
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Encabezado */}
@@ -202,7 +215,7 @@ const MisCapsulas = () => {
                     className="w-full h-48 object-cover"
                   />
                   <div className="absolute top-4 right-4 flex gap-2">
-                    {getEstado(capsula) === 'programada' && (
+                    {getEstado(capsula) === 'programada' && plan !== 'Básico' && (
                       <button
                         className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e]"
                         onClick={e => {
