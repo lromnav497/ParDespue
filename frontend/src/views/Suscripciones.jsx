@@ -51,6 +51,12 @@ const Suscripciones = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user?.token;
 
+    if (!token) {
+      setMensaje('Debes iniciar sesión para cambiar de plan.');
+      setLoading(false);
+      return;
+    }
+
     // Simulación de espera de compra
     setTimeout(async () => {
       if (plan.price === 0) {
