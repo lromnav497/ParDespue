@@ -169,11 +169,6 @@ const MisCapsulas = () => {
         </button>
       </div>
 
-      {/* Plan del usuario */}
-      <p className="text-sm text-gray-400 mb-2">
-        Plan actual: <span className="font-bold text-[#F5E050]">{plan}</span>
-      </p>
-
       {/* Filtros */}
       <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
         {filtros.map(filtro => (
