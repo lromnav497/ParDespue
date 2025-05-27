@@ -17,13 +17,22 @@ const CapsuleModel = {
 
   // Obtener todas las cápsulas de un usuario
   findByUser: async (userId) => {
-    console.log('Buscando cápsulas para userId:', userId);
     const [rows] = await db.execute(
-      `SELECT * FROM Capsules WHERE Creator_User_ID = ? ORDER BY Creation_Date DESC`,
+      `SELECT c.*, cat.Name as Category_Name, cat.Description as Category_Description, cat.Category_ID as Category_ID
+       FROM Capsules c
+       LEFT JOIN Categories cat ON c.Category_ID = cat.Category_ID
+       WHERE c.Creator_User_ID = ? ORDER BY c.Creation_Date DESC`,
       [userId]
     );
-    console.log('Capsules encontradas en el modelo:', rows); // <-- Agrega esto
-    return rows;
+    // Construye el objeto Category igual que en findById
+    return rows.map(capsule => ({
+      ...capsule,
+      Category: {
+        Category_ID: capsule.Category_ID,
+        Name: capsule.Category_Name,
+        Description: capsule.Category_Description
+      }
+    }));
   },
 
   findById: async (id) => {
