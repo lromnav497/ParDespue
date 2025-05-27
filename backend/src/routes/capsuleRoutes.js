@@ -18,58 +18,40 @@ router.get('/public', (req, res) => CapsuleController.getPublicCapsules(req, res
 // Obtener cápsula por ID con todos los campos y contenidos
 router.get('/:id', async (req, res) => {
   const capsuleId = req.params.id;
-  // Supón que recibes el userId por cabecera (ajusta según tu auth)
   const userId = req.headers['x-user-id'];
-
   try {
-    const [capsuleRows] = await db.query(
-      `SELECT c.Capsule_ID, c.Title, c.Description, c.Opening_Date, c.Privacy, c.Tags, c.Creation_Date,
-              c.Category_ID, cat.Name as Category_Name, cat.Description as Category_Description,
-              c.Password, c.Creator_User_ID
-       FROM Capsules c
-       INNER JOIN Categories cat ON c.Category_ID = cat.Category_ID
-       WHERE c.Capsule_ID = ?`, [capsuleId]
-    );
-    if (!capsuleRows.length) return res.status(404).json({ message: 'Cápsula no encontrada' });
-    const capsule = capsuleRows[0];
-
-    const [contents] = await db.query(
-      `SELECT Content_ID, Type, File_Path, Creation_Date FROM Contents WHERE Capsule_ID = ?`, [capsuleId]
-    );
-    const images = contents.filter(c => c.Type === 'image').map(c => ({ id: c.Content_ID, url: c.File_Path }));
-    const videos = contents.filter(c => c.Type === 'video').map(c => ({ id: c.Content_ID, url: c.File_Path }));
-    const audios = contents.filter(c => c.Type === 'audio').map(c => ({ id: c.Content_ID, url: c.File_Path }));
-    const messages = contents.filter(c => c.Type === 'text').map(c => ({ id: c.Content_ID, contenido: c.File_Path }));
-
-    // Solo el dueño recibe la contraseña real, los demás solo booleano
-    let passwordField;
-    if (userId && Number(userId) === capsule.Creator_User_ID) {
-      passwordField = capsule.Password || '';
-    } else {
-      passwordField = !!capsule.Password;
-    }
+    const capsule = await capsuleModel.findById(capsuleId);
+    if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
 
     const ahora = new Date();
     const apertura = new Date(capsule.Opening_Date);
+    // Solo permite ver si ya se abrió
     if (apertura > ahora) {
       return res.status(403).json({ message: 'Esta cápsula aún no está disponible.' });
     }
 
-    res.json({
-      ...capsule,
-      Password: passwordField,
-      Category: { 
-        Category_ID: capsule.Category_ID, 
-        Name: capsule.Category_Name, 
-        Description: capsule.Category_Description 
-      },
-      Images: images,
-      Videos: videos,
-      Audios: audios,
-      Messages: messages
-    });
+    // Puedes devolver la info que quieras mostrar al público aquí
+    res.status(200).json(capsule);
   } catch (err) {
-    res.status(500).json({ message: 'Error al obtener la cápsula', error: err.message });
+    res.status(500).json({ error: err.message });
+  }
+});
+// Para editar la cápsula (solo el dueño, siempre)
+router.get('/:id/edit', async (req, res) => {
+  const capsuleId = req.params.id;
+  const userId = req.headers['x-user-id'];
+  try {
+    const capsule = await capsuleModel.findById(capsuleId);
+    if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
+
+    // Solo el dueño puede editar
+    if (!userId || Number(userId) !== capsule.Creator_User_ID) {
+      return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
+    }
+
+    res.status(200).json(capsule);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 router.put('/:id', (req, res) => CapsuleController.update(req, res));

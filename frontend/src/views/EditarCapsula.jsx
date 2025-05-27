@@ -42,7 +42,13 @@ const EditarCapsula = () => {
     const fetchCapsula = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/capsules/${id}`);
+        // Al cargar para editar:
+        const user = JSON.parse(localStorage.getItem('user'));
+        const res = await fetch(`/api/capsules/${id}/edit`, {
+          headers: {
+            'x-user-id': user?.id
+          }
+        });
         const data = await res.json();
         setCapsula(data);
         setForm({
