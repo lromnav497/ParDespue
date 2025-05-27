@@ -170,6 +170,7 @@ const EditarCapsula = () => {
     try {
       // --- LIMPIA LA CONTRASEÑA SI PASA A PUBLICA ---
       let formToSend = { ...form };
+      formToSend.Category_ID = Number(formToSend.Category_ID);
       if (formToSend.Privacy !== 'private') {
         formToSend.Password = '';
       }

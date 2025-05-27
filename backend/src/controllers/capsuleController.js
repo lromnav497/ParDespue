@@ -106,10 +106,16 @@ class CapsuleController extends GeneralController {
     async update(req, res) {
         try {
             const data = { ...req.body };
-            if (data.Privacy !== 'private') {
-                data.Password = null; // o '', según tu modelo
+            // Asegura que Category_ID sea un número
+            if (typeof data.Category_ID === 'object' && data.Category_ID !== null) {
+                data.Category_ID = data.Category_ID.Category_ID;
             }
-            if (new Date(Opening_Date) <= new Date(data.Creation_Date)) {
+            data.Category_ID = Number(data.Category_ID);
+
+            if (data.Privacy !== 'private') {
+                data.Password = null;
+            }
+            if (new Date(data.Opening_Date) <= new Date(data.Creation_Date)) {
                 return res.status(400).json({ message: 'La fecha de apertura debe ser posterior a la de creación.' });
             }
             const updated = await this.model.update(req.params.id, data);
