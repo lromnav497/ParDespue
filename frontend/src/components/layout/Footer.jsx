@@ -21,7 +21,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="text-center md:text-left">
-            <h2 className="text-[#F5E050] passero-font text-xl mb-4">TimeCapsule</h2>
+            <h2 className="text-[#F5E050] passero-font text-xl mb-4">ParDespue</h2>
             <p className="mb-4">Preservando momentos especiales para el futuro</p>
           </div>
           
@@ -75,7 +75,7 @@ const Footer = () => {
         />
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-          <p>&copy; {new Date().getFullYear()} TimeCapsule. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} ParDespue. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
