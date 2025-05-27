@@ -12,14 +12,25 @@ const SubscriptionModel = {
 
   // Cambia el plan del usuario (simulado)
   setUserPlan: async (userId, plan) => {
-    // Marca todas las suscripciones como inactivas
     await db.execute(`UPDATE Subscriptions SET Status = 'inactive' WHERE User_ID = ?`, [userId]);
-    // Crea una nueva suscripción activa
-    await db.execute(
+    // Crea la nueva suscripción y obtiene su ID
+    const [result] = await db.execute(
       `INSERT INTO Subscriptions (User_ID, Type, Start_Date, End_Date, Status)
        VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR), 'active')`,
       [userId, plan]
     );
+    const subscriptionId = result.insertId;
+
+    // Define el monto según el plan
+    let amount = 0;
+    if (plan === 'Premium') amount = 99.99; // O el precio real de tu plan
+    // Si quieres distinguir mensual/anual, pásalo desde el frontend
+
+    // Solo registra transacción si es de pago
+    if (amount > 0) {
+      await SubscriptionModel.createTransaction(subscriptionId, amount);
+    }
+
     return { plan };
   },
 
@@ -30,6 +41,15 @@ const SubscriptionModel = {
       [userId]
     );
     return rows[0]?.total || 0;
+  },
+
+  // Crea una transacción asociada a una suscripción
+  createTransaction: async (subscriptionId, amount) => {
+    await db.execute(
+      `INSERT INTO Transactions (Subscription_ID, Date, Amount, Status)
+       VALUES (?, NOW(), ?, 'Pagado')`,
+      [subscriptionId, amount]
+    );
   }
 };
 

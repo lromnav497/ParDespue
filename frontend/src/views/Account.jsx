@@ -348,12 +348,6 @@ const MisSuscripciones = () => {
   const [transacciones, setTransacciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [renewLoading, setRenewLoading] = useState(false);
-  const [renewSuccess, setRenewSuccess] = useState('');
-  const [renewError, setRenewError] = useState('');
-  const [showRenewModal, setShowRenewModal] = useState(false);
-  const [selectedSubscription, setSelectedSubscription] = useState(null);
-  const [renewMonths, setRenewMonths] = useState(1);
   const storedUser = getStoredUser();
 
   useEffect(() => {
@@ -361,8 +355,9 @@ const MisSuscripciones = () => {
       setLoading(true);
       setError('');
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`/api/subscriptions/user/${storedUser.id}`, {
+        const token = localStorage.getItem('token') || (storedUser && storedUser.token);
+        // Cambia la ruta al endpoint correcto de tu backend
+        const res = await fetch(`/api/subscriptions/my-data`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -376,36 +371,6 @@ const MisSuscripciones = () => {
     };
     if (storedUser) fetchData();
   }, [storedUser && storedUser.id]);
-
-  const openRenewModal = (sub) => {
-    setSelectedSubscription(sub);
-    setShowRenewModal(true);
-  };
-
-  const handleRenewConfirm = async () => {
-    setRenewLoading(true);
-    setRenewSuccess('');
-    setRenewError('');
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/subscriptions/renew/${selectedSubscription.id}`, {
-        method: 'POST',
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ months: renewMonths })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al renovar');
-      setRenewSuccess('Suscripción renovada correctamente');
-      setShowRenewModal(false);
-      setTimeout(() => window.location.reload(), 1000);
-    } catch (err) {
-      setRenewError(err.message || 'Error de conexión');
-    }
-    setRenewLoading(false);
-  };
 
   if (loading) return <div className="text-white">Cargando...</div>;
   if (error) return <div className="text-red-400">{error}</div>;
@@ -423,13 +388,6 @@ const MisSuscripciones = () => {
                 <h4 className="text-xl font-semibold">{sub.nombre}</h4>
                 <p className="text-gray-400">Activo hasta: {sub.fecha_fin}</p>
               </div>
-              <button
-                className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full"
-                onClick={() => openRenewModal(sub)}
-                disabled={renewLoading}
-              >
-                Renovar
-              </button>
             </div>
           </div>
         ))}
@@ -461,18 +419,6 @@ const MisSuscripciones = () => {
           </table>
         )}
       </div>
-      {renewError && <div className="text-red-400 mb-2">{renewError}</div>}
-      {renewSuccess && <div className="text-green-400 mb-2">{renewSuccess}</div>}
-      {showRenewModal && (
-        <RenewSubscriptionModal
-          isOpen={showRenewModal}
-          onClose={() => setShowRenewModal(false)}
-          onConfirm={handleRenewConfirm}
-          renewMonths={renewMonths}
-          setRenewMonths={setRenewMonths}
-          loading={renewLoading}
-        />
-      )}
     </div>
   );
 };
