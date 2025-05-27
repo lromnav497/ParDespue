@@ -10,6 +10,9 @@ import {
 
 const Suscripciones = () => {
   const [billing, setBilling] = useState('monthly'); // 'monthly' or 'annual'
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [mensaje, setMensaje] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const plans = [
     {
@@ -17,11 +20,9 @@ const Suscripciones = () => {
       icon: faUser,
       price: billing === 'monthly' ? 0 : 0,
       features: [
-        "5 cápsulas del tiempo",
-        "100 MB de almacenamiento",
-        "Contenido básico (fotos y textos)",
-        "Apertura programada",
-        "Acceso a la comunidad"
+        "15 cápsulas del tiempo",
+        "500 MB de almacenamiento",
+        "Todo tipo de contenido",
       ],
       cta: "Comenzar Gratis",
       popular: false
@@ -32,33 +33,47 @@ const Suscripciones = () => {
       price: billing === 'monthly' ? 9.99 : 99.99,
       features: [
         "Cápsulas ilimitadas",
-        "5 GB de almacenamiento",
+        "50 GB de almacenamiento",
         "Todo tipo de contenido",
-        "Notificaciones personalizadas",
-        "Temas exclusivos",
-        "Cápsulas colaborativas",
-        "Soporte prioritario"
+        "Editar cápsulas antes de su apertura"
       ],
       cta: "Obtener Premium",
       popular: true
-    },
-    {
-      name: "Empresas",
-      icon: faRocket,
-      price: billing === 'monthly' ? 29.99 : 299.99,
-      features: [
-        "Cápsulas ilimitadas",
-        "50 GB de almacenamiento",
-        "Usuarios ilimitados",
-        "Panel de administración",
-        "API acceso",
-        "Soporte 24/7",
-        "Personalización total"
-      ],
-      cta: "Contactar Ventas",
-      popular: false
     }
   ];
+
+  // Simula la compra o cambio de plan
+  const handleSubscribe = async (plan) => {
+    setLoading(true);
+    setMensaje('');
+    setSelectedPlan(plan.name);
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = user?.token;
+
+    // Simulación de espera de compra
+    setTimeout(async () => {
+      if (plan.price === 0) {
+        setMensaje("¡Ya tienes el plan Básico activado!");
+      } else {
+        // Cambia el plan en el backend
+        const res = await fetch('/api/subscriptions/change-plan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ plan: plan.name })
+        });
+        if (res.ok) {
+          setMensaje(`¡Has adquirido el plan ${plan.name} (${billing === 'monthly' ? 'Mensual' : 'Anual'}) correctamente!`);
+        } else {
+          setMensaje('Error al cambiar de plan');
+        }
+      }
+      setLoading(false);
+    }, 1500);
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 py-16">
@@ -91,6 +106,13 @@ const Suscripciones = () => {
             </span>
           </div>
         </div>
+
+        {/* Mensaje de compra */}
+        {mensaje && (
+          <div className="max-w-xl mx-auto mb-8 text-center">
+            <div className="bg-[#1a1a4a] text-[#F5E050] p-4 rounded-lg shadow">{mensaje}</div>
+          </div>
+        )}
 
         {/* Plans Grid */}
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -141,12 +163,16 @@ const Suscripciones = () => {
                 ))}
               </ul>
 
-              <button className={`w-full py-3 rounded-full transition-colors ${
-                plan.popular
-                  ? 'bg-[#F5E050] text-[#2E2E7A] hover:bg-[#e6d047]'
-                  : 'bg-[#1a1a4a] text-white hover:bg-[#3d3d9e]'
-              }`}>
-                {plan.cta}
+              <button
+                className={`w-full py-3 rounded-full transition-colors ${
+                  plan.popular
+                    ? 'bg-[#F5E050] text-[#2E2E7A] hover:bg-[#e6d047]'
+                    : 'bg-[#1a1a4a] text-white hover:bg-[#3d3d9e]'
+                } ${loading && selectedPlan === plan.name ? 'opacity-60 cursor-not-allowed' : ''}`}
+                disabled={loading}
+                onClick={() => handleSubscribe(plan)}
+              >
+                {loading && selectedPlan === plan.name ? 'Procesando...' : plan.cta}
               </button>
             </div>
           ))}

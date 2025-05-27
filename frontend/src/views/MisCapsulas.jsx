@@ -139,6 +139,9 @@ const MisCapsulas = () => {
     }
   };
 
+  // Obtener el plan del usuario (simulado aquí, deberías obtenerlo de tu API o contexto)
+  const plan = user?.plan || 'Gratuito';
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Encabezado */}
@@ -153,6 +156,11 @@ const MisCapsulas = () => {
           Nueva Cápsula
         </button>
       </div>
+
+      {/* Plan del usuario */}
+      <p className="text-sm text-gray-400 mb-2">
+        Plan actual: <span className="font-bold text-[#F5E050]">{plan}</span>
+      </p>
 
       {/* Filtros */}
       <div className="flex gap-4 mb-8 overflow-x-auto pb-2">

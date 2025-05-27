@@ -39,12 +39,37 @@ const CrearCapsula = () => {
   const [showModal, setShowModal] = useState(false);
   const [carruselArchivos, setCarruselArchivos] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [puedeCrear, setPuedeCrear] = useState(true);
+  const [plan, setPlan] = useState('Básico');
+  const [planMsg, setPlanMsg] = useState('');
 
   useEffect(() => {
     fetch('/api/categories')
       .then(res => res.json())
       .then(setCategorias)
       .catch(() => setCategorias([]));
+  }, []);
+
+  useEffect(() => {
+    const fetchPlan = async () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const token = user?.token;
+      if (!token) return;
+      // Consulta el plan
+      const resPlan = await fetch('/api/subscriptions/my-plan', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const dataPlan = await resPlan.json();
+      setPlan(dataPlan.plan || 'Básico');
+      // Consulta si puede crear
+      const res = await fetch('/api/subscriptions/can-create-capsule', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setPuedeCrear(data.allowed);
+      setPlanMsg(data.message || '');
+    };
+    fetchPlan();
   }, []);
 
   const steps = [
@@ -673,6 +698,13 @@ const CrearCapsula = () => {
 
         {renderStepContent()}
 
+        {/* Mensaje de límite de creación de cápsulas */}
+        {!puedeCrear && (
+          <div className="text-center text-red-500 mb-4">
+            {planMsg || 'Has alcanzado el límite de cápsulas para tu plan.'}
+          </div>
+        )}
+
         {/* Botones de navegación */}
         <div className="flex justify-between mt-8">
           {currentStep > 0 && (
@@ -686,6 +718,7 @@ const CrearCapsula = () => {
           <button
             onClick={currentStep === steps.length - 1 ? handleCreateCapsule : nextStep}
             className="ml-auto px-6 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full hover:bg-[#e6d047]"
+            disabled={!puedeCrear && currentStep === steps.length - 1}
           >
             {currentStep === steps.length - 1 ? 'Crear Cápsula' : 'Siguiente'}
           </button>

@@ -1,28 +1,36 @@
-const GeneralModel = require('./generalModel');
-const db = require('../config/db'); // <-- Corrección aquí
-const transactionModel = require('./transactionModel');
+const db = require('../config/db');
 
-class SubscriptionModel extends GeneralModel {
-    constructor() {
-        super('Subscriptions');
-    }
+const SubscriptionModel = {
+  // Obtiene la suscripción activa del usuario
+  getUserPlan: async (userId) => {
+    const [rows] = await db.execute(
+      `SELECT Type as plan FROM Subscriptions WHERE User_ID = ? AND Status = 'active' ORDER BY End_Date DESC LIMIT 1`,
+      [userId]
+    );
+    return rows[0]?.plan || 'Básico';
+  },
 
-    async getUserSubscriptionsAndTransactions(userId) {
-        const [suscripciones] = await db.execute(
-            `SELECT 
-                Subscription_ID as id,
-                Type as nombre,
-                DATE_FORMAT(End_Date, '%Y-%m-%d') as fecha_fin,
-                Status as estado
-            FROM Subscriptions
-            WHERE User_ID = ?`,
-            [userId]
-        );
+  // Cambia el plan del usuario (simulado)
+  setUserPlan: async (userId, plan) => {
+    // Marca todas las suscripciones como inactivas
+    await db.execute(`UPDATE Subscriptions SET Status = 'inactive' WHERE User_ID = ?`, [userId]);
+    // Crea una nueva suscripción activa
+    await db.execute(
+      `INSERT INTO Subscriptions (User_ID, Type, Start_Date, End_Date, Status)
+       VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR), 'active')`,
+      [userId, plan]
+    );
+    return { plan };
+  },
 
-        const transacciones = await transactionModel.getUserTransactions(userId);
+  // Cuenta cápsulas del usuario
+  countUserCapsules: async (userId) => {
+    const [rows] = await db.execute(
+      `SELECT COUNT(*) as total FROM Capsules WHERE Creator_User_ID = ?`,
+      [userId]
+    );
+    return rows[0]?.total || 0;
+  }
+};
 
-        return { suscripciones, transacciones };
-    }
-}
-
-module.exports = new SubscriptionModel();
+module.exports = SubscriptionModel;

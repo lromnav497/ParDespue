@@ -1,5 +1,6 @@
 const GeneralController = require('./generalController');
 const CapsuleModel = require('../models/capsuleModel');
+const SubscriptionModel = require('../models/subscriptionModel');
 
 class CapsuleController extends GeneralController {
     constructor() {
@@ -54,6 +55,13 @@ class CapsuleController extends GeneralController {
             }
             if (new Date(Opening_Date) <= new Date(Creation_Date)) {
                 return res.status(400).json({ message: 'La fecha de apertura debe ser posterior a la de creación.' });
+            }
+
+            const userId = Creator_User_ID;
+            const plan = await SubscriptionModel.getUserPlan(userId);
+            const total = await SubscriptionModel.countUserCapsules(userId);
+            if (plan === 'Básico' && total >= 15) {
+                return res.status(403).json({ message: 'Límite de cápsulas alcanzado para el plan Básico.' });
             }
 
             // Usar el método general de creación
