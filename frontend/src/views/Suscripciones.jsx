@@ -49,7 +49,7 @@ const Suscripciones = () => {
     setSelectedPlan(plan.name);
 
     const user = JSON.parse(localStorage.getItem('user'));
-    const token = user?.token;
+    const token = user?.token || localStorage.getItem('token');
 
     if (!token) {
       setMensaje('Debes iniciar sesión para cambiar de plan.');
