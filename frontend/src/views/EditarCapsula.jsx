@@ -155,6 +155,18 @@ const EditarCapsula = () => {
       return;
     }
 
+    // VALIDACIÓN DE CAMPOS OBLIGATORIOS
+    if (!form.Title || !form.Opening_Date) {
+      alert('Debes completar todos los campos obligatorios.');
+      setLoading(false);
+      return;
+    }
+    if (!form.Category_ID) {
+      alert('Debes seleccionar una categoría.');
+      setLoading(false);
+      return;
+    }
+
     try {
       // --- LIMPIA LA CONTRASEÑA SI PASA A PUBLICA ---
       let formToSend = { ...form };
@@ -171,7 +183,10 @@ const EditarCapsula = () => {
           Tags: formToSend.Tags,
         }),
       });
-      if (!res.ok) throw new Error('Error al actualizar la cápsula');
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Error al actualizar la cápsula');
+      }
 
       // 2. Elimina archivos marcados para borrar
       for (const contentId of archivosParaEliminar) {
