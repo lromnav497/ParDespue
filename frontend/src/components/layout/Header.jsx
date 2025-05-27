@@ -2,13 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faUser, 
-  faHome, 
-  faBoxArchive, 
-  faCompass, 
-  faQuestionCircle,
-  faChevronDown,
-  faRightFromBracket
+  faUser, faHome, faBoxArchive, faCompass, faQuestionCircle,
+  faChevronDown, faRightFromBracket, faCrown
 } from '@fortawesome/free-solid-svg-icons';
 
 const getStoredUser = () => {
@@ -30,13 +25,34 @@ const getStoredUser = () => {
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(getStoredUser());
+  const [plan, setPlan] = useState(null);
   const navigate = useNavigate();
 
+  // Escucha cambios de usuario
   useEffect(() => {
     const handler = () => setUser(getStoredUser());
     window.addEventListener('user-updated', handler);
     return () => window.removeEventListener('user-updated', handler);
   }, []);
+
+  // Consulta el plan real al backend cuando hay usuario
+  useEffect(() => {
+    const fetchPlan = async () => {
+      if (!user) return;
+      const token = localStorage.getItem('token') || user.token;
+      if (!token) return;
+      try {
+        const res = await fetch('/api/subscriptions/my-plan', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setPlan(data.plan); // "Premium", "Básico", etc.
+      } catch {
+        setPlan(null);
+      }
+    };
+    fetchPlan();
+  }, [user]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -106,7 +122,13 @@ const Header = () => {
                 onClick={() => setMenuOpen(v => !v)}
               >
                 <FontAwesomeIcon icon={faUser} className="mr-2" />
-                <span className="mr-2">{user.name}</span>
+                <span className="mr-2 flex items-center">
+                  {user.name}
+                  {/* Mostrar corona si es premium */}
+                  {plan === 'Premium' && (
+                    <FontAwesomeIcon icon={faCrown} className="ml-2 text-yellow-400" title="Usuario Premium" />
+                  )}
+                </span>
                 <FontAwesomeIcon icon={faChevronDown} />
               </button>
               {menuOpen && (
