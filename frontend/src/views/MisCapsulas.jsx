@@ -53,13 +53,12 @@ const MisCapsulas = () => {
   useEffect(() => {
     const fetchPlan = async () => {
       const user = JSON.parse(localStorage.getItem('user'));
-      const token = user?.token;
+      const token = localStorage.getItem('token') || user?.token;
       if (!token) return;
       const res = await fetch('/api/subscriptions/my-plan', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      console.log('Plan recibido:', data);
       setPlan(data.plan || 'Básico');
     };
     fetchPlan();
