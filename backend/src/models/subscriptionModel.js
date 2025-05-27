@@ -17,7 +17,6 @@ const SubscriptionModel = {
 
   // Cambia el plan del usuario
   setUserPlan: async (userId, plan) => {
-    // Convierte el plan a minúsculas para que coincida con el ENUM de la base de datos
     const planDb = plan.toLowerCase();
 
     await db.execute(`UPDATE Subscriptions SET Status = 'inactive' WHERE User_ID = ?`, [userId]);
@@ -35,7 +34,10 @@ const SubscriptionModel = {
       await SubscriptionModel.createTransaction(subscriptionId, amount);
     }
 
-    return { plan: planDb };
+    // Devuelve el mismo formato que getUserPlan
+    if (planDb === 'premium') return { plan: 'Premium' };
+    if (planDb === 'basic') return { plan: 'Básico' };
+    return { plan: planDb.charAt(0).toUpperCase() + planDb.slice(1) };
   },
 
   // Cuenta cápsulas del usuario
