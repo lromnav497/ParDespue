@@ -1,6 +1,8 @@
 const db = require('../config/db');
 
 const SubscriptionModel = {
+  db, // Exporta la conexión para usarla en el controlador
+
   // Obtiene la suscripción activa del usuario
   getUserPlan: async (userId) => {
     const [rows] = await db.execute(

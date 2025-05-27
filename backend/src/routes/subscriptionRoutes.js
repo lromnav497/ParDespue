@@ -13,4 +13,7 @@ router.post('/change-plan', authMiddleware, SubscriptionController.setUserPlan);
 // Saber si puede crear cápsula (para frontend)
 router.get('/can-create-capsule', authMiddleware, SubscriptionController.canCreateCapsule);
 
+// NUEVA RUTA: Devuelve suscripciones y transacciones del usuario
+router.get('/my-data', authMiddleware, SubscriptionController.getUserData);
+
 module.exports = router;

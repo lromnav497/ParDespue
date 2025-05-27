@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faCheck, 
@@ -9,10 +9,25 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 const Suscripciones = () => {
-  const [billing, setBilling] = useState('monthly'); // 'monthly' or 'annual'
+  const [billing, setBilling] = useState('monthly');
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [mensaje, setMensaje] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState('Básico');
+
+  // Consulta el plan actual del usuario al montar
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = user?.token || localStorage.getItem('token');
+    if (!token) return;
+    fetch('/api/subscriptions/my-plan', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.plan) setCurrentPlan(data.plan);
+      });
+  }, []);
 
   const plans = [
     {
@@ -61,6 +76,8 @@ const Suscripciones = () => {
     setTimeout(async () => {
       if (plan.price === 0) {
         setMensaje("¡Ya tienes el plan Básico activado!");
+      } else if (currentPlan === "Premium" && plan.name === "Premium") {
+        setMensaje("¡Ya tienes el plan Premium activo!");
       } else {
         // Cambia el plan en el backend
         const res = await fetch('/api/subscriptions/change-plan', {
@@ -73,6 +90,7 @@ const Suscripciones = () => {
         });
         if (res.ok) {
           setMensaje(`¡Has adquirido el plan ${plan.name} (${billing === 'monthly' ? 'Mensual' : 'Anual'}) correctamente!`);
+          setCurrentPlan(plan.name); // Actualiza el plan actual
         } else {
           setMensaje('Error al cambiar de plan');
         }
@@ -123,7 +141,7 @@ const Suscripciones = () => {
         {/* Plans Grid */}
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
-            <div 
+            <div
               key={index}
               className={`bg-[#2E2E7A] rounded-xl p-8 relative ${
                 plan.popular ? 'transform md:-translate-y-4' : ''
@@ -138,8 +156,8 @@ const Suscripciones = () => {
               )}
 
               <div className="text-center mb-8">
-                <FontAwesomeIcon 
-                  icon={plan.icon} 
+                <FontAwesomeIcon
+                  icon={plan.icon}
                   className="text-[#F5E050] text-4xl mb-4"
                 />
                 <h3 className="text-2xl text-[#F5E050] passero-font mb-4">
@@ -160,8 +178,8 @@ const Suscripciones = () => {
               <ul className="space-y-4 mb-8">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-center text-gray-300">
-                    <FontAwesomeIcon 
-                      icon={faCheck} 
+                    <FontAwesomeIcon
+                      icon={faCheck}
                       className="text-[#F5E050] mr-2"
                     />
                     {feature}
@@ -169,16 +187,27 @@ const Suscripciones = () => {
                 ))}
               </ul>
 
+              {/* Botón: deshabilita si ya tiene el plan */}
               <button
                 className={`w-full py-3 rounded-full transition-colors ${
                   plan.popular
                     ? 'bg-[#F5E050] text-[#2E2E7A] hover:bg-[#e6d047]'
                     : 'bg-[#1a1a4a] text-white hover:bg-[#3d3d9e]'
                 } ${loading && selectedPlan === plan.name ? 'opacity-60 cursor-not-allowed' : ''}`}
-                disabled={loading}
+                disabled={
+                  loading ||
+                  (plan.name === "Premium" && currentPlan === "Premium") ||
+                  (plan.name === "Básico" && currentPlan === "Básico")
+                }
                 onClick={() => handleSubscribe(plan)}
               >
-                {loading && selectedPlan === plan.name ? 'Procesando...' : plan.cta}
+                {loading && selectedPlan === plan.name
+                  ? 'Procesando...'
+                  : (plan.name === "Premium" && currentPlan === "Premium")
+                    ? 'Ya tienes Premium'
+                    : (plan.name === "Básico" && currentPlan === "Básico")
+                      ? 'Ya tienes Básico'
+                      : plan.cta}
               </button>
             </div>
           ))}
