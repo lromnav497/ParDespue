@@ -36,11 +36,13 @@ const EditarCapsula = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [pendingAction, setPendingAction] = useState(null); // 'changePrivacy' o 'changePassword'
+  const [error, setError] = useState(null);
 
   // Cargar datos de la cápsula y archivos actuales
   useEffect(() => {
     const fetchCapsula = async () => {
       setLoading(true);
+      setError(null);
       try {
         // Al cargar para editar:
         const user = JSON.parse(localStorage.getItem('user'));
@@ -49,6 +51,12 @@ const EditarCapsula = () => {
             'x-user-id': user?.id
           }
         });
+        if (!res.ok) {
+          const data = await res.json();
+          setError(data.message || 'No tienes permiso para editar esta cápsula.');
+          setLoading(false);
+          return;
+        }
         const data = await res.json();
         setCapsula(data);
         setForm({
@@ -73,9 +81,8 @@ const EditarCapsula = () => {
               }))
             : []
         );
-      } catch {
-        setCapsula(null);
-        setArchivos([]);
+      } catch (err) {
+        setError('Error al cargar la cápsula.');
       }
       setLoading(false);
     };
@@ -223,6 +230,22 @@ const EditarCapsula = () => {
 
   if (loading) return <div className="text-center text-[#F5E050] py-10">Cargando cápsula...</div>;
   if (!capsula) return <div className="text-center text-red-500 py-10">No se encontró la cápsula.</div>;
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="bg-[#1a1a4a] text-[#F5E050] p-8 rounded-lg shadow-lg text-center">
+          <h2 className="text-2xl font-bold mb-4">Error</h2>
+          <p>{error}</p>
+          <button
+            className="mt-6 px-4 py-2 bg-[#F5E050] text-[#2E2E7A] rounded hover:bg-[#e6d047]"
+            onClick={() => window.history.back()}
+          >
+            Volver atrás
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 py-8">
