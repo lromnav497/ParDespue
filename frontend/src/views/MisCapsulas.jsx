@@ -59,6 +59,7 @@ const MisCapsulas = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
+      console.log('Plan recibido:', data); // <-- Agrega esto
       setPlan(data.plan || 'Básico');
     };
     fetchPlan();
