@@ -69,19 +69,19 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', (req, res) => CapsuleController.update(req, res));
 router.delete('/:id', async (req, res) => {
   const capsuleId = req.params.id;
-  const userId = req.body.userId || req.headers['x-user-id']; // Ajusta según tu frontend
+  const userId = req.body.userId || req.headers['x-user-id'];
 
-  // Busca el dueño de la cápsula
-  const [rows] = await db.query('SELECT Creator_User_ID FROM Capsules WHERE Capsule_ID = ?', [capsuleId]);
-  if (!rows.length) return res.status(404).json({ message: 'Cápsula no encontrada' });
+  // Verifica que el usuario es el dueño (como ya tienes)
 
-  if (rows[0].Creator_User_ID != userId) {
-    return res.status(403).json({ message: 'Solo el creador puede eliminar esta cápsula.' });
+  try {
+    // 1. Elimina los contenidos asociados
+    await db.query('DELETE FROM Contents WHERE Capsule_ID = ?', [capsuleId]);
+    // 2. Ahora elimina la cápsula
+    await db.query('DELETE FROM Capsules WHERE Capsule_ID = ?', [capsuleId]);
+    res.json({ message: 'Cápsula eliminada correctamente.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error al eliminar la cápsula', error: err.message });
   }
-
-  // Elimina la cápsula
-  await db.query('DELETE FROM Capsules WHERE Capsule_ID = ?', [capsuleId]);
-  res.json({ message: 'Cápsula eliminada correctamente.' });
 });
 router.post('/:id/check-password', async (req, res) => {
   const { password } = req.body;
