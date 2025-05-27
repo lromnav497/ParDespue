@@ -229,7 +229,6 @@ const EditarCapsula = () => {
   };
 
   if (loading) return <div className="text-center text-[#F5E050] py-10">Cargando cápsula...</div>;
-  if (!capsula) return <div className="text-center text-red-500 py-10">No se encontró la cápsula.</div>;
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -250,6 +249,7 @@ const EditarCapsula = () => {
       </div>
     );
   }
+  if (!capsula) return <div className="text-center text-red-500 py-10">No se encontró la cápsula.</div>;
 
   return (
     <div className="min-h-screen bg-gray-900 py-8">
