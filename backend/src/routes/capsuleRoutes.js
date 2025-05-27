@@ -49,6 +49,13 @@ router.get('/:id/edit', async (req, res) => {
       return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
     }
 
+    // NO permitir editar si la cápsula ya está abierta
+    const ahora = new Date();
+    const apertura = new Date(capsule.Opening_Date);
+    if (apertura <= ahora) {
+      return res.status(403).json({ message: 'No se puede editar una cápsula que ya está abierta.' });
+    }
+
     res.status(200).json(capsule);
   } catch (err) {
     res.status(500).json({ error: err.message });
