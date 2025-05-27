@@ -234,8 +234,12 @@ const EditarCapsula = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="bg-[#1a1a4a] text-[#F5E050] p-8 rounded-lg shadow-lg text-center">
-          <h2 className="text-2xl font-bold mb-4">Error</h2>
-          <p>{error}</p>
+          <h2 className="text-2xl font-bold mb-4">No se puede editar la cápsula</h2>
+          <p>
+            {error.includes('abierta')
+              ? 'No se pueden editar cápsulas que ya han sido abiertas.'
+              : error}
+          </p>
           <button
             className="mt-6 px-4 py-2 bg-[#F5E050] text-[#2E2E7A] rounded hover:bg-[#e6d047]"
             onClick={() => window.history.back()}
