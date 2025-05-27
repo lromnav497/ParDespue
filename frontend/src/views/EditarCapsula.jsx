@@ -47,9 +47,11 @@ const EditarCapsula = () => {
       try {
         // Al cargar para editar:
         const user = JSON.parse(localStorage.getItem('user'));
+        const token = localStorage.getItem('token') || user?.token;
+
         const res = await fetch(`/api/capsules/${id}/edit`, {
           headers: {
-            'x-user-id': user?.id
+            'Authorization': `Bearer ${token}`
           }
         });
         if (!res.ok) {
