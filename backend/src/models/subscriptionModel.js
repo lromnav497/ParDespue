@@ -50,41 +50,42 @@ const SubscriptionModel = {
   },
 
   // Crea una transacción asociada a una suscripción
-  createTransaction: async (subscriptionId, amount, paymentMethod = 'card', status = 'completed') => {
+  createTransaction: async (subscriptionId, amount, paymentMethod = 'card', status = 'completed', description = null) => {
     await db.execute(
-      `INSERT INTO Transactions (Subscription_ID, Date, Amount, Payment_Method, Status)
-       VALUES (?, NOW(), ?, ?, ?)`,
-      [subscriptionId, amount, paymentMethod, status]
+      `INSERT INTO Transactions (Subscription_ID, Date, Amount, Payment_Method, Status, Description)
+       VALUES (?, NOW(), ?, ?, ?, ?)`,
+      [subscriptionId, amount, paymentMethod, status, description]
     );
   },
 
   async cancel(subId, userId) {
-    // Marca la suscripción como cancelada
     await db.query(
       'UPDATE Subscriptions SET Status = ? WHERE Subscription_ID = ? AND User_ID = ?',
       ['canceled', subId, userId]
     );
-    // Crea una transacción de cancelación (puedes poner amount 0 o negativo, según tu lógica)
-    await SubscriptionModel.createTransaction(subId, 0, 'card', 'completed');
+    // No crear transacción aquí
   },
 
   async renew(subId, months, userId) {
-    // Suma meses a la fecha de fin
     await db.query(
       `UPDATE Subscriptions 
        SET End_Date = DATE_ADD(End_Date, INTERVAL ? MONTH)
        WHERE Subscription_ID = ? AND User_ID = ? AND Status = 'active'`,
       [months, subId, userId]
     );
-    // Busca el tipo de suscripción para saber el precio
     const [rows] = await db.execute(
       'SELECT Type FROM Subscriptions WHERE Subscription_ID = ?',
       [subId]
     );
     let amount = 0;
-    if (rows.length && rows[0].Type === 'premium') amount = 99.99 * months; // ajusta si tienes mensual/anual
-    // Crea una transacción de renovación
-    await SubscriptionModel.createTransaction(subId, amount, 'card', 'completed');
+    if (rows.length && rows[0].Type === 'premium') amount = 99.99 * months;
+    await SubscriptionModel.createTransaction(
+      subId,
+      amount,
+      'card',
+      'completed',
+      'Renovación de suscripción'
+    );
   }
 };
 
