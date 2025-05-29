@@ -56,6 +56,24 @@ const SubscriptionModel = {
        VALUES (?, NOW(), ?, 'card', 'completed')`,
       [subscriptionId, amount]
     );
+  },
+
+  async cancel(subId, userId) {
+    // Marca la suscripción como cancelada (ajusta el campo según tu BD)
+    return db.query(
+      'UPDATE subscriptions SET status = ? WHERE id = ? AND user_id = ?',
+      ['cancelled', subId, userId]
+    );
+  },
+
+  async renew(subId, months, userId) {
+    // Suma meses a la fecha de fin (ajusta según tu lógica y BD)
+    return db.query(
+      `UPDATE subscriptions 
+       SET end_date = DATE_ADD(end_date, INTERVAL ? MONTH)
+       WHERE id = ? AND user_id = ? AND status = 'active'`,
+      [months, subId, userId]
+    );
   }
 };
 
