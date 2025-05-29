@@ -424,9 +424,9 @@ const MisSuscripciones = () => {
     <div className="text-white">
       <h3 className="text-2xl passero-font text-[#F5E050] mb-6">Mis Suscripciones</h3>
       <div className="grid gap-4">
-        {suscripciones.length === 0 ? (
+        {suscripciones.filter(sub => sub.status === 'active').length === 0 ? (
           <div className="bg-[#1a1a4a] p-6 rounded-lg">No tienes suscripciones activas.</div>
-        ) : suscripciones.map(sub => (
+        ) : suscripciones.filter(sub => sub.status === 'active').map(sub => (
           <div key={sub.id} className="bg-[#1a1a4a] p-6 rounded-lg">
             <div className="flex justify-between items-center">
               <div>
@@ -446,7 +446,6 @@ const MisSuscripciones = () => {
                     setShowRenewModal(true);
                     setRenewMonths(1);
                     setRenewLoading(false);
-                    // Guarda el id de la suscripción a renovar
                     setRenewSubId(sub.id);
                   }}
                 >
