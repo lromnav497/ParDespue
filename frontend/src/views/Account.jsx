@@ -348,6 +348,10 @@ const MisSuscripciones = () => {
   const [transacciones, setTransacciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showRenewModal, setShowRenewModal] = useState(false);
+  const [renewMonths, setRenewMonths] = useState(1);
+  const [renewLoading, setRenewLoading] = useState(false);
+  const [renewSubId, setRenewSubId] = useState(null);
   const storedUser = getStoredUser();
 
   useEffect(() => {
@@ -372,6 +376,47 @@ const MisSuscripciones = () => {
     if (storedUser) fetchData();
   }, [storedUser && storedUser.id]);
 
+  const handleRenew = async (subId) => {
+    setRenewLoading(true);
+    try {
+      const token = localStorage.getItem('token') || (storedUser && storedUser.token);
+      const res = await fetch(`/api/subscriptions/renew/${subId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ months: renewMonths })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al renovar');
+      setShowRenewModal(false);
+      setRenewLoading(false);
+      // Opcional: recarga las suscripciones
+      window.location.reload();
+    } catch (err) {
+      setRenewLoading(false);
+      alert(err.message || 'Error de conexión');
+    }
+  };
+
+  const handleCancel = async (subId) => {
+    if (!window.confirm('¿Seguro que quieres cancelar esta suscripción?')) return;
+    try {
+      const token = localStorage.getItem('token') || (storedUser && storedUser.token);
+      const res = await fetch(`/api/subscriptions/cancel/${subId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al cancelar');
+      setSuscripciones(prev => prev.filter(s => s.id !== subId));
+      alert('Suscripción cancelada');
+    } catch (err) {
+      alert(err.message || 'Error de conexión');
+    }
+  };
+
   if (loading) return <div className="text-white">Cargando...</div>;
   if (error) return <div className="text-red-400">{error}</div>;
 
@@ -387,6 +432,26 @@ const MisSuscripciones = () => {
               <div>
                 <h4 className="text-xl font-semibold">{sub.nombre}</h4>
                 <p className="text-gray-400">Activo hasta: {sub.fecha_fin}</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  className="px-4 py-2 rounded bg-gray-500 text-white"
+                  onClick={() => handleCancel(sub.id)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="px-4 py-2 rounded bg-[#F5E050] text-[#2E2E7A] font-bold"
+                  onClick={() => {
+                    setShowRenewModal(true);
+                    setRenewMonths(1);
+                    setRenewLoading(false);
+                    // Guarda el id de la suscripción a renovar
+                    setRenewSubId(sub.id);
+                  }}
+                >
+                  Renovar
+                </button>
               </div>
             </div>
           </div>
@@ -419,6 +484,18 @@ const MisSuscripciones = () => {
           </table>
         )}
       </div>
+
+      {/* Modal para renovar suscripción */}
+      {showRenewModal && (
+        <RenewSubscriptionModal
+          isOpen={showRenewModal}
+          onClose={() => setShowRenewModal(false)}
+          onConfirm={() => handleRenew(renewSubId)}
+          renewMonths={renewMonths}
+          setRenewMonths={setRenewMonths}
+          loading={renewLoading}
+        />
+      )}
     </div>
   );
 };
