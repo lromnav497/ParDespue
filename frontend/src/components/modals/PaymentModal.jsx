@@ -7,16 +7,21 @@ const PaymentModal = ({
   loading
 }) => {
   const [paymentData, setPaymentData] = useState({
-    name: '',
-    card: '',
-    expiry: '',
-    cvv: ''
+    name: 'Juan Pérez',
+    card: '4242424242424242',
+    expiry: '12/25',
+    cvv: '123'
   });
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
-      setPaymentData({ name: '', card: '', expiry: '', cvv: '' });
+      setPaymentData({
+        name: 'Juan Pérez',
+        card: '4242424242424242',
+        expiry: '12/25',
+        cvv: '123'
+      });
       setError('');
     }
   }, [isOpen]);

@@ -29,14 +29,9 @@ const Suscripciones = () => {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user?.token || localStorage.getItem('token');
-    if (!token) return;
     fetch('/api/subscriptions/my-plan', {
       headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.plan) setCurrentPlan(data.plan);
-      });
+    });
   }, []);
 
   const plans = [

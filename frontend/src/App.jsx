@@ -23,6 +23,7 @@ import CookiesModal from './components/modals/CookiesModal';
 import VerifyEmail from './views/VerifyEmail';
 import ResendVerification from './views/ResendVerification';
 import ResetPassword from './views/ResetPassword';
+import './index.css';
 
 function App() {
   const [showCookiesModal, setShowCookiesModal] = useState(false);
