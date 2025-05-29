@@ -19,4 +19,10 @@ router.get('/can-create-capsule', authMiddleware, SubscriptionController.canCrea
 // NUEVA RUTA: Devuelve suscripciones y transacciones del usuario
 router.get('/my-data', authMiddleware, SubscriptionController.getUserData);
 
+// Renovar suscripción
+router.post('/renew/:id', authMiddleware, SubscriptionController.renewSubscription);
+
+// Cancelar suscripción
+router.post('/cancel/:id', authMiddleware, SubscriptionController.cancelSubscription);
+
 module.exports = router;

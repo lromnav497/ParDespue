@@ -64,6 +64,31 @@ const SubscriptionController = {
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
+  },
+
+  renewSubscription: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const subId = req.params.id;
+      const { months } = req.body;
+      // Llama a tu modelo para renovar la suscripción
+      await SubscriptionModel.renew(subId, months, userId);
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ message: err.message || 'Error al renovar suscripción' });
+    }
+  },
+
+  cancelSubscription: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const subId = req.params.id;
+      // Llama a tu modelo para cancelar la suscripción
+      await SubscriptionModel.cancel(subId, userId);
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ message: err.message || 'Error al cancelar suscripción' });
+    }
   }
 };
 
