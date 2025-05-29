@@ -28,14 +28,15 @@ const Suscripciones = () => {
   // Consulta el plan actual del usuario al montar
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
-    const token = localStorage.getItem('token');
-    if (!token) {
-      // Redirige a login o muestra mensaje
-      return;
-    }
+    const token = localStorage.getItem('token') || user?.token;
+    if (!token) return;
     fetch('/api/subscriptions/my-plan', {
       headers: { Authorization: `Bearer ${token}` }
-    });
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.plan) setCurrentPlan(data.plan);
+      });
   }, []);
 
   const plans = [
@@ -73,7 +74,7 @@ const Suscripciones = () => {
     setSelectedPlan(plan.name);
 
     const user = JSON.parse(localStorage.getItem('user'));
-    const token = user?.token || localStorage.getItem('token');
+    const token = localStorage.getItem('token') || user?.token;
 
     if (!token) {
       setMensaje('Debes iniciar sesión para cambiar de plan.');
