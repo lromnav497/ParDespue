@@ -31,7 +31,13 @@ const SubscriptionModel = {
     if (planDb === 'premium') amount = 99.99;
 
     if (amount > 0) {
-      await SubscriptionModel.createTransaction(subscriptionId, amount);
+      await SubscriptionModel.createTransaction(
+        subscriptionId,
+        amount,
+        'card',
+        'completed',
+        'Compra de suscripción'
+      );
     }
 
     // Devuelve el mismo formato que getUserPlan
@@ -86,6 +92,14 @@ const SubscriptionModel = {
       'completed',
       'Renovación de suscripción'
     );
+  },
+
+  async getActiveSubscriptions(userId) {
+    const [subs] = await SubscriptionModel.db.execute(
+      `SELECT Subscription_ID as id, Type as nombre, End_Date as fecha_fin, Status as status
+       FROM Subscriptions WHERE User_ID = ? AND Status = 'active' ORDER BY End_Date DESC`, [userId]
+    );
+    return subs;
   }
 };
 
