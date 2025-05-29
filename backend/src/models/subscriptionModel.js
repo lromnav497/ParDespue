@@ -19,7 +19,8 @@ const SubscriptionModel = {
   setUserPlan: async (userId, plan) => {
     const planDb = plan.toLowerCase();
 
-    await db.execute(`UPDATE Subscriptions SET Status = 'inactive' WHERE User_ID = ?`, [userId]);
+    // Cambia 'inactive' por 'canceled'
+    await db.execute(`UPDATE Subscriptions SET Status = 'canceled' WHERE User_ID = ? AND Status = 'active'`, [userId]);
     const [result] = await db.execute(
       `INSERT INTO Subscriptions (User_ID, Type, Start_Date, End_Date, Status)
        VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR), 'active')`,
@@ -40,7 +41,6 @@ const SubscriptionModel = {
       );
     }
 
-    // Devuelve el mismo formato que getUserPlan
     if (planDb === 'premium') return { plan: 'Premium' };
     if (planDb === 'basic') return { plan: 'Básico' };
     return { plan: planDb.charAt(0).toUpperCase() + planDb.slice(1) };
