@@ -50,30 +50,41 @@ const SubscriptionModel = {
   },
 
   // Crea una transacción asociada a una suscripción
-  createTransaction: async (subscriptionId, amount) => {
+  createTransaction: async (subscriptionId, amount, paymentMethod = 'card', status = 'completed') => {
     await db.execute(
       `INSERT INTO Transactions (Subscription_ID, Date, Amount, Payment_Method, Status)
-       VALUES (?, NOW(), ?, 'card', 'completed')`,
-      [subscriptionId, amount]
+       VALUES (?, NOW(), ?, ?, ?)`,
+      [subscriptionId, amount, paymentMethod, status]
     );
   },
 
   async cancel(subId, userId) {
-    // Marca la suscripción como cancelada (ajusta el campo según tu BD)
-    return db.query(
-      'UPDATE subscriptions SET status = ? WHERE id = ? AND user_id = ?',
-      ['cancelled', subId, userId]
+    // Marca la suscripción como cancelada
+    await db.query(
+      'UPDATE Subscriptions SET Status = ? WHERE Subscription_ID = ? AND User_ID = ?',
+      ['canceled', subId, userId]
     );
+    // Crea una transacción de cancelación (puedes poner amount 0 o negativo, según tu lógica)
+    await SubscriptionModel.createTransaction(subId, 0, 'card', 'completed');
   },
 
   async renew(subId, months, userId) {
-    // Suma meses a la fecha de fin (ajusta según tu lógica y BD)
-    return db.query(
-      `UPDATE subscriptions 
-       SET end_date = DATE_ADD(end_date, INTERVAL ? MONTH)
-       WHERE id = ? AND user_id = ? AND status = 'active'`,
+    // Suma meses a la fecha de fin
+    await db.query(
+      `UPDATE Subscriptions 
+       SET End_Date = DATE_ADD(End_Date, INTERVAL ? MONTH)
+       WHERE Subscription_ID = ? AND User_ID = ? AND Status = 'active'`,
       [months, subId, userId]
     );
+    // Busca el tipo de suscripción para saber el precio
+    const [rows] = await db.execute(
+      'SELECT Type FROM Subscriptions WHERE Subscription_ID = ?',
+      [subId]
+    );
+    let amount = 0;
+    if (rows.length && rows[0].Type === 'premium') amount = 99.99 * months; // ajusta si tienes mensual/anual
+    // Crea una transacción de renovación
+    await SubscriptionModel.createTransaction(subId, amount, 'card', 'completed');
   }
 };
 
