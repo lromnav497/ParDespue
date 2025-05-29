@@ -7,6 +7,7 @@ import {
   faUser,
   faInfinity
 } from '@fortawesome/free-solid-svg-icons';
+import PaymentModal from '../components/modals/PaymentModal';
 
 const Suscripciones = () => {
   const [billing, setBilling] = useState('monthly');
@@ -14,6 +15,15 @@ const Suscripciones = () => {
   const [mensaje, setMensaje] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentPlan, setCurrentPlan] = useState('Básico');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentData, setPaymentData] = useState({
+    name: '',
+    card: '',
+    expiry: '',
+    cvv: ''
+  });
+  const [paymentError, setPaymentError] = useState('');
+  const [pendingPlan, setPendingPlan] = useState(null);
 
   // Consulta el plan actual del usuario al montar
   useEffect(() => {
@@ -58,7 +68,7 @@ const Suscripciones = () => {
   ];
 
   // Simula la compra o cambio de plan
-  const handleSubscribe = async (plan) => {
+  const handleSubscribe = async (plan, yaPago = false) => {
     setLoading(true);
     setMensaje('');
     setSelectedPlan(plan.name);
@@ -68,6 +78,14 @@ const Suscripciones = () => {
 
     if (!token) {
       setMensaje('Debes iniciar sesión para cambiar de plan.');
+      setLoading(false);
+      return;
+    }
+
+    // Si es premium y no ha pagado, muestra el modal
+    if (plan.name === "Premium" && !yaPago) {
+      setPendingPlan(plan);
+      setShowPaymentModal(true);
       setLoading(false);
       return;
     }
@@ -248,6 +266,19 @@ const Suscripciones = () => {
             </div>
           </div>
         </div>
+
+        {/* Payment Modal */}
+        {showPaymentModal && pendingPlan && (
+          <PaymentModal
+            isOpen={showPaymentModal}
+            onClose={() => setShowPaymentModal(false)}
+            onPay={() => {
+              setShowPaymentModal(false);
+              handleSubscribe(pendingPlan, true); // true = ya pagó
+            }}
+            loading={loading}
+          />
+        )}
       </div>
     </div>
   );
