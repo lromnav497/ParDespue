@@ -346,7 +346,7 @@ const InformacionGeneral = () => {
 const MisSuscripciones = () => {
   const [suscripciones, setSuscripciones] = useState([]);
   const [transacciones, setTransacciones] = useState([]);
-  const [plan, setPlan] = useState(''); // <-- Nuevo estado para el plan
+  const [plan, setPlan] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showRenewModal, setShowRenewModal] = useState(false);
@@ -362,7 +362,7 @@ const MisSuscripciones = () => {
       try {
         const token = localStorage.getItem('token') || (storedUser && storedUser.token);
 
-        // Obtiene el plan actual
+        // Plan actual
         const planRes = await fetch(`/api/subscriptions/my-plan`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -370,14 +370,13 @@ const MisSuscripciones = () => {
         if (!planRes.ok) throw new Error(planData.message || 'Error al obtener el plan');
         setPlan(planData.plan || '');
 
-        // Obtiene suscripciones y transacciones
-        const res = await fetch(`/api/subscriptions/my-data`, {
+        // Transacciones
+        const txRes = await fetch(`/api/transactions/my-transactions`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Error al cargar');
-        setSuscripciones(data.suscripciones || []);
-        setTransacciones(data.transacciones || []);
+        const txData = await txRes.json();
+        if (!txRes.ok) throw new Error(txData.message || 'Error al obtener transacciones');
+        setTransacciones(txData.transacciones || []);
       } catch (err) {
         setError(err.message || 'Error de conexión');
       }
