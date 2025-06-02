@@ -21,6 +21,14 @@ class TransactionModel extends GeneralModel {
         );
         return transacciones;
     }
+
+    createTransaction = async (subscriptionId, amount, paymentMethod = 'card', status = 'completed', description = null) => {
+        await db.execute(
+            `INSERT INTO Transactions (Subscription_ID, Date, Amount, Payment_Method, Status, Description)
+             VALUES (?, NOW(), ?, ?, ?, ?)`,
+            [subscriptionId, amount, paymentMethod, status, description]
+        );
+    }
 }
 
 module.exports = new TransactionModel();

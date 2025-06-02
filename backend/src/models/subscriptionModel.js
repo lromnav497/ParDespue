@@ -36,8 +36,7 @@ const SubscriptionModel = {
         subscriptionId,
         amount,
         'card',
-        'completed',
-        'Compra de suscripción'
+        'completed'
       );
     }
 
@@ -56,11 +55,11 @@ const SubscriptionModel = {
   },
 
   // Crea una transacción asociada a una suscripción
-  createTransaction: async (subscriptionId, amount, paymentMethod = 'card', status = 'completed', description = null) => {
+  createTransaction: async (subscriptionId, amount, paymentMethod = 'card', status = 'completed') => {
     await db.execute(
-      `INSERT INTO Transactions (Subscription_ID, Date, Amount, Payment_Method, Status, Description)
-       VALUES (?, NOW(), ?, ?, ?, ?)`,
-      [subscriptionId, amount, paymentMethod, status, description]
+      `INSERT INTO Transactions (Subscription_ID, Date, Amount, Payment_Method, Status)
+       VALUES (?, NOW(), ?, ?, ?)`,
+      [subscriptionId, amount, paymentMethod, status]
     );
   },
 
@@ -89,8 +88,7 @@ const SubscriptionModel = {
       subId,
       amount,
       'card',
-      'completed',
-      'Renovación de suscripción'
+      'completed'
     );
   },
 
