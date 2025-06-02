@@ -348,6 +348,9 @@ const MisSuscripciones = () => {
   const [transacciones, setTransacciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showRenewModal, setShowRenewModal] = useState(false);
+  const [renewMonths, setRenewMonths] = useState(1);
+  const [renewLoading, setRenewLoading] = useState(false);
   const storedUser = getStoredUser();
 
   useEffect(() => {
@@ -380,14 +383,52 @@ const MisSuscripciones = () => {
     if (storedUser) fetchData();
   }, [storedUser && storedUser.id]);
 
-  // Handlers para renovar y cancelar
-  const handleRenew = async () => {
-    // Aquí abres tu modal o llamas al endpoint de renovación
-    // Usa suscripcion.id para saber cuál renovar
+  // Abrir modal al pulsar Renovar
+  const handleRenew = () => {
+    setShowRenewModal(true);
+  };
+
+  // Confirmar renovación
+  const handleRenewConfirm = async () => {
+    if (!suscripcion?.id) return;
+    setRenewLoading(true);
+    setError('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/subscriptions/renew/${suscripcion.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ months: renewMonths })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al renovar');
+      setShowRenewModal(false);
+      setRenewLoading(false);
+      // Refresca datos
+      window.location.reload();
+    } catch (err) {
+      setError(err.message || 'Error al renovar');
+      setRenewLoading(false);
+    }
   };
 
   const handleCancel = async () => {
-    // Llama al endpoint de cancelar usando suscripcion.id
+    if (!suscripcion?.id) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/subscriptions/cancel/${suscripcion.id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al cancelar');
+      setSuscripcion(null); // Quita la suscripción activa
+    } catch (err) {
+      setError(err.message || 'Error al cancelar');
+    }
   };
 
   if (loading) return <div className="text-white">Cargando...</div>;
@@ -425,6 +466,17 @@ const MisSuscripciones = () => {
       ) : (
         <div className="mb-4">No tienes suscripción activa.</div>
       )}
+
+      {/* Modal de renovación */}
+      <RenewSubscriptionModal
+        isOpen={showRenewModal}
+        onClose={() => setShowRenewModal(false)}
+        onConfirm={handleRenewConfirm}
+        renewMonths={renewMonths}
+        setRenewMonths={setRenewMonths}
+        loading={renewLoading}
+      />
+
       <h4 className="text-xl mt-8 mb-4">Transacciones</h4>
       <div className="bg-[#1a1a4a] p-6 rounded-lg">
         {transacciones.length === 0 ? (
