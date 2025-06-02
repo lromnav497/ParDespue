@@ -5,7 +5,7 @@ import {
   faUser, faHome, faBoxArchive, faCompass, faQuestionCircle,
   faChevronDown, faRightFromBracket, faCrown
 } from '@fortawesome/free-solid-svg-icons';
-import { fetchWithAuth } from '../helpers/fetchWithAuth';
+import { fetchWithAuth } from '../../helpers/fetchWithAuth';
 
 const getStoredUser = () => {
   try {
