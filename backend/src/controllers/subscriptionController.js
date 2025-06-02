@@ -17,14 +17,10 @@ const SubscriptionController = {
     try {
       const userId = req.user.id;
       const { plan } = req.body;
-      const validPlans = ['basic', 'premium'];
-      if (!validPlans.includes(plan.toLowerCase())) {
-        return res.status(400).json({ message: 'Plan no válido' });
-      }
-      await SubscriptionModel.setUserPlan(userId, plan);
-      res.json({ message: `Plan cambiado a ${plan}` });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+      const result = await SubscriptionModel.setUserPlan(userId, plan);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ message: err.message || 'Error al cambiar de plan' });
     }
   },
 
