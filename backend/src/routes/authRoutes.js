@@ -87,7 +87,7 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, remember } = req.body;
     try {
         const user = await userModel.findByEmail(email);
         if (!user) {
@@ -102,9 +102,9 @@ router.post('/login', async (req, res) => {
         }
         // Genera el token
         const token = jwt.sign(
-            { id: user.User_ID, email: user.Email, role: user.Role },
-            process.env.JWT_SECRET,
-            { expiresIn: '2h' }
+          { id: user.User_ID, email: user.Email, role: user.Role },
+          process.env.JWT_SECRET,
+          { expiresIn: remember ? '30d' : '2h' } // Si remember, sin expiración
         );
         res.json({ token, user: { id: user.User_ID, name: user.Name, email: user.Email, role: user.Role } });
     } catch (error) {

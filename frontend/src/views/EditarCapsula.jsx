@@ -5,6 +5,7 @@ import {
   faSave, faTimes, faTrash, faImage, faVideo, faFileAlt, faMusic, faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 import PasswordModal from '../components/modals/PasswordModal';
+import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const getTypeFromMime = (mime) => {
   if (mime.startsWith('image/')) return 'image';

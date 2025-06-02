@@ -11,6 +11,7 @@ import {
 import RenewSubscriptionModal from '../components/modals/RenewSubscriptionModal';
 import ConfirmCancelSubscriptionModal from '../components/modals/ConfirmCancelSubscriptionModal';
 import MisCapsulas from './MisCapsulas'; // Asegúrate de que la ruta es correcta
+import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const Account = () => {
   const [activeSection, setActiveSection] = useState('general');

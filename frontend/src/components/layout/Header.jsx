@@ -5,6 +5,7 @@ import {
   faUser, faHome, faBoxArchive, faCompass, faQuestionCircle,
   faChevronDown, faRightFromBracket, faCrown
 } from '@fortawesome/free-solid-svg-icons';
+import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const getStoredUser = () => {
   try {
@@ -42,9 +43,8 @@ const Header = () => {
       const token = localStorage.getItem('token') || user.token;
       if (!token) return;
       try {
-        const res = await fetch('/api/subscriptions/my-plan', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await fetchWithAuth('/api/subscriptions/my-plan');
+        if (!res) return; // Ya redirigió si expiró
         const data = await res.json();
         // Si tu backend devuelve { suscripcion: { nombre: 'premium', ... } }
         if (data.suscripcion && data.suscripcion.nombre) {

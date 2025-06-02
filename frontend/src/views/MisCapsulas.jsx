@@ -11,6 +11,7 @@ import {
   faBoxArchive
 } from '@fortawesome/free-solid-svg-icons';
 import PasswordModal from '../components/modals/PasswordModal'; // importa el modal
+import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const MisCapsulas = () => {
   const [activeFilter, setActiveFilter] = useState('todas');
@@ -37,7 +38,8 @@ const MisCapsulas = () => {
     const fetchCapsulas = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/capsules/user/${userId}`);
+        const res = await fetchWithAuth(`/api/capsules/user/${userId}`);
+        if (!res) return; // Ya redirigió si expiró
         const data = await res.json();
         setCapsulas(data);
         console.log('Cápsulas recibidas:', data); // <-- Agrega esto

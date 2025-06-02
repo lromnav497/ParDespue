@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
@@ -13,21 +14,22 @@ const VerifyEmail = () => {
       setMessage("Enlace de verificación inválido.");
       return;
     }
-    fetch(`/api/auth/verify/${token}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.message && data.message.toLowerCase().includes("verificado")) {
-          setStatus("success");
-          setMessage("¡Tu cuenta ha sido verificada correctamente! Ya puedes iniciar sesión.");
-        } else {
-          setStatus("error");
-          setMessage(data.message || "No se pudo verificar el usuario.");
-        }
-      })
-      .catch(() => {
+    const verifyEmail = async () => {
+      const res = await fetchWithAuth(`/api/auth/verify/${token}`);
+      if (!res) return; // Ya redirigió si expiró
+      const data = await res.json();
+      if (data.message && data.message.toLowerCase().includes("verificado")) {
+        setStatus("success");
+        setMessage("¡Tu cuenta ha sido verificada correctamente! Ya puedes iniciar sesión.");
+      } else {
         setStatus("error");
-        setMessage("Error de conexión con el servidor.");
-      });
+        setMessage(data.message || "No se pudo verificar el usuario.");
+      }
+    };
+    verifyEmail().catch(() => {
+      setStatus("error");
+      setMessage("Error de conexión con el servidor.");
+    });
   }, [searchParams]);
 
   return (

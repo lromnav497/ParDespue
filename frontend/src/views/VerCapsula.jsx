@@ -15,6 +15,7 @@ import {
   faEye,
   faEyeSlash
 } from '@fortawesome/free-solid-svg-icons';
+import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const VerCapsula = () => {
   const { id } = useParams();
@@ -28,7 +29,7 @@ const VerCapsula = () => {
       setLoading(true);
       try {
         const user = JSON.parse(localStorage.getItem('user'));
-        const res = await fetch(`/api/capsules/${id}`, {
+        const res = await fetchWithAuth(`/api/capsules/${id}`, {
           headers: {
             'x-user-id': user?.id
           }
@@ -56,7 +57,7 @@ const VerCapsula = () => {
   useEffect(() => {
     const fetchArchivos = async () => {
       try {
-        const res = await fetch(`/api/contents/capsule/${id}`);
+        const res = await fetchWithAuth(`/api/contents/capsule/${id}`);
         const data = await res.json();
         setArchivos(data);
       } catch (err) {

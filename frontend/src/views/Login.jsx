@@ -9,9 +9,11 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [remember, setRemember] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [showVerifyModal, setShowVerifyModal] = useState(location.state?.showVerifyModal || false);
+  const expired = new URLSearchParams(location.search).get('expired');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,8 +35,13 @@ const Login = () => {
         }
         return;
       }
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      if (remember) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      } else {
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+      }
       window.dispatchEvent(new Event('user-updated'));
       navigate('/explorar');
     } catch (err) {
@@ -97,6 +104,16 @@ const Login = () => {
               </div>
             </div>
 
+            <label className="flex items-center mt-2">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={e => setRemember(e.target.checked)}
+                className="mr-2"
+              />
+              Recordar sesión
+            </label>
+
             <div className="flex justify-center">
               <button
                 type="submit"
@@ -120,6 +137,12 @@ const Login = () => {
               Regístrate
             </Link>
           </p>
+
+          {expired && (
+            <div className="text-red-500 mb-4">
+              Tu sesión ha expirado. Por favor, inicia sesión de nuevo.
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -14,6 +14,7 @@ import {
   faTag
 } from '@fortawesome/free-solid-svg-icons';
 import CapsuleCreatedModal from '../components/modals/CapsuleCreatedModal';
+import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const CrearCapsula = () => {
   const user = JSON.parse(localStorage.getItem('user')); // Asegúrate que la clave sea 'user'

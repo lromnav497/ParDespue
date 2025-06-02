@@ -8,6 +8,7 @@ import {
   faInfinity
 } from '@fortawesome/free-solid-svg-icons';
 import PaymentModal from '../components/modals/PaymentModal';
+import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const Suscripciones = () => {
   const [billing, setBilling] = useState('monthly');
@@ -98,7 +99,7 @@ const Suscripciones = () => {
         setMensaje("¡Ya tienes el plan Premium activo!");
       } else {
         // Cambia el plan en el backend
-        const res = await fetch('/api/subscriptions/change-plan', {
+        const res = await fetchWithAuth('/api/subscriptions/change-plan', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
