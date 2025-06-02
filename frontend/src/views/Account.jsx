@@ -346,6 +346,7 @@ const InformacionGeneral = () => {
 const MisSuscripciones = () => {
   const [suscripciones, setSuscripciones] = useState([]);
   const [transacciones, setTransacciones] = useState([]);
+  const [plan, setPlan] = useState(''); // <-- Nuevo estado para el plan
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showRenewModal, setShowRenewModal] = useState(false);
@@ -360,7 +361,16 @@ const MisSuscripciones = () => {
       setError('');
       try {
         const token = localStorage.getItem('token') || (storedUser && storedUser.token);
-        // Cambia la ruta al endpoint correcto de tu backend
+
+        // Obtiene el plan actual
+        const planRes = await fetch(`/api/subscriptions/my-plan`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const planData = await planRes.json();
+        if (!planRes.ok) throw new Error(planData.message || 'Error al obtener el plan');
+        setPlan(planData.plan || '');
+
+        // Obtiene suscripciones y transacciones
         const res = await fetch(`/api/subscriptions/my-data`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -423,6 +433,10 @@ const MisSuscripciones = () => {
   return (
     <div className="text-white">
       <h3 className="text-2xl passero-font text-[#F5E050] mb-6">Mis Suscripciones</h3>
+      <div className="mb-4">
+        <span className="font-semibold">Plan actual:</span>{' '}
+        <span className="bg-[#F5E050] text-[#2E2E7A] px-3 py-1 rounded-full font-bold">{plan}</span>
+      </div>
       <div className="grid gap-4">
         {suscripciones.filter(sub => (sub.status || sub.Status) === 'active').length === 0 ? (
           <div className="bg-[#1a1a4a] p-6 rounded-lg">No tienes suscripciones activas.</div>
