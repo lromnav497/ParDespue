@@ -67,6 +67,20 @@ const SubscriptionModel = {
     );
   },
 
+  getUserPlan: async (userId) => {
+    const [rows] = await db.execute(
+      `SELECT Type FROM Subscriptions WHERE User_ID = ? AND Status = 'active' ORDER BY End_Date DESC LIMIT 1`,
+      [userId]
+    );
+    if (rows.length > 0) {
+      // Devuelve el nombre del plan en formato amigable
+      if (rows[0].Type === 'premium') return 'Premium';
+      if (rows[0].Type === 'basic') return 'Básico';
+      return rows[0].Type.charAt(0).toUpperCase() + rows[0].Type.slice(1);
+    }
+    return 'Sin suscripción';
+  },
+
   db
 };
 
