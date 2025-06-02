@@ -69,16 +69,14 @@ const SubscriptionModel = {
 
   getUserPlan: async (userId) => {
     const [rows] = await db.execute(
-      `SELECT Type FROM Subscriptions WHERE User_ID = ? AND Status = 'active' ORDER BY End_Date DESC LIMIT 1`,
+      `SELECT Subscription_ID as id, Type as nombre, End_Date as fecha_fin, Status as status
+       FROM Subscriptions WHERE User_ID = ? AND Status = 'active' ORDER BY End_Date DESC LIMIT 1`,
       [userId]
     );
     if (rows.length > 0) {
-      // Devuelve el nombre del plan en formato amigable
-      if (rows[0].Type === 'premium') return 'Premium';
-      if (rows[0].Type === 'basic') return 'Básico';
-      return rows[0].Type.charAt(0).toUpperCase() + rows[0].Type.slice(1);
+      return rows[0]; // Devuelve toda la suscripción activa
     }
-    return 'Sin suscripción';
+    return null;
   },
 
   db

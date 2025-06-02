@@ -344,8 +344,8 @@ const InformacionGeneral = () => {
 };
 
 const MisSuscripciones = () => {
+  const [suscripcion, setSuscripcion] = useState(null);
   const [transacciones, setTransacciones] = useState([]);
-  const [plan, setPlan] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const storedUser = getStoredUser();
@@ -357,13 +357,13 @@ const MisSuscripciones = () => {
       try {
         const token = localStorage.getItem('token') || (storedUser && storedUser.token);
 
-        // Plan actual
+        // Plan y suscripción activa
         const planRes = await fetch(`/api/subscriptions/my-plan`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const planData = await planRes.json();
         if (!planRes.ok) throw new Error(planData.message || 'Error al obtener el plan');
-        setPlan(planData.plan || '');
+        setSuscripcion(planData.suscripcion || null);
 
         // Transacciones
         const txRes = await fetch(`/api/transactions/my-transactions`, {
@@ -380,16 +380,51 @@ const MisSuscripciones = () => {
     if (storedUser) fetchData();
   }, [storedUser && storedUser.id]);
 
+  // Handlers para renovar y cancelar
+  const handleRenew = async () => {
+    // Aquí abres tu modal o llamas al endpoint de renovación
+    // Usa suscripcion.id para saber cuál renovar
+  };
+
+  const handleCancel = async () => {
+    // Llama al endpoint de cancelar usando suscripcion.id
+  };
+
   if (loading) return <div className="text-white">Cargando...</div>;
   if (error) return <div className="text-red-400">{error}</div>;
 
   return (
     <div className="text-white">
       <h3 className="text-2xl passero-font text-[#F5E050] mb-6">Mis Suscripciones</h3>
-      <div className="mb-4">
-        <span className="font-semibold">Plan actual:</span>{' '}
-        <span className="bg-[#F5E050] text-[#2E2E7A] px-3 py-1 rounded-full font-bold">{plan}</span>
-      </div>
+      {suscripcion ? (
+        <div className="mb-4 flex flex-col md:flex-row md:items-center md:gap-4">
+          <div>
+            <span className="font-semibold">Plan actual:</span>{' '}
+            <span className="bg-[#F5E050] text-[#2E2E7A] px-3 py-1 rounded-full font-bold">
+              {suscripcion.nombre.charAt(0).toUpperCase() + suscripcion.nombre.slice(1)}
+            </span>
+            <span className="ml-4 text-gray-400">
+              Activo hasta: {new Date(suscripcion.fecha_fin).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="mt-2 md:mt-0 flex gap-2">
+            <button
+              className="px-4 py-2 rounded bg-gray-500 text-white"
+              onClick={handleCancel}
+            >
+              Cancelar
+            </button>
+            <button
+              className="px-4 py-2 rounded bg-[#F5E050] text-[#2E2E7A] font-bold"
+              onClick={handleRenew}
+            >
+              Renovar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mb-4">No tienes suscripción activa.</div>
+      )}
       <h4 className="text-xl mt-8 mb-4">Transacciones</h4>
       <div className="bg-[#1a1a4a] p-6 rounded-lg">
         {transacciones.length === 0 ? (
