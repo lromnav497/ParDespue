@@ -344,15 +344,10 @@ const InformacionGeneral = () => {
 };
 
 const MisSuscripciones = () => {
-  const [suscripciones, setSuscripciones] = useState([]);
   const [transacciones, setTransacciones] = useState([]);
   const [plan, setPlan] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showRenewModal, setShowRenewModal] = useState(false);
-  const [renewMonths, setRenewMonths] = useState(1);
-  const [renewLoading, setRenewLoading] = useState(false);
-  const [renewSubId, setRenewSubId] = useState(null);
   const storedUser = getStoredUser();
 
   useEffect(() => {
@@ -385,47 +380,6 @@ const MisSuscripciones = () => {
     if (storedUser) fetchData();
   }, [storedUser && storedUser.id]);
 
-  const handleRenew = async (subId) => {
-    setRenewLoading(true);
-    try {
-      const token = localStorage.getItem('token') || (storedUser && storedUser.token);
-      const res = await fetch(`/api/subscriptions/renew/${subId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ months: renewMonths })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al renovar');
-      setShowRenewModal(false);
-      setRenewLoading(false);
-      // Opcional: recarga las suscripciones
-      window.location.reload();
-    } catch (err) {
-      setRenewLoading(false);
-      alert(err.message || 'Error de conexión');
-    }
-  };
-
-  const handleCancel = async (subId) => {
-    if (!window.confirm('¿Seguro que quieres cancelar esta suscripción?')) return;
-    try {
-      const token = localStorage.getItem('token') || (storedUser && storedUser.token);
-      const res = await fetch(`/api/subscriptions/cancel/${subId}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al cancelar');
-      setSuscripciones(prev => prev.filter(s => s.id !== subId));
-      alert('Suscripción cancelada');
-    } catch (err) {
-      alert(err.message || 'Error de conexión');
-    }
-  };
-
   if (loading) return <div className="text-white">Cargando...</div>;
   if (error) return <div className="text-red-400">{error}</div>;
 
@@ -435,39 +389,6 @@ const MisSuscripciones = () => {
       <div className="mb-4">
         <span className="font-semibold">Plan actual:</span>{' '}
         <span className="bg-[#F5E050] text-[#2E2E7A] px-3 py-1 rounded-full font-bold">{plan}</span>
-      </div>
-      <div className="grid gap-4">
-        {suscripciones.filter(sub => (sub.status || sub.Status) === 'active').length === 0 ? (
-          <div className="bg-[#1a1a4a] p-6 rounded-lg">No tienes suscripciones activas.</div>
-        ) : suscripciones.filter(sub => (sub.status || sub.Status) === 'active').map(sub => (
-          <div key={sub.id || sub.Subscription_ID} className="bg-[#1a1a4a] p-6 rounded-lg">
-            <div className="flex justify-between items-center">
-              <div>
-                <h4 className="text-xl font-semibold">{sub.nombre || sub.Name}</h4>
-                <p className="text-gray-400">Activo hasta: {sub.fecha_fin || sub.End_Date}</p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  className="px-4 py-2 rounded bg-gray-500 text-white"
-                  onClick={() => handleCancel(sub.id)}
-                >
-                  Cancelar
-                </button>
-                <button
-                  className="px-4 py-2 rounded bg-[#F5E050] text-[#2E2E7A] font-bold"
-                  onClick={() => {
-                    setShowRenewModal(true);
-                    setRenewMonths(1);
-                    setRenewLoading(false);
-                    setRenewSubId(sub.id);
-                  }}
-                >
-                  Renovar
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
       <h4 className="text-xl mt-8 mb-4">Transacciones</h4>
       <div className="bg-[#1a1a4a] p-6 rounded-lg">
@@ -496,18 +417,6 @@ const MisSuscripciones = () => {
           </table>
         )}
       </div>
-
-      {/* Modal para renovar suscripción */}
-      {showRenewModal && (
-        <RenewSubscriptionModal
-          isOpen={showRenewModal}
-          onClose={() => setShowRenewModal(false)}
-          onConfirm={() => handleRenew(renewSubId)}
-          renewMonths={renewMonths}
-          setRenewMonths={setRenewMonths}
-          loading={renewLoading}
-        />
-      )}
     </div>
   );
 };
