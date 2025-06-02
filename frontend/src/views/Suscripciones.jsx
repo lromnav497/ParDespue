@@ -109,6 +109,7 @@ const Suscripciones = () => {
         if (res.ok) {
           setMensaje(`¡Has adquirido el plan ${plan.name} (${billing === 'monthly' ? 'Mensual' : 'Anual'}) correctamente!`);
           setCurrentPlan(plan.name); // Actualiza el plan actual
+          window.dispatchEvent(new Event('user-updated')); // <-- Notifica al Header
         } else {
           setMensaje('Error al cambiar de plan');
         }
