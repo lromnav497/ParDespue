@@ -424,14 +424,14 @@ const MisSuscripciones = () => {
     <div className="text-white">
       <h3 className="text-2xl passero-font text-[#F5E050] mb-6">Mis Suscripciones</h3>
       <div className="grid gap-4">
-        {suscripciones.filter(sub => sub.status === 'active').length === 0 ? (
+        {suscripciones.filter(sub => (sub.status || sub.Status) === 'active').length === 0 ? (
           <div className="bg-[#1a1a4a] p-6 rounded-lg">No tienes suscripciones activas.</div>
-        ) : suscripciones.filter(sub => sub.status === 'active').map(sub => (
-          <div key={sub.id} className="bg-[#1a1a4a] p-6 rounded-lg">
+        ) : suscripciones.filter(sub => (sub.status || sub.Status) === 'active').map(sub => (
+          <div key={sub.id || sub.Subscription_ID} className="bg-[#1a1a4a] p-6 rounded-lg">
             <div className="flex justify-between items-center">
               <div>
-                <h4 className="text-xl font-semibold">{sub.nombre}</h4>
-                <p className="text-gray-400">Activo hasta: {sub.fecha_fin}</p>
+                <h4 className="text-xl font-semibold">{sub.nombre || sub.Name}</h4>
+                <p className="text-gray-400">Activo hasta: {sub.fecha_fin || sub.End_Date}</p>
               </div>
               <div className="flex gap-2">
                 <button
