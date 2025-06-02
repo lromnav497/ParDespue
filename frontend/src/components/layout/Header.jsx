@@ -46,7 +46,15 @@ const Header = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        setPlan(data.plan); // "Premium", "Básico", etc.
+        // Si tu backend devuelve { suscripcion: { nombre: 'premium', ... } }
+        if (data.suscripcion && data.suscripcion.nombre) {
+          setPlan(
+            data.suscripcion.nombre.charAt(0).toUpperCase() +
+            data.suscripcion.nombre.slice(1)
+          );
+        } else {
+          setPlan(null);
+        }
       } catch {
         setPlan(null);
       }
