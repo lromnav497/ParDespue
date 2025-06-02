@@ -9,6 +9,7 @@ import {
   faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
 import RenewSubscriptionModal from '../components/modals/RenewSubscriptionModal';
+import ConfirmCancelSubscriptionModal from '../components/modals/ConfirmCancelSubscriptionModal';
 import MisCapsulas from './MisCapsulas'; // Asegúrate de que la ruta es correcta
 
 const Account = () => {
@@ -351,6 +352,8 @@ const MisSuscripciones = () => {
   const [showRenewModal, setShowRenewModal] = useState(false);
   const [renewMonths, setRenewMonths] = useState(1);
   const [renewLoading, setRenewLoading] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const storedUser = getStoredUser();
 
   useEffect(() => {
@@ -415,8 +418,15 @@ const MisSuscripciones = () => {
     }
   };
 
-  const handleCancel = async () => {
+  // Cambiar el botón Cancelar para abrir el modal
+  const handleCancel = () => {
+    setShowCancelModal(true);
+  };
+
+  // Nueva función para confirmar cancelación
+  const handleCancelConfirm = async () => {
     if (!suscripcion?.id) return;
+    setCancelLoading(true);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`/api/subscriptions/cancel/${suscripcion.id}`, {
@@ -425,9 +435,13 @@ const MisSuscripciones = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al cancelar');
-      setSuscripcion(null); // Quita la suscripción activa
+      setSuscripcion(null);
+      setShowCancelModal(false);
+      setCancelLoading(false);
+      window.dispatchEvent(new Event('user-updated')); // Recarga el Header
     } catch (err) {
       setError(err.message || 'Error al cancelar');
+      setCancelLoading(false);
     }
   };
 
@@ -451,7 +465,7 @@ const MisSuscripciones = () => {
           <div className="mt-2 md:mt-0 flex gap-2">
             <button
               className="px-4 py-2 rounded bg-gray-500 text-white"
-              onClick={handleCancel}
+              onClick={() => setShowCancelModal(true)}
             >
               Cancelar
             </button>
@@ -475,6 +489,14 @@ const MisSuscripciones = () => {
         renewMonths={renewMonths}
         setRenewMonths={setRenewMonths}
         loading={renewLoading}
+      />
+
+      {/* Modal de confirmación de cancelación */}
+      <ConfirmCancelSubscriptionModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancelConfirm}
+        loading={cancelLoading}
       />
 
       <h4 className="text-xl mt-8 mb-4">Transacciones</h4>
