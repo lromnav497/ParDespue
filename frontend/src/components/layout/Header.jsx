@@ -81,6 +81,14 @@ const Header = () => {
     fetchNotifications();
   }, [user]);
 
+  // Marcar notificaciones como leídas al abrir el dropdown
+  const handleBellClick = () => {
+    setNotifOpen(v => !v);
+    if (!notifOpen) {
+      setNotifications([]); // Oculta el número al abrir
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
@@ -130,7 +138,7 @@ const Header = () => {
             <div className="relative">
               <button
                 className="text-white hover:text-[#F5E050] relative"
-                onClick={() => setNotifOpen(v => !v)}
+                onClick={handleBellClick}
                 aria-label="Notificaciones"
               >
                 <FontAwesomeIcon icon={faBell} />
