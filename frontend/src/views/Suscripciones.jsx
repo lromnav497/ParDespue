@@ -33,7 +33,12 @@ const Suscripciones = () => {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.plan) setCurrentPlan(data.plan);
+        // Cambia esto:
+        // if (data.plan) setCurrentPlan(data.plan);
+        // Por esto:
+        if (data.suscripcion && data.suscripcion.nombre) {
+          setCurrentPlan(data.suscripcion.nombre); // nombre debe ser "Premium" o "Básico"
+        }
       });
   }, []);
 
