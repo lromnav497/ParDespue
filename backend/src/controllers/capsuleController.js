@@ -154,6 +154,7 @@ class CapsuleController extends GeneralController {
             }
             res.json(updated);
         } catch (error) {
+            console.error('[CapsuleController][update] Error:', error); // <--- Añade esto
             res.status(500).json({ error: error.message });
         }
     }
