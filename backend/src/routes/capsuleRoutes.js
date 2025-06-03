@@ -5,6 +5,19 @@ const capsuleModel = require('../models/capsuleModel');
 const db = require('../config/db');
 const requirePremium = require('../middleware/premiumMiddleware');
 const { authMiddleware } = require('../middleware/authMiddleware');
+const multer = require('multer');
+const path = require('path');
+
+const coverStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/capsule_covers/');
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, Date.now() + ext);
+  }
+});
+const uploadCover = multer({ storage: coverStorage });
 
 router.post('/', (req, res) => CapsuleController.create(req, res));
 router.get('/privacy/:privacy', async (req, res) => {
@@ -85,6 +98,18 @@ router.post('/:id/check-password', async (req, res) => {
   if (!rows.length) return res.status(404).json({ valid: false });
   const valid = rows[0].Password === password;
   res.json({ valid });
+});
+
+// Subir/actualizar portada
+router.put('/:id/cover', authMiddleware, uploadCover.single('cover_image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No se subió ninguna imagen' });
+    const coverUrl = `/uploads/capsule_covers/${req.file.filename}`;
+    await capsuleModel.update(req.params.id, { Cover_Image: coverUrl });
+    res.json({ message: 'Portada actualizada', coverImage: coverUrl });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;

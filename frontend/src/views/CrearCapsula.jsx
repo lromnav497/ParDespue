@@ -43,6 +43,7 @@ const CrearCapsula = () => {
   const [puedeCrear, setPuedeCrear] = useState(true);
   const [plan, setPlan] = useState('Básico');
   const [planMsg, setPlanMsg] = useState('');
+  const [coverImage, setCoverImage] = useState(null);
 
   useEffect(() => {
     fetch('/api/categories')
@@ -265,6 +266,22 @@ const CrearCapsula = () => {
                   </span>
                 ))}
               </div>
+            </div>
+            <div>
+              <label className="block text-white mb-2">Imagen de portada</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={e => setCoverImage(e.target.files[0])}
+                className="w-full"
+              />
+              {coverImage && (
+                <img
+                  src={URL.createObjectURL(coverImage)}
+                  alt="Portada"
+                  className="mt-2 w-40 h-28 object-cover rounded"
+                />
+              )}
             </div>
           </div>
         );
@@ -570,7 +587,7 @@ const CrearCapsula = () => {
       return;
     }
 
-    // 1. Crear la cápsula
+    // 1. Crear la cápsula (sin portada)
     const resCapsule = await fetch('/api/capsules', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -590,6 +607,18 @@ const CrearCapsula = () => {
     const capsuleData = await resCapsule.json();
     if (!resCapsule.ok) throw new Error(capsuleData.message || 'Error al crear cápsula');
     const capsuleId = capsuleData.Capsule_ID || capsuleData.id;
+
+    // 2. Si hay portada, súbela
+    if (coverImage) {
+      const formData = new FormData();
+      formData.append('cover_image', coverImage);
+      const token = localStorage.getItem('token');
+      await fetch(`/api/capsules/${capsuleId}/cover`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+    }
 
     // 2. Sube los archivos con userId y capsuleId
     for (const archivo of formData.archivos) {

@@ -6,11 +6,11 @@ const path = require('path');
 
 const CapsuleModel = {
   create: async (capsule) => {
-    const { Title, Description, Creation_Date, Opening_Date, Privacy, Password = null, Creator_User_ID, Tags, Category_ID } = capsule;
+    const { Title, Description, Creation_Date, Opening_Date, Privacy, Password = null, Creator_User_ID, Tags, Category_ID, Cover_Image = null } = capsule;
     const [result] = await db.execute(
-      `INSERT INTO Capsules (Title, Description, Creation_Date, Opening_Date, Privacy, Password, Creator_User_ID, Tags, Category_ID)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [Title, Description, Creation_Date, Opening_Date, Privacy, Password, Creator_User_ID, Tags, Category_ID]
+      `INSERT INTO Capsules (Title, Description, Creation_Date, Opening_Date, Privacy, Password, Creator_User_ID, Tags, Category_ID, Cover_Image)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [Title, Description, Creation_Date, Opening_Date, Privacy, Password, Creator_User_ID, Tags, Category_ID, Cover_Image]
     );
     return { Capsule_ID: result.insertId, ...capsule };
   },

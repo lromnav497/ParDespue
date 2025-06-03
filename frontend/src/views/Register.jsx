@@ -10,6 +10,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [profilePicture, setProfilePicture] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -21,10 +22,15 @@ const Register = () => {
       return;
     }
     try {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('password', password);
+      if (profilePicture) formData.append('profile_picture', profilePicture);
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: formData
       });
       const data = await response.json();
       if (!response.ok) {
@@ -35,6 +41,7 @@ const Register = () => {
         setEmail('');
         setPassword('');
         setConfirmPassword('');
+        setProfilePicture(null);
         // Redirige después de 2 segundos a login y pasa un estado
         setTimeout(() => {
           navigate('/login', { state: { showVerifyModal: true } });
@@ -60,7 +67,7 @@ const Register = () => {
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="mb-4">
             <label className="block text-gray-300 mb-2 flex items-center">
               <FontAwesomeIcon icon={faUser} className="mr-2" />
@@ -131,6 +138,16 @@ const Register = () => {
                 required
               />
             </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-300 mb-2">Foto de perfil</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={e => setProfilePicture(e.target.files[0])}
+              className="w-full"
+            />
           </div>
 
           {error && <div className="text-red-400 text-center mb-4">{error}</div>}

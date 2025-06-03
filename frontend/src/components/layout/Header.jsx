@@ -219,7 +219,13 @@ const Header = () => {
                 <FontAwesomeIcon icon={faUser} className="mr-2" />
                 <span className="mr-2 flex items-center">
                   {user.name}
-                  {/* Mostrar corona si es premium */}
+                  {user.profilePicture && (
+                    <img
+                      src={user.profilePicture.startsWith('http') ? user.profilePicture : `${user.profilePicture}`}
+                      alt="Foto de perfil"
+                      className="ml-2 w-8 h-8 rounded-full object-cover border-2 border-[#F5E050]"
+                    />
+                  )}
                   {plan === 'Premium' && (
                     <FontAwesomeIcon icon={faCrown} className="ml-2 text-yellow-400" title="Usuario Premium" />
                   )}

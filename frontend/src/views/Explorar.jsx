@@ -119,7 +119,7 @@ const Explorar = () => {
                 style={{ textDecoration: 'none' }}
               >
                 <img 
-                  src={capsula.imagen} 
+                  src={capsula.Cover_Image || "https://picsum.photos/400/300"} 
                   alt={capsula.titulo}
                   className="w-full h-48 object-cover"
                 />

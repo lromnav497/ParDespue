@@ -246,7 +246,7 @@ const MisCapsulas = () => {
               >
                 <div className="relative">
                   <img 
-                    src={capsula.imagen || "https://picsum.photos/400/300"} 
+                    src={capsula.Cover_Image || "https://picsum.photos/400/300"} 
                     alt={capsula.Title}
                     className="w-full h-48 object-cover"
                   />

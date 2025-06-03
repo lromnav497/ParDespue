@@ -45,6 +45,8 @@ const EditarCapsula = () => {
   const [pendingAction, setPendingAction] = useState(null); // 'changePrivacy' o 'changePassword'
   const [error, setError] = useState(null);
   const [plan, setPlan] = useState(null);
+  const [coverImage, setCoverImage] = useState(null);
+  const [coverPreview, setCoverPreview] = useState('');
 
   // Cargar categorías
   useEffect(() => {
@@ -136,6 +138,7 @@ const EditarCapsula = () => {
           Privacy: data.Privacy || 'private',
           Tags: Array.isArray(data.Tags) ? data.Tags.join(', ') : (data.Tags || ''),
         });
+        setCoverPreview(data.Cover_Image || '');
         // Obtén los archivos igual que en VerCapsula
         const resArchivos = await fetch(`/api/contents/capsule/${id}`);
         const archivosData = await resArchivos.json();
@@ -300,6 +303,18 @@ const EditarCapsula = () => {
         });
       }
 
+      // Actualizar imagen de portada si se subió una nueva
+      if (coverImage) {
+        const formData = new FormData();
+        formData.append('cover_image', coverImage);
+        const token = localStorage.getItem('token');
+        await fetch(`/api/capsules/${id}/cover`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+      }
+
       alert('Cápsula actualizada correctamente');
       navigate(`/capsulas`);
     } catch (err) {
@@ -447,6 +462,26 @@ const EditarCapsula = () => {
                 />
               </div>
             )}
+            {/* Imagen de portada */}
+            <div>
+              <label className="block text-white mb-2">Imagen de portada</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={e => {
+                  setCoverImage(e.target.files[0]);
+                  setCoverPreview(URL.createObjectURL(e.target.files[0]));
+                }}
+                className="w-full"
+              />
+              {coverPreview && (
+                <img
+                  src={coverPreview}
+                  alt="Portada"
+                  className="mt-2 w-40 h-28 object-cover rounded"
+                />
+              )}
+            </div>
             {/* Archivos actuales */}
             <div>
               <h3 className="text-xl text-[#F5E050] mb-4">Archivos actuales</h3>

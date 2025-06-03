@@ -5,8 +5,23 @@ const userModel = require('../models/userModel');
 const { authMiddleware } = require('../middleware/authMiddleware');
 const bcrypt = require('bcryptjs');
 const db = require('../config/db'); // Asegúrate de tener la configuración de la base de datos
+const multer = require('multer');
+const path = require('path');
 
 const router = express.Router(); // Usa un router limpio
+
+// Configuración de Multer para la carga de imágenes
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/profile_pics');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage });
 
 // RUTAS PERSONALIZADAS PRIMERO
 
@@ -83,6 +98,19 @@ router.put('/:id/password', authMiddleware, async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+});
+
+// Actualizar foto de perfil
+router.put('/:id/profile-picture', authMiddleware, upload.single('profile_picture'), async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id, 10);
+    if (!req.file) return res.status(400).json({ message: 'No se subió ninguna imagen' });
+    const profilePictureUrl = `/uploads/profile_pics/${req.file.filename}`;
+    await userModel.update(userId, { Profile_Picture: profilePictureUrl });
+    res.json({ message: 'Foto de perfil actualizada', profilePicture: profilePictureUrl });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // LUEGO agrega las rutas generales

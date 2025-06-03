@@ -5,6 +5,8 @@ const userModel = require('../models/userModel');
 const pool = require('../config/db');
 const crypto = require('crypto');
 const Mailjet = require('node-mailjet');
+const multer = require('multer');
+const path = require('path');
 
 // Aquí importa y configura Mailjet usando variables de entorno
 const mailjet = Mailjet.apiConnect(
@@ -14,8 +16,24 @@ const mailjet = Mailjet.apiConnect(
 
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
+// Configuración de multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/profile_pics/');
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, Date.now() + ext);
+  }
+});
+const upload = multer({ storage });
+
+router.post('/register', upload.single('profile_picture'), async (req, res) => {
     const { name, email, password } = req.body;
+    let profilePictureUrl = null;
+    if (req.file) {
+      profilePictureUrl = `/uploads/profile_pics/${req.file.filename}`;
+    }
     try {
         console.log('Intentando registrar usuario:', email);
 
@@ -39,7 +57,8 @@ router.post('/register', async (req, res) => {
             Password: hashedPassword,
             Role: 'standard',
             Verified: false,
-            VerificationToken: verificationToken
+            VerificationToken: verificationToken,
+            Profile_Picture: profilePictureUrl
         });
 
         // Genera el enlace de verificación
