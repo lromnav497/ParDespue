@@ -7,13 +7,13 @@ class NotificationController extends GeneralController {
     }
 }
 
-exports.getRecent = async (req, res) => {
+const getRecent = async (req, res) => {
   const userId = req.user.id;
   const notifications = await NotificationModel.getRecent(userId);
   res.json(notifications);
 };
 
-exports.getAll = async (req, res) => {
+const getAll = async (req, res) => {
   const userId = req.user.id;
   const notifications = await NotificationModel.getAll(userId);
   res.json(notifications);
