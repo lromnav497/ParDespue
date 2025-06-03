@@ -22,7 +22,7 @@ const Terms = () => {
             <h2 className="text-2xl text-[#F5E050] mb-4">1. Aceptación de los Términos</h2>
             <div className="text-gray-300 space-y-4">
               <p>
-                Al acceder y utilizar TimeCapsule, usted acepta estar sujeto a estos
+                Al acceder y utilizar ParDespue, usted acepta estar sujeto a estos
                 términos y condiciones. Si no está de acuerdo con alguna parte de estos
                 términos, no podrá acceder al servicio.
               </p>
@@ -60,7 +60,7 @@ const Terms = () => {
             <h2 className="text-2xl text-[#F5E050] mb-4">4. Limitación de Responsabilidad</h2>
             <div className="text-gray-300 space-y-4">
               <p>
-                TimeCapsule se proporciona "tal cual" y no ofrecemos garantías sobre
+                ParDespue se proporciona "tal cual" y no ofrecemos garantías sobre
                 su disponibilidad o funcionamiento. No nos hacemos responsables de
                 pérdidas o daños derivados del uso del servicio.
               </p>

@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faCheck, 
-  faCrown, 
-  faRocket, 
-  faUser,
-  faInfinity
-} from '@fortawesome/free-solid-svg-icons';
-import PaymentModal from '../components/modals/PaymentModal';
+import { faCheck, faCrown, faUser } from '@fortawesome/free-solid-svg-icons';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
+import { useLocation } from 'react-router-dom';
 
 const Suscripciones = () => {
   const [billing, setBilling] = useState('monthly');
@@ -16,15 +10,15 @@ const Suscripciones = () => {
   const [mensaje, setMensaje] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentPlan, setCurrentPlan] = useState('Básico');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentData, setPaymentData] = useState({
-    name: '',
-    card: '',
-    expiry: '',
-    cvv: ''
-  });
-  const [paymentError, setPaymentError] = useState('');
-  const [pendingPlan, setPendingPlan] = useState(null);
+  const [stripePrices, setStripePrices] = useState([]);
+  const location = useLocation();
+
+  // Obtiene los precios de Stripe al montar
+  useEffect(() => {
+    fetch('/api/subscriptions/stripe-prices')
+      .then(res => res.json())
+      .then(data => setStripePrices(data));
+  }, []);
 
   // Consulta el plan actual del usuario al montar
   useEffect(() => {
@@ -40,11 +34,35 @@ const Suscripciones = () => {
       });
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('success')) {
+      setMensaje('¡Pago realizado correctamente! Tu suscripción Premium está activa.');
+      window.dispatchEvent(new Event('user-updated'));
+    }
+    if (params.get('canceled')) {
+      setMensaje('El pago fue cancelado.');
+    }
+  }, [location.search]);
+
+  // Mapea los precios de Stripe a tus planes
+  const getStripePrice = (nickname) => {
+    const price = stripePrices.find(
+      p => p.nickname && p.nickname.toLowerCase().includes(nickname.toLowerCase())
+    );
+    if (!price) return null;
+    return {
+      id: price.id,
+      amount: (price.unit_amount / 100).toFixed(2),
+      interval: price.recurring?.interval
+    };
+  };
+
   const plans = [
     {
       name: "Básico",
       icon: faUser,
-      price: billing === 'monthly' ? 0 : 0,
+      price: 0,
       features: [
         "15 cápsulas del tiempo",
         "500 MB de almacenamiento",
@@ -56,7 +74,7 @@ const Suscripciones = () => {
     {
       name: "Premium",
       icon: faCrown,
-      price: billing === 'monthly' ? 9.99 : 99.99,
+      price: getStripePrice(billing === 'monthly' ? 'mensual' : 'anual')?.amount,
       features: [
         "Cápsulas ilimitadas",
         "50 GB de almacenamiento",
@@ -64,12 +82,12 @@ const Suscripciones = () => {
         "Editar cápsulas antes de su apertura"
       ],
       cta: "Obtener Premium",
-      popular: true
+      popular: true,
+      stripePriceId: getStripePrice(billing === 'monthly' ? 'mensual' : 'anual')?.id
     }
   ];
 
-  // Simula la compra o cambio de plan
-  const handleSubscribe = async (plan, yaPago = false) => {
+  const handleSubscribe = async (plan) => {
     setLoading(true);
     setMensaje('');
     setSelectedPlan(plan.name);
@@ -83,40 +101,38 @@ const Suscripciones = () => {
       return;
     }
 
-    // Si es premium y no ha pagado, muestra el modal
-    if (plan.name === "Premium" && !yaPago) {
-      setPendingPlan(plan);
-      setShowPaymentModal(true);
-      setLoading(false);
-      return;
-    }
-
-    // Simulación de espera de compra
-    setTimeout(async () => {
-      if (plan.price === 0) {
-        setMensaje("¡Ya tienes el plan Básico activado!");
-      } else if (currentPlan === "Premium" && plan.name === "Premium") {
-        setMensaje("¡Ya tienes el plan Premium activo!");
-      } else {
-        // Cambia el plan en el backend
-        const res = await fetchWithAuth('/api/subscriptions/change-plan', {
+    if (plan.name === "Premium") {
+      try {
+        const res = await fetchWithAuth('/api/subscriptions/create-checkout-session', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify({ plan: plan.name.toLowerCase() })
+          body: JSON.stringify({
+            plan: plan.name,
+            billing,
+            priceId: plan.stripePriceId // Envía el priceId de Stripe
+          })
         });
-        if (res.ok) {
-          setMensaje(`¡Has adquirido el plan ${plan.name} (${billing === 'monthly' ? 'Mensual' : 'Anual'}) correctamente!`);
-          setCurrentPlan(plan.name); // Actualiza el plan actual
-          window.dispatchEvent(new Event('user-updated')); // <-- Notifica al Header
+        const data = await res.json();
+        if (res.ok && data.url) {
+          window.location.href = data.url;
         } else {
-          setMensaje('Error al cambiar de plan');
+          setMensaje('Error al iniciar el pago con Stripe');
+          setLoading(false);
         }
+      } catch (err) {
+        setMensaje('Error de conexión con Stripe');
+        setLoading(false);
       }
+      return;
+    }
+
+    setTimeout(() => {
+      setMensaje("¡Ya tienes el plan Básico activado!");
       setLoading(false);
-    }, 1500);
+    }, 1000);
   };
 
   return (
@@ -268,19 +284,6 @@ const Suscripciones = () => {
             </div>
           </div>
         </div>
-
-        {/* Payment Modal */}
-        {showPaymentModal && pendingPlan && (
-          <PaymentModal
-            isOpen={showPaymentModal}
-            onClose={() => setShowPaymentModal(false)}
-            onPay={() => {
-              setShowPaymentModal(false);
-              handleSubscribe(pendingPlan, true); // true = ya pagó
-            }}
-            loading={loading}
-          />
-        )}
       </div>
     </div>
   );

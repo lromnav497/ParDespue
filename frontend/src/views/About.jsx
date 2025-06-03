@@ -11,23 +11,11 @@ import {
 const About = () => {
   const teamMembers = [
     {
-      name: "María González",
-      role: "Fundadora & CEO",
+      name: "Luis Carlos Romero Navarro",
+      role: "Fundador & CEO",
       image: "https://picsum.photos/200",
-      description: "Apasionada por preservar momentos especiales y conectar personas."
+      description: "Apasionado por preservar momentos especiales y conectar personas."
     },
-    {
-      name: "Carlos Rodríguez",
-      role: "Director Técnico",
-      image: "https://picsum.photos/201",
-      description: "Experto en desarrollo de software y seguridad digital."
-    },
-    {
-      name: "Ana Martínez",
-      role: "Diseñadora UX",
-      image: "https://picsum.photos/202",
-      description: "Creando experiencias memorables para nuestros usuarios."
-    }
   ];
 
   const values = [
@@ -57,7 +45,7 @@ const About = () => {
             Preservando Momentos, Conectando Vidas
           </h1>
           <p className="text-gray-300 text-xl max-w-3xl mx-auto">
-            En TimeCapsule, creemos que cada momento merece ser recordado y 
+            En ParDespue, creemos que cada momento merece ser recordado y 
             cada historia merece ser contada. Nuestra misión es ayudarte a 
             preservar tus recuerdos más preciados para el futuro.
           </p>

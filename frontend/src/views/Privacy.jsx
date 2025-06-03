@@ -41,7 +41,7 @@ export const TermsModal = ({ isOpen, onClose }) => (
       <section>
         <h3 className="text-[#F5E050] text-xl mb-2">1. Aceptación de los Términos</h3>
         <p className="text-gray-300">
-          Al acceder y utilizar TimeCapsule, usted acepta estar sujeto a estos términos y condiciones.
+          Al acceder y utilizar ParDespue, usted acepta estar sujeto a estos términos y condiciones.
         </p>
       </section>
 
@@ -115,7 +115,7 @@ const Privacy = () => {
             <h2 className="text-2xl text-[#F5E050] mb-4">1. Información que Recopilamos</h2>
             <div className="text-gray-300 space-y-4">
               <p>
-                En TimeCapsule, recopilamos diferentes tipos de información para proporcionar
+                En ParDespue, recopilamos diferentes tipos de información para proporcionar
                 y mejorar nuestro servicio:
               </p>
               <ul className="list-disc pl-6 space-y-2">

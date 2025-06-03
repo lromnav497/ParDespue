@@ -33,16 +33,6 @@ const Features = () => {
       description: "Crea cápsulas en grupo para eventos especiales. Permite que familia y amigos añadan sus propios recuerdos."
     },
     {
-      icon: faCloud,
-      title: "Almacenamiento Seguro",
-      description: "Tus recuerdos se guardan en la nube con copias de seguridad automáticas. Accede a ellos desde cualquier dispositivo."
-    },
-    {
-      icon: faMobileAlt,
-      title: "Acceso Móvil",
-      description: "Aplicación móvil intuitiva para crear y gestionar tus cápsulas desde cualquier lugar. Disponible para iOS y Android."
-    },
-    {
       icon: faEnvelope,
       title: "Notificaciones",
       description: "Recibe alertas personalizadas cuando se acerque la fecha de apertura de tus cápsulas. Nunca te perderás un momento especial."

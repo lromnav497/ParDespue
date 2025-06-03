@@ -20,6 +20,7 @@
     "multer": "^2.0.0",
     "mysql2": "^3.14.1",
     "node-mailjet": "^6.0.8",
+    "stripe": "^18.2.1",
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"
   }
