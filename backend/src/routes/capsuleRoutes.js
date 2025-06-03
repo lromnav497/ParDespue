@@ -38,7 +38,7 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// Para editar la cápsula (solo el dueño, siempre)
+// Para editar la cápsula (permite premium o dueño)
 router.get('/:id/edit', authMiddleware, requirePremium, async (req, res) => {
   const capsuleId = req.params.id;
   const userId = req.user.id;
@@ -46,8 +46,10 @@ router.get('/:id/edit', authMiddleware, requirePremium, async (req, res) => {
     const capsule = await capsuleModel.findById(capsuleId);
     if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
 
-    // Solo el dueño puede editar
-    if (Number(userId) !== capsule.Creator_User_ID) {
+    // Permitir si es el dueño o si es premium
+    const plan = req.user.plan || req.user.Plan || req.user.tipoPlan;
+    const isPremium = plan && plan.toLowerCase() === 'premium';
+    if (Number(userId) !== capsule.Creator_User_ID && !isPremium) {
       return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
     }
 
