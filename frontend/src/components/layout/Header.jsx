@@ -163,7 +163,17 @@ const Header = () => {
                   ) : (
                     <ul>
                       {notifications.map(n => (
-                        <li key={n.Notification_ID} className="text-white border-b border-[#3d3d9e] py-2">
+                        <li
+                          key={n.Notification_ID}
+                          className="text-white border-b border-[#3d3d9e] py-2 cursor-pointer hover:bg-[#1a1a4a]"
+                          onClick={() => {
+                            if (n.Capsule_ID) {
+                              localStorage.setItem('highlight_capsule', n.Capsule_ID);
+                              setNotifOpen(false);
+                              navigate('/capsulas');
+                            }
+                          }}
+                        >
                           {n.Message}
                           <span className="text-xs text-gray-400 block">{new Date(n.Sent_Date).toLocaleString()}</span>
                         </li>
