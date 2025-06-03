@@ -355,8 +355,6 @@ const MisSuscripciones = () => {
   const [renewLoading, setRenewLoading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
-  const [suscripcionSeleccionada, setSuscripcionSeleccionada] = useState(null);
-  const [planSeleccionado, setPlanSeleccionado] = useState(null);
   const storedUser = getStoredUser();
 
   useEffect(() => {
@@ -492,9 +490,6 @@ const MisSuscripciones = () => {
         renewMonths={renewMonths}
         setRenewMonths={setRenewMonths}
         loading={renewLoading}
-        suscripcion={suscripcion} // <-- Debe ser un objeto con .id
-        token={localStorage.getItem('token')}
-        plan={planSeleccionado} // <-- Debe ser un objeto con .stripePriceId
       />
 
       {/* Modal de confirmación de cancelación */}
