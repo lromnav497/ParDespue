@@ -101,24 +101,37 @@ const EditarCapsula = () => {
       .catch(() => setCategorias([]));
   }, []);
 
-  // Verificar plan del usuario
+  // Verificar plan del usuario (igual que en Header)
   useEffect(() => {
     const fetchPlan = async () => {
       const user = JSON.parse(localStorage.getItem('user'));
       const token = localStorage.getItem('token') || user?.token;
       if (!token) return;
-      const res = await fetch('/api/subscriptions/my-plan', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setPlan(data.plan);
-      if (data.plan !== 'Premium') {
-        alert('Solo los usuarios Premium pueden editar cápsulas.');
-        navigate('/capsulas');
+      try {
+        const res = await fetch('/api/subscriptions/my-plan', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) return setPlan(null);
+        const data = await res.json();
+        // Si tu backend devuelve { suscripcion: { nombre: 'premium', ... } }
+        if (data.suscripcion && data.suscripcion.nombre) {
+          setPlan(
+            data.suscripcion.nombre.charAt(0).toUpperCase() +
+            data.suscripcion.nombre.slice(1)
+          );
+        } else if (data.plan) {
+          setPlan(
+            data.plan.charAt(0).toUpperCase() + data.plan.slice(1)
+          );
+        } else {
+          setPlan(null);
+        }
+      } catch {
+        setPlan(null);
       }
     };
     fetchPlan();
-  }, [navigate]);
+  }, [id]);
 
   // Eliminar archivo actual (solo del frontend, se elimina en el backend al guardar)
   const handleRemoveArchivo = (contentId) => {
