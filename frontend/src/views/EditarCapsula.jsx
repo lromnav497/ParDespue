@@ -38,7 +38,7 @@ const EditarCapsula = () => {
   const [passwordError, setPasswordError] = useState('');
   const [pendingAction, setPendingAction] = useState(null); // 'changePrivacy' o 'changePassword'
   const [error, setError] = useState(null);
-  const [plan, setPlan] = useState('Básico');
+  const [plan, setPlan] = useState(null);
 
   // Cargar datos de la cápsula y archivos actuales
   useEffect(() => {
@@ -105,14 +105,29 @@ const EditarCapsula = () => {
   useEffect(() => {
     const fetchPlan = async () => {
       const user = JSON.parse(localStorage.getItem('user'));
-      if (!user) return setPlan('Básico');
-      const res = await fetchWithAuth('/api/subscriptions/my-plan');
-      if (!res) return setPlan('Básico');
-      const data = await res.json();
-      if (data.suscripcion && data.suscripcion.nombre && data.suscripcion.nombre.toLowerCase() === 'premium') {
-        setPlan('Premium');
-      } else {
-        setPlan('Básico');
+      const token = localStorage.getItem('token') || user?.token;
+      if (!token) return setPlan(null);
+      try {
+        const res = await fetch('/api/subscriptions/my-plan', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) return setPlan(null);
+        const data = await res.json();
+        // Si tu backend devuelve { suscripcion: { nombre: 'premium', ... } }
+        if (data.suscripcion && data.suscripcion.nombre) {
+          setPlan(
+            data.suscripcion.nombre.charAt(0).toUpperCase() +
+            data.suscripcion.nombre.slice(1)
+          );
+        } else if (data.plan) {
+          setPlan(
+            data.plan.charAt(0).toUpperCase() + data.plan.slice(1)
+          );
+        } else {
+          setPlan(null);
+        }
+      } catch {
+        setPlan(null);
       }
     };
     fetchPlan();
