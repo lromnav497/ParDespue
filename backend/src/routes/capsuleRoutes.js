@@ -66,17 +66,17 @@ router.get('/:id/edit', authMiddleware, requirePremium, async (req, res) => {
   }
 });
 router.put('/:id', authMiddleware, (req, res) => CapsuleController.update(req, res));
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   const capsuleId = req.params.id;
-  const userId = req.body.userId || req.headers['x-user-id'];
-
-  // Verifica que el usuario es el dueño (como ya tienes)
+  const userId = req.user.id;
 
   try {
-    // 1. Elimina los contenidos asociados
-    await db.query('DELETE FROM Contents WHERE Capsule_ID = ?', [capsuleId]);
-    // 2. Ahora elimina la cápsula
-    await db.query('DELETE FROM Capsules WHERE Capsule_ID = ?', [capsuleId]);
+    const capsule = await capsuleModel.findById(capsuleId);
+    if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
+    if (capsule.Creator_User_ID !== userId) {
+      return res.status(403).json({ message: 'No tienes permiso para eliminar esta cápsula.' });
+    }
+    await capsuleModel.delete(capsuleId);
     res.json({ message: 'Cápsula eliminada correctamente.' });
   } catch (err) {
     res.status(500).json({ message: 'Error al eliminar la cápsula', error: err.message });
