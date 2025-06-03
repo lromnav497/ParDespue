@@ -71,7 +71,7 @@ const SubscriptionController = {
         return res.status(400).json({ message: 'Faltan los meses de renovación.' });
       }
 
-      // Lógica para renovar: sumar meses a End_Date
+      // Solo renueva en la BD, sin Stripe
       await SubscriptionModel.renew(subId, userId, months);
 
       res.json({ success: true });
