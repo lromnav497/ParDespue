@@ -84,8 +84,8 @@ class CapsuleController extends GeneralController {
                 const notificationDate = new Date(openingDate);
                 notificationDate.setDate(notificationDate.getDate() - 1);
                 await NotificationModel.create({
-                    userId: req.user.id,
-                    capsuleId: newCapsule.id, // el ID de la cápsula recién creada
+                    userId: Creator_User_ID, // <-- fix: use Creator_User_ID
+                    capsuleId: newCapsule.Capsule_ID, // <-- fix: use Capsule_ID
                     message: '¡Tu cápsula está a punto de abrirse!',
                     sentDate: notificationDate.toISOString().slice(0, 19).replace('T', ' ')
                 });
