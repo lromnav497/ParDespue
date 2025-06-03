@@ -45,6 +45,10 @@ const UserModel = {
     const [rows] = await pool.query('SELECT * FROM Users WHERE User_ID = ?', [id]);
     return rows[0];
   },
+  findById: async (id) => {
+    const [rows] = await pool.execute('SELECT * FROM Users WHERE User_ID = ?', [id]);
+    return rows[0] || null;
+  },
   // ...otros métodos...
 };
 
