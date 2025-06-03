@@ -583,7 +583,8 @@ const CrearCapsula = () => {
         Tags: formData.tags.join(','),
         Creator_User_ID: userId,
         Password: privacyValue === 'private' ? formData.password : null,
-        Category_ID: formData.categoriaId // <-- usa el ID seleccionado
+        Category_ID: formData.categoriaId,
+        notificaciones: formData.notificaciones // <-- AÑADIDO para notificación
       }),
     });
     const capsuleData = await resCapsule.json();
