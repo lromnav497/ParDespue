@@ -1,3 +1,9 @@
-const createGeneralRouter = require('./generalRoutes');
+const express = require('express');
+const notificationController = require('../controllers/notificationController');
+const { authMiddleware } = require('../middleware/authMiddleware');
+const router = express.Router();
 
-module.exports = createGeneralRouter('Notifications');
+router.get('/recent', authMiddleware, notificationController.getRecent);
+router.get('/all', authMiddleware, notificationController.getAll);
+
+module.exports = router;

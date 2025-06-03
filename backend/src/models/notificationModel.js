@@ -1,11 +1,36 @@
-const GeneralModel = require('./generalModel');
+const db = require('../config/db');
 
-class NotificationModel extends GeneralModel {
-    constructor() {
-        super('Notifications'); // Nombre de la tabla
-    }
+const NotificationModel = {
+  create: async ({ userId, capsuleId, message, sentDate }) => {
+    await db.execute(
+      `INSERT INTO Notifications (User_ID, Capsule_ID, Message, Sent_Date)
+       VALUES (?, ?, ?, ?)`,
+      [userId, capsuleId, message, sentDate]
+    );
+  },
 
-    // Puedes agregar métodos específicos para Notifications si es necesario
-}
+  updateDate: async ({ userId, capsuleId, sentDate }) => {
+    await db.execute(
+      `UPDATE Notifications SET Sent_Date = ? WHERE User_ID = ? AND Capsule_ID = ?`,
+      [sentDate, userId, capsuleId]
+    );
+  },
 
-module.exports = new NotificationModel();
+  getRecent: async (userId, limit = 5) => {
+    const [rows] = await db.execute(
+      `SELECT * FROM Notifications WHERE User_ID = ? ORDER BY Sent_Date DESC LIMIT ?`,
+      [userId, limit]
+    );
+    return rows;
+  },
+
+  getAll: async (userId) => {
+    const [rows] = await db.execute(
+      `SELECT * FROM Notifications WHERE User_ID = ? ORDER BY Sent_Date DESC`,
+      [userId]
+    );
+    return rows;
+  }
+};
+
+module.exports = NotificationModel;

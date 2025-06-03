@@ -1,6 +1,7 @@
 const GeneralController = require('./generalController');
 const CapsuleModel = require('../models/capsuleModel');
 const SubscriptionModel = require('../models/subscriptionModel');
+const NotificationModel = require('../models/notificationModel');
 
 class CapsuleController extends GeneralController {
     constructor() {
@@ -77,6 +78,19 @@ class CapsuleController extends GeneralController {
                 Category_ID
             });
 
+            // Enviar notificación si corresponde
+            if (req.body.notificaciones) {
+                const openingDate = new Date(req.body.Opening_Date);
+                const notificationDate = new Date(openingDate);
+                notificationDate.setDate(notificationDate.getDate() - 1);
+                await NotificationModel.create({
+                    userId: req.user.id,
+                    capsuleId: newCapsule.id, // el ID de la cápsula recién creada
+                    message: '¡Tu cápsula está a punto de abrirse!',
+                    sentDate: notificationDate.toISOString().slice(0, 19).replace('T', ' ')
+                });
+            }
+
             res.status(201).json(newCapsule);
         } catch (err) {
             res.status(500).json({ message: err.message || 'Error al crear la cápsula.' });
@@ -127,6 +141,17 @@ class CapsuleController extends GeneralController {
                 return res.status(400).json({ message: 'La fecha de apertura debe ser posterior a la de creación.' });
             }
             const updated = await this.model.update(req.params.id, data);
+            // Actualiza la fecha de notificación si se proporciona una nueva fecha de apertura
+            if (req.body.Opening_Date) {
+                const openingDate = new Date(req.body.Opening_Date);
+                const notificationDate = new Date(openingDate);
+                notificationDate.setDate(notificationDate.getDate() - 1);
+                await NotificationModel.updateDate({
+                    userId: req.user.id,
+                    capsuleId: req.params.id,
+                    sentDate: notificationDate.toISOString().slice(0, 19).replace('T', ' ')
+                });
+            }
             res.json(updated);
         } catch (error) {
             res.status(500).json({ error: error.message });

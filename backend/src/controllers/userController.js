@@ -1,4 +1,5 @@
 const UserModel = require('../models/userModel');
+const NotificationModel = require('../models/notificationModel'); // Asegúrate de tener el modelo de notificación
 
 const UserController = {
   findByEmail: async (req, res) => {
@@ -21,6 +22,20 @@ const UserController = {
       res.json({ message: 'Usuario actualizado correctamente' });
     } catch (err) {
       res.status(500).json({ message: 'Error al actualizar usuario', error: err.message });
+    }
+  },
+  createNotification: async (req, res) => {
+    const { userId } = req.body;
+    try {
+      await NotificationModel.create({
+        userId: userId,
+        capsuleId: 0, // o null si lo permites en la BD
+        message: '¡Bienvenido a ParDespue! Ya puedes crear y recibir cápsulas.',
+        sentDate: new Date().toISOString().slice(0, 19).replace('T', ' ')
+      });
+      res.json({ message: 'Notificación creada y enviada al usuario' });
+    } catch (err) {
+      res.status(500).json({ message: 'Error al crear notificación', error: err.message });
     }
   },
   // ...otros métodos...

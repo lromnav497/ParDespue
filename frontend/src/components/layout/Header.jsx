@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUser, faHome, faBoxArchive, faCompass, faQuestionCircle,
-  faChevronDown, faRightFromBracket, faCrown
+  faChevronDown, faRightFromBracket, faCrown, faBell
 } from '@fortawesome/free-solid-svg-icons';
 import { fetchWithAuth } from '../../helpers/fetchWithAuth';
 
@@ -27,6 +27,8 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(getStoredUser());
   const [plan, setPlan] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
 
   // Escucha cambios de usuario
@@ -60,6 +62,23 @@ const Header = () => {
       }
     };
     fetchPlan();
+  }, [user]);
+
+  // Cargar notificaciones recientes cuando hay usuario
+  useEffect(() => {
+    if (!user) return;
+    const fetchNotifications = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const res = await fetch('/api/notifications/recent', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+    };
+    fetchNotifications();
   }, [user]);
 
   const handleLogout = () => {
@@ -107,6 +126,46 @@ const Header = () => {
         </div>
 
         <div className="flex gap-4 items-center">
+          {user && (
+            <div className="relative">
+              <button
+                className="text-white hover:text-[#F5E050] relative"
+                onClick={() => setNotifOpen(v => !v)}
+                aria-label="Notificaciones"
+              >
+                <FontAwesomeIcon icon={faBell} />
+                {notifications.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-[#F5E050] text-[#2E2E7A] rounded-full px-2 text-xs font-bold">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+              {notifOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-[#2E2E7A] rounded-lg shadow-lg z-50 p-4">
+                  <h4 className="text-[#F5E050] font-bold mb-2">Notificaciones</h4>
+                  {notifications.length === 0 ? (
+                    <div className="text-white">No tienes notificaciones recientes.</div>
+                  ) : (
+                    <ul>
+                      {notifications.map(n => (
+                        <li key={n.Notification_ID} className="text-white border-b border-[#3d3d9e] py-2">
+                          {n.Message}
+                          <span className="text-xs text-gray-400 block">{new Date(n.Sent_Date).toLocaleString()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <button
+                    className="mt-2 text-[#F5E050] underline"
+                    onClick={() => { setNotifOpen(false); navigate('/notificaciones'); }}
+                  >
+                    Ver todas
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {!user ? (
             <>
               <Link 

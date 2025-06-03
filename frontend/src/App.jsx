@@ -23,6 +23,7 @@ import CookiesModal from './components/modals/CookiesModal';
 import VerifyEmail from './views/VerifyEmail';
 import ResendVerification from './views/ResendVerification';
 import ResetPassword from './views/ResetPassword';
+import Notificaciones from './views/Notificaciones';
 import './index.css';
 
 function App() {
@@ -68,6 +69,7 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/resend-verification" element={<ResendVerification />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/notificaciones" element={<Notificaciones />} />
         </Routes>
         <CookiesModal
           isOpen={showCookiesModal}
