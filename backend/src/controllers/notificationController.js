@@ -19,4 +19,8 @@ exports.getAll = async (req, res) => {
   res.json(notifications);
 };
 
-module.exports = new NotificationController();
+module.exports = {
+  getRecent,
+  getAll,
+  // ...other handlers
+};
