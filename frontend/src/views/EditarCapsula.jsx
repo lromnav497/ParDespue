@@ -238,6 +238,7 @@ const EditarCapsula = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formToSend,
+          Creation_Date: capsula.Creation_Date, // <-- Añade esto
           Tags: formToSend.Tags,
         }),
       });
