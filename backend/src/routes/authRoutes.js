@@ -5,6 +5,7 @@ const userModel = require('../models/userModel');
 const pool = require('../config/db');
 const crypto = require('crypto');
 const Mailjet = require('node-mailjet');
+const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
 
@@ -16,10 +17,16 @@ const mailjet = Mailjet.apiConnect(
 
 const router = express.Router();
 
-// Configuración de multer
+// Multer storage dinámico según el ID del usuario
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/profile_pics/');
+  destination: async (req, file, cb) => {
+    // El ID estará disponible en req.userId después de crear el usuario
+    const userId = req.userId;
+    const dir = `uploads/profile_pics/${userId}`;
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -28,12 +35,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post('/register', upload.single('profile_picture'), async (req, res) => {
+router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
-    let profilePictureUrl = null;
-    if (req.file) {
-      profilePictureUrl = `/uploads/profile_pics/${req.file.filename}`;
-    }
     try {
         console.log('Intentando registrar usuario:', email);
 
@@ -51,54 +54,66 @@ router.post('/register', upload.single('profile_picture'), async (req, res) => {
         const verificationToken = crypto.randomBytes(32).toString('hex');
 
         // Crea el usuario con Verified = false
-        await userModel.create({
+        const result = await userModel.create({
             Name: name,
             Email: email,
             Password: hashedPassword,
             Role: 'standard',
             Verified: false,
             VerificationToken: verificationToken,
-            Profile_Picture: profilePictureUrl
+            Profile_Picture: null
         });
+        const userId = result.insertId;
+        req.userId = userId; // Para que multer lo use
 
-        // Genera el enlace de verificación
-        const verifyUrl = `http://44.209.31.187/verify-email?token=${verificationToken}`;
-        console.log('Enviando correo de verificación a:', email);
+        // Procesa la imagen si viene
+        upload.single('profile_picture')(req, res, async function (err) {
+          if (err) return res.status(400).json({ message: 'Error al subir imagen', error: err.message });
+          let profilePictureUrl = null;
+          if (req.file) {
+            profilePictureUrl = `/uploads/profile_pics/${userId}/${req.file.filename}`;
+            await userModel.update(userId, { Profile_Picture: profilePictureUrl });
+          }
 
-        // Envía el correo con Mailjet
-        await mailjet
-            .post('send', { version: 'v3.1' })
-            .request({
-                Messages: [
-                    {
-                        From: {
-                            Email: "lromnav497@gmail.com",
-                            Name: "ParDespue Team"
-                        },
-                        To: [
-                            {
-                                Email: email,
-                                Name: name
-                            }
-                        ],
-                        Subject: "Verifica tu cuenta",
-                        TextPart: `Haz clic en el siguiente enlace para verificar tu cuenta: ${verifyUrl}`,
-                        HTMLPart: `
-                          <div style="font-family:Arial,sans-serif;background:#f9f9f9;padding:30px;">
-                            <h2 style="color:#2E2E7A;">¡Bienvenido a ParDespue!</h2>
-                            <p>Gracias por registrarte. Para activar tu cuenta, haz clic en el botón:</p>
-                            <a href="${verifyUrl}" style="display:inline-block;background:#F5E050;color:#2E2E7A;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;margin:20px 0;">Verificar cuenta</a>
-                            <p>Si no solicitaste este registro, puedes ignorar este correo.</p>
-                            <hr style="margin:24px 0;">
-                            <small style="color:#888;">ParDespue Team</small>
-                          </div>
-                        `
-                    }
-                ]
-            });
+          // Genera el enlace de verificación
+          const verifyUrl = `http://44.209.31.187/verify-email?token=${verificationToken}`;
+          console.log('Enviando correo de verificación a:', email);
 
-        console.log('Correo enviado correctamente');
-        res.status(201).json({ message: 'Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.' });
+          // Envía el correo con Mailjet
+          await mailjet
+              .post('send', { version: 'v3.1' })
+              .request({
+                  Messages: [
+                      {
+                          From: {
+                              Email: "lromnav497@gmail.com",
+                              Name: "ParDespue Team"
+                          },
+                          To: [
+                              {
+                                  Email: email,
+                                  Name: name
+                              }
+                          ],
+                          Subject: "Verifica tu cuenta",
+                          TextPart: `Haz clic en el siguiente enlace para verificar tu cuenta: ${verifyUrl}`,
+                          HTMLPart: `
+                            <div style="font-family:Arial,sans-serif;background:#f9f9f9;padding:30px;">
+                              <h2 style="color:#2E2E7A;">¡Bienvenido a ParDespue!</h2>
+                              <p>Gracias por registrarte. Para activar tu cuenta, haz clic en el botón:</p>
+                              <a href="${verifyUrl}" style="display:inline-block;background:#F5E050;color:#2E2E7A;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;margin:20px 0;">Verificar cuenta</a>
+                              <p>Si no solicitaste este registro, puedes ignorar este correo.</p>
+                              <hr style="margin:24px 0;">
+                              <small style="color:#888;">ParDespue Team</small>
+                            </div>
+                          `
+                      }
+                  ]
+              });
+
+          console.log('Correo enviado correctamente');
+          res.status(201).json({ message: 'Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.' });
+        });
     } catch (error) {
         console.error('Error en /register:', error);
         res.status(500).json({ error: error.message });
