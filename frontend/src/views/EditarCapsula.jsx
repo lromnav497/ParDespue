@@ -7,6 +7,12 @@ import {
 import PasswordModal from '../components/modals/PasswordModal';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
+function toMySQLDateTime(dateString) {
+  if (!dateString) return null;
+  const d = new Date(dateString);
+  return d.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 const getTypeFromMime = (mime) => {
   if (mime.startsWith('image/')) return 'image';
   if (mime.startsWith('video/')) return 'video';
@@ -238,7 +244,7 @@ const EditarCapsula = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formToSend,
-          Creation_Date: capsula.Creation_Date, // <-- Añade esto
+          Creation_Date: toMySQLDateTime(capsula.Creation_Date), // <-- Formato correcto
           Tags: formToSend.Tags,
         }),
       });
@@ -583,8 +589,7 @@ const EditarCapsula = () => {
           }}
           error={passwordError}
         />
-      )}
-    </div>
+      </div>
   );
 };
 
