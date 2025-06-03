@@ -244,7 +244,7 @@ const EditarCapsula = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formToSend,
-          Creation_Date: toMySQLDateTime(capsula.Creation_Date), // <-- Formato correcto
+          Creation_Date: toMySQLDateTime(capsula.Creation_Date), // <-- Formato correcto para MySQL
           Tags: formToSend.Tags,
         }),
       });
@@ -589,7 +589,8 @@ const EditarCapsula = () => {
           }}
           error={passwordError}
         />
-      </div>
+      )}
+    </div>
   );
 };
 
