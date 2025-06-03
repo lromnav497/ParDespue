@@ -24,7 +24,7 @@ const RenewSubscriptionModal = ({
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ priceId: plan.stripePriceId })
+        body: JSON.stringify({ months: renewMonths }) // Solo meses, sin Stripe
       });
     } catch (error) {
       console.error('Error al renovar la suscripción:', error);
