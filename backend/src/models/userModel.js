@@ -7,39 +7,29 @@ const UserModel = {
   },
   create: async (user) => {
     const [result] = await pool.query(
-      'INSERT INTO Users (Name, Email, Password, Role, Verified, VerificationToken) VALUES (?, ?, ?, ?, ?, ?)',
-      [user.Name, user.Email, user.Password, user.Role, user.Verified ?? false, user.VerificationToken ?? null]
+      'INSERT INTO Users (Name, Email, Password, Role, Verified, VerificationToken, Profile_Picture) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [
+        user.Name,
+        user.Email,
+        user.Password,
+        user.Role,
+        user.Verified ?? false,
+        user.VerificationToken ?? null,
+        user.Profile_Picture ?? null
+      ]
     );
     return result;
   },
   update: async (id, user) => {
-    // Construye dinámicamente el SET y los valores
-    const fields = [];
-    const values = [];
-    if (user.Name !== undefined) {
-      fields.push('Name = ?');
-      values.push(user.Name);
-    }
-    if (user.Email !== undefined) {
-      fields.push('Email = ?');
-      values.push(user.Email);
-    }
-    if (user.Role !== undefined) {
-      fields.push('Role = ?');
-      values.push(user.Role);
-    }
-    if (user.Password !== undefined) {
-      fields.push('Password = ?');
-      values.push(user.Password);
-    }
+    const fields = Object.keys(user);
     if (fields.length === 0) throw new Error('No fields to update');
-    values.push(id);
-
-    const [result] = await pool.query(
-      `UPDATE Users SET ${fields.join(', ')} WHERE User_ID = ?`,
-      values
+    const values = fields.map(f => user[f]);
+    const setClause = fields.map(f => `${f} = ?`).join(', ');
+    await pool.query(
+      `UPDATE Users SET ${setClause} WHERE User_ID = ?`,
+      [...values, id]
     );
-    return result;
+    return true;
   },
   findOne: async (id) => {
     const [rows] = await pool.query('SELECT * FROM Users WHERE User_ID = ?', [id]);
