@@ -35,13 +35,8 @@ const Login = () => {
         }
         return;
       }
-      if (remember) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-      } else {
-        sessionStorage.setItem('token', data.token);
-        sessionStorage.setItem('user', JSON.stringify(data.user));
-      }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       window.dispatchEvent(new Event('user-updated'));
       navigate('/explorar');
     } catch (err) {
