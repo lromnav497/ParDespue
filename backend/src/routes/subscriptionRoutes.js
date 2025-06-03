@@ -66,4 +66,7 @@ router.get('/stripe-prices', async (req, res) => {
   }
 });
 
+// NUEVA RUTA: Activar plan premium
+router.post('/activate-premium', authMiddleware, SubscriptionController.activatePremium);
+
 module.exports = router;

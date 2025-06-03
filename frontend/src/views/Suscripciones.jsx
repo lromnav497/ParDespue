@@ -17,7 +17,10 @@ const Suscripciones = () => {
   useEffect(() => {
     fetch('/api/subscriptions/stripe-prices')
       .then(res => res.json())
-      .then(data => setStripePrices(data));
+      .then(data => {
+        console.log('Stripe prices:', data); // <-- Mira la consola
+        setStripePrices(data);
+      });
   }, []);
 
   // Consulta el plan actual del usuario al montar
@@ -38,7 +41,18 @@ const Suscripciones = () => {
     const params = new URLSearchParams(location.search);
     if (params.get('success')) {
       setMensaje('¡Pago realizado correctamente! Tu suscripción Premium está activa.');
-      window.dispatchEvent(new Event('user-updated'));
+      // Llama al backend para registrar la suscripción y transacción
+      const token = localStorage.getItem('token');
+      fetch('/api/subscriptions/activate-premium', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ billing }) // Puedes enviar 'monthly' o 'annual'
+      })
+        .then(res => res.json())
+        .then(() => window.dispatchEvent(new Event('user-updated')));
     }
     if (params.get('canceled')) {
       setMensaje('El pago fue cancelado.');
@@ -50,12 +64,13 @@ const Suscripciones = () => {
     const price = stripePrices.find(
       p => p.nickname && p.nickname.toLowerCase().includes(nickname.toLowerCase())
     );
-    if (!price) return null;
-    return {
-      id: price.id,
-      amount: (price.unit_amount / 100).toFixed(2),
-      interval: price.recurring?.interval
-    };
+    return price
+      ? {
+          id: price.id,
+          amount: (price.unit_amount / 100).toFixed(2),
+          interval: price.recurring?.interval
+        }
+      : null;
   };
 
   const plans = [

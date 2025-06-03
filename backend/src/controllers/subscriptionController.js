@@ -83,7 +83,37 @@ const SubscriptionController = {
     } catch (err) {
       res.status(500).json({ message: err.message || 'Error al cancelar suscripción' });
     }
-  }
+  },
+
+  activatePremium: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { billing } = req.body; // 'monthly' o 'annual'
+      // Cancela cualquier suscripción activa anterior
+      await SubscriptionModel.db.execute(
+        `UPDATE Subscriptions SET Status = 'canceled' WHERE User_ID = ? AND Status = 'active'`,
+        [userId]
+      );
+      // Crea la nueva suscripción
+      const [result] = await SubscriptionModel.db.execute(
+        `INSERT INTO Subscriptions (User_ID, Type, Start_Date, End_Date, Status)
+         VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 1 ${billing === 'monthly' ? 'MONTH' : 'YEAR'}), 'active')`,
+        [userId, 'premium']
+      );
+      const subscriptionId = result.insertId;
+      // Crea la transacción (puedes ajustar el monto según tu lógica)
+      const amount = billing === 'monthly' ? 9.99 : 99.99;
+      await SubscriptionModel.createTransaction(
+        subscriptionId,
+        amount,
+        'card',
+        'completed'
+      );
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ message: err.message || 'Error al activar suscripción' });
+    }
+  },
 };
 
 module.exports = SubscriptionController;
