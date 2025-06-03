@@ -33,6 +33,7 @@ const Suscripciones = () => {
     })
       .then(res => res.json())
       .then(data => {
+        console.log('Current plan:', data + data.plan); // <-- Mira la consola
         if (data.plan) setCurrentPlan(data.plan);
       });
   }, []);
