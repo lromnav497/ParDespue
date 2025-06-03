@@ -17,107 +17,104 @@ const mailjet = Mailjet.apiConnect(
 
 const router = express.Router();
 
-// Multer storage dinámico según el ID del usuario
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    // El ID estará disponible en req.userId después de crear el usuario
-    const userId = req.userId;
-    const dir = `uploads/profile_pics/${userId}`;
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+// Multer: primero guarda en una carpeta temporal
+const tempStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = 'uploads/profile_pics/temp';
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, Date.now() + ext);
+    cb(null, Date.now() + path.extname(file.originalname));
   }
 });
-const upload = multer({ storage });
+const upload = multer({ storage: tempStorage });
 
-router.post('/register', async (req, res) => {
+// REGISTRO
+router.post('/register', upload.single('profile_picture'), async (req, res) => {
+  try {
+    // 1. Crea el usuario sin foto
     const { name, email, password } = req.body;
-    try {
-        console.log('Intentando registrar usuario:', email);
+    console.log('Intentando registrar usuario:', email);
 
-        // Verifica si el usuario ya existe
-        const existingUser = await userModel.findByEmail(email);
-        if (existingUser) {
-            console.log('Correo ya registrado:', email);
-            return res.status(400).json({ message: 'El correo ya está registrado' });
-        }
-
-        // Hashea la contraseña
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Genera un token de verificación
-        const verificationToken = crypto.randomBytes(32).toString('hex');
-
-        // Crea el usuario con Verified = false
-        const result = await userModel.create({
-            Name: name,
-            Email: email,
-            Password: hashedPassword,
-            Role: 'standard',
-            Verified: false,
-            VerificationToken: verificationToken,
-            Profile_Picture: null
-        });
-        const userId = result.insertId;
-        req.userId = userId; // Para que multer lo use
-
-        // Procesa la imagen si viene
-        upload.single('profile_picture')(req, res, async function (err) {
-          if (err) return res.status(400).json({ message: 'Error al subir imagen', error: err.message });
-          let profilePictureUrl = null;
-          if (req.file) {
-            profilePictureUrl = `/uploads/profile_pics/${userId}/${req.file.filename}`;
-            await userModel.update(userId, { Profile_Picture: profilePictureUrl });
-          }
-
-          // Genera el enlace de verificación
-          const verifyUrl = `http://44.209.31.187/verify-email?token=${verificationToken}`;
-          console.log('Enviando correo de verificación a:', email);
-
-          // Envía el correo con Mailjet
-          await mailjet
-              .post('send', { version: 'v3.1' })
-              .request({
-                  Messages: [
-                      {
-                          From: {
-                              Email: "lromnav497@gmail.com",
-                              Name: "ParDespue Team"
-                          },
-                          To: [
-                              {
-                                  Email: email,
-                                  Name: name
-                              }
-                          ],
-                          Subject: "Verifica tu cuenta",
-                          TextPart: `Haz clic en el siguiente enlace para verificar tu cuenta: ${verifyUrl}`,
-                          HTMLPart: `
-                            <div style="font-family:Arial,sans-serif;background:#f9f9f9;padding:30px;">
-                              <h2 style="color:#2E2E7A;">¡Bienvenido a ParDespue!</h2>
-                              <p>Gracias por registrarte. Para activar tu cuenta, haz clic en el botón:</p>
-                              <a href="${verifyUrl}" style="display:inline-block;background:#F5E050;color:#2E2E7A;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;margin:20px 0;">Verificar cuenta</a>
-                              <p>Si no solicitaste este registro, puedes ignorar este correo.</p>
-                              <hr style="margin:24px 0;">
-                              <small style="color:#888;">ParDespue Team</small>
-                            </div>
-                          `
-                      }
-                  ]
-              });
-
-          console.log('Correo enviado correctamente');
-          res.status(201).json({ message: 'Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.' });
-        });
-    } catch (error) {
-        console.error('Error en /register:', error);
-        res.status(500).json({ error: error.message });
+    // Verifica si el usuario ya existe
+    const existingUser = await userModel.findByEmail(email);
+    if (existingUser) {
+        console.log('Correo ya registrado:', email);
+        return res.status(400).json({ message: 'El correo ya está registrado' });
     }
+
+    // Hashea la contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Genera un token de verificación
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
+    // Crea el usuario con Verified = false
+    const result = await userModel.create({
+        Name: name,
+        Email: email,
+        Password: hashedPassword,
+        Role: 'standard',
+        Verified: false,
+        VerificationToken: verificationToken,
+        Profile_Picture: null
+    });
+    const userId = result.insertId;
+
+    // 2. Si hay imagen, muévela a la carpeta del usuario
+    let profilePictureUrl = null;
+    if (req.file) {
+      const userDir = `uploads/profile_pics/${userId}`;
+      if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
+      const destPath = `${userDir}/${req.file.filename}`;
+      fs.renameSync(req.file.path, destPath);
+      profilePictureUrl = `/uploads/profile_pics/${userId}/${req.file.filename}`;
+      await userModel.update(userId, { Profile_Picture: profilePictureUrl });
+    }
+
+    // Genera el enlace de verificación
+    const verifyUrl = `http://44.209.31.187/verify-email?token=${verificationToken}`;
+    console.log('Enviando correo de verificación a:', email);
+
+    // Envía el correo con Mailjet
+    await mailjet
+        .post('send', { version: 'v3.1' })
+        .request({
+            Messages: [
+                {
+                    From: {
+                        Email: "lromnav497@gmail.com",
+                        Name: "ParDespue Team"
+                    },
+                    To: [
+                        {
+                            Email: email,
+                            Name: name
+                        }
+                    ],
+                    Subject: "Verifica tu cuenta",
+                    TextPart: `Haz clic en el siguiente enlace para verificar tu cuenta: ${verifyUrl}`,
+                    HTMLPart: `
+                      <div style="font-family:Arial,sans-serif;background:#f9f9f9;padding:30px;">
+                        <h2 style="color:#2E2E7A;">¡Bienvenido a ParDespue!</h2>
+                        <p>Gracias por registrarte. Para activar tu cuenta, haz clic en el botón:</p>
+                        <a href="${verifyUrl}" style="display:inline-block;background:#F5E050;color:#2E2E7A;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;margin:20px 0;">Verificar cuenta</a>
+                        <p>Si no solicitaste este registro, puedes ignorar este correo.</p>
+                        <hr style="margin:24px 0;">
+                        <small style="color:#888;">ParDespue Team</small>
+                      </div>
+                    `
+                }
+            ]
+        });
+
+    console.log('Correo enviado correctamente');
+    res.status(201).json({ message: 'Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.' });
+  } catch (error) {
+    console.error('Error en /register:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 router.post('/login', async (req, res) => {
