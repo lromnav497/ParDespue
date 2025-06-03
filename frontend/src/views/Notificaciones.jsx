@@ -23,6 +23,18 @@ const Notificaciones = () => {
             <li key={n.Notification_ID} className="bg-[#1a1a4a] p-4 rounded-lg">
               <div className="font-bold">{n.Message}</div>
               <div className="text-xs text-gray-400">{new Date(n.Sent_Date).toLocaleString()}</div>
+              {n.Capsule_ID && (
+                <button
+                  className="mt-2 bg-[#F5E050] text-[#2E2E7A] px-4 py-1 rounded-full font-bold hover:bg-[#e6d047] transition-colors"
+                  onClick={() => {
+                    // Guarda el Capsule_ID destacado en localStorage y navega
+                    localStorage.setItem('highlight_capsule', n.Capsule_ID);
+                    window.location.href = '/capsulas';
+                  }}
+                >
+                  Ver cápsula
+                </button>
+              )}
             </li>
           ))}
         </ul>

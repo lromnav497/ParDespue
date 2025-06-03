@@ -157,6 +157,19 @@ const MisCapsulas = () => {
     }
   };
 
+  // Efecto para resaltar cápsula si viene de notificación
+  useEffect(() => {
+    const highlightId = localStorage.getItem('highlight_capsule');
+    if (highlightId) {
+      setTimeout(() => {
+        const el = document.querySelector(`[data-capsule-id="${highlightId}"]`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [filteredCapsulas]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Encabezado */}
@@ -199,10 +212,19 @@ const MisCapsulas = () => {
             filteredCapsulas.map(capsula => (
               <div
                 key={capsula.Capsule_ID}
-                className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                data-capsule-id={capsula.Capsule_ID}
+                className={`bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer relative ${
+                  String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')
+                    ? 'border-4 border-yellow-400 animate-shake'
+                    : ''
+                }`}
                 onClick={e => {
                   e.stopPropagation();
                   handleProtectedAction('ver', capsula);
+                  // Si era la destacada, la quitamos del highlight
+                  if (String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')) {
+                    localStorage.removeItem('highlight_capsule');
+                  }
                 }}
               >
                 <div className="relative">
@@ -276,6 +298,25 @@ const MisCapsulas = () => {
         onSubmit={handlePasswordSubmit}
         error={passwordError}
       />
+
+      {/* Agrega animación shake */}
+      <style>
+      {`
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-8px); }
+  80% { transform: translateX(8px); }
+  100% { transform: translateX(0); }
+}
+.animate-shake {
+  animation: shake 0.7s;
+  box-shadow: 0 0 0 4px #F5E050;
+  z-index: 10;
+}
+`}
+</style>
     </div>
   );
 };
