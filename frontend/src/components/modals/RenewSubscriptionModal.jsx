@@ -7,9 +7,29 @@ const RenewSubscriptionModal = ({
   onConfirm,
   renewMonths,
   setRenewMonths,
-  loading
+  loading,
+  suscripcion,
+  token,
+  plan
 }) => {
   if (!isOpen) return null;
+
+  const handleConfirm = async () => {
+    if (loading) return;
+    onConfirm();
+    try {
+      await fetch(`/api/subscriptions/renew/${suscripcion.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ priceId: plan.stripePriceId })
+      });
+    } catch (error) {
+      console.error('Error al renovar la suscripción:', error);
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Renovar Suscripción">
@@ -36,7 +56,7 @@ const RenewSubscriptionModal = ({
           </button>
           <button
             className="px-4 py-2 rounded bg-[#F5E050] text-[#2E2E7A] font-bold"
-            onClick={onConfirm}
+            onClick={handleConfirm}
             disabled={loading}
           >
             {loading ? 'Renovando...' : 'Confirmar'}
