@@ -405,7 +405,7 @@ const MisSuscripciones = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ priceId }) // priceId debe ser el ID del precio de Stripe
+        body: JSON.stringify({ months: renewMonths })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al renovar');
