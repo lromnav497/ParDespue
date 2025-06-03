@@ -81,6 +81,14 @@ const SubscriptionModel = {
     return null;
   },
 
+  countUserCapsules: async (userId) => {
+    const [rows] = await db.execute(
+      'SELECT COUNT(*) as count FROM Capsules WHERE Creator_User_ID = ?',
+      [userId]
+    );
+    return rows[0].count;
+  },
+
   db
 };
 
