@@ -85,9 +85,16 @@ const Header = () => {
   const handleBellClick = () => {
     setNotifOpen(v => !v);
     if (!notifOpen) {
-      setNotifications([]); // Oculta el número al abrir
+      // Marcar como leídas en localStorage
+      if (user) {
+        localStorage.setItem(`notificaciones_leidas_${user.id}`, 'true');
+      }
+      // No borres las notificaciones, solo el badge se ocultará
     }
   };
+
+  // Determinar si mostrar el badge
+  const showBadge = notifications.length > 0 && !(user && localStorage.getItem(`notificaciones_leidas_${user.id}`) === 'true');
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -142,7 +149,7 @@ const Header = () => {
                 aria-label="Notificaciones"
               >
                 <FontAwesomeIcon icon={faBell} />
-                {notifications.length > 0 && (
+                {showBadge && (
                   <span className="absolute -top-2 -right-2 bg-[#F5E050] text-[#2E2E7A] rounded-full px-2 text-xs font-bold">
                     {notifications.length}
                   </span>
