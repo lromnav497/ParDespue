@@ -17,9 +17,11 @@ const NotificationModel = {
   },
 
   getRecent: async (userId, limit = 5) => {
+    // Ensure limit is a safe integer
+    limit = Number.isInteger(limit) && limit > 0 ? limit : 5;
     const [rows] = await db.execute(
-      `SELECT * FROM Notifications WHERE User_ID = ? ORDER BY Sent_Date DESC LIMIT ?`,
-      [userId, limit]
+      `SELECT * FROM Notifications WHERE User_ID = ? ORDER BY Sent_Date DESC LIMIT ${limit}`,
+      [userId]
     );
     return rows;
   },
