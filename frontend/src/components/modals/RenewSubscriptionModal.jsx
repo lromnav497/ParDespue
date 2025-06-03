@@ -16,6 +16,10 @@ const RenewSubscriptionModal = ({
 
   const handleConfirm = async () => {
     if (loading) return;
+    if (!suscripcion || !suscripcion.id || !plan || !plan.stripePriceId) {
+      console.error('Faltan datos para renovar la suscripción:', { suscripcion, plan });
+      return;
+    }
     onConfirm();
     try {
       await fetch(`/api/subscriptions/renew/${suscripcion.id}`, {
