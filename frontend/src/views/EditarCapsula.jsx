@@ -238,13 +238,20 @@ const EditarCapsula = () => {
         formToSend.Password = '';
       }
 
+      const user = JSON.parse(localStorage.getItem('user'));
+      const token = localStorage.getItem('token') || user?.token;
+      const userId = user?.id;
+
       // 1. Actualiza los datos principales de la cápsula
       const res = await fetch(`/api/capsules/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           ...formToSend,
-          Creation_Date: toMySQLDateTime(capsula.Creation_Date), // <-- Formato correcto para MySQL
+          Creation_Date: toMySQLDateTime(capsula.Creation_Date),
           Tags: formToSend.Tags,
         }),
       });
@@ -260,8 +267,6 @@ const EditarCapsula = () => {
       setArchivosParaEliminar([]); // Limpia el array
 
       // 3. Sube nuevos archivos y los asocia a la cápsula
-      const user = JSON.parse(localStorage.getItem('user'));
-      const userId = user?.id;
       for (const archivo of nuevosArchivos) {
         // 1. Sube a temporal
         const formDataFile = new FormData();
@@ -288,7 +293,7 @@ const EditarCapsula = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             Type: getTypeFromMime(archivo.type),
-            File_Path: moveData.filePath, // <--- SIEMPRE la definitiva
+            File_Path: moveData.filePath,
             Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
             Capsule_ID: id,
           }),
