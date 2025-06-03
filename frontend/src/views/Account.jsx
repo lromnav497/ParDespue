@@ -405,7 +405,7 @@ const MisSuscripciones = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ months: renewMonths })
+        body: JSON.stringify({ months: renewMonths }) // <-- solo months
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al renovar');

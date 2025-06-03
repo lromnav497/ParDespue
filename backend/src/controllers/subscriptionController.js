@@ -66,27 +66,13 @@ const SubscriptionController = {
     try {
       const userId = req.user.id;
       const subId = req.params.id;
-      const { priceId } = req.body; // El priceId de Stripe para el plan
-      if (!priceId) {
-        return res.status(400).json({ message: 'Falta el priceId de Stripe.' });
+      const { months } = req.body;
+      if (!months || isNaN(months)) {
+        return res.status(400).json({ message: 'Faltan los meses de renovación.' });
       }
 
-      // Busca el usuario y su email
-      const user = await UserModel.findById(userId);
-
-      // Crea una nueva suscripción en Stripe
-      const customer = await stripe.customers.list({ email: user.email });
-      const customerId = customer.data[0].id;
-
-      const subscription = await stripe.subscriptions.create({
-        customer: customerId,
-        items: [{ price: priceId }],
-        payment_behavior: 'default_incomplete',
-        expand: ['latest_invoice.payment_intent'],
-      });
-
-      // Guarda el nuevo Stripe_Subscription_ID en tu BD y actualiza fechas, etc.
-      await SubscriptionModel.renew(subId, userId, subscription.id);
+      // Lógica para renovar: sumar meses a End_Date
+      await SubscriptionModel.renew(subId, userId, months);
 
       res.json({ success: true });
     } catch (err) {
