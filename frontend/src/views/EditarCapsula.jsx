@@ -40,16 +40,54 @@ const EditarCapsula = () => {
   const [error, setError] = useState(null);
   const [plan, setPlan] = useState(null);
 
-  // Cargar datos de la cápsula y archivos actuales
+  // Cargar categorías
   useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(setCategorias)
+      .catch(() => setCategorias([]));
+  }, []);
+
+  // Verificar plan del usuario (igual que en Header)
+  useEffect(() => {
+    const fetchPlan = async () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const token = localStorage.getItem('token') || user?.token;
+      if (!token) return setPlan(null);
+      try {
+        const res = await fetch('/api/subscriptions/my-plan', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) return setPlan(null);
+        const data = await res.json();
+        if (data.suscripcion && data.suscripcion.nombre) {
+          setPlan(
+            data.suscripcion.nombre.charAt(0).toUpperCase() +
+            data.suscripcion.nombre.slice(1)
+          );
+        } else if (data.plan) {
+          setPlan(
+            data.plan.charAt(0).toUpperCase() + data.plan.slice(1)
+          );
+        } else {
+          setPlan(null);
+        }
+      } catch {
+        setPlan(null);
+      }
+    };
+    fetchPlan();
+  }, [id]);
+
+  // Esperar a que el plan esté cargado antes de pedir la cápsula
+  useEffect(() => {
+    if (plan === null) return; // Espera a que el plan esté definido
     const fetchCapsula = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Al cargar para editar:
         const user = JSON.parse(localStorage.getItem('user'));
         const token = localStorage.getItem('token') || user?.token;
-
         const res = await fetch(`/api/capsules/${id}/edit`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -91,47 +129,8 @@ const EditarCapsula = () => {
       setLoading(false);
     };
     fetchCapsula();
-  }, [id]);
-
-  // Cargar categorías
-  useEffect(() => {
-    fetch('/api/categories')
-      .then(res => res.json())
-      .then(setCategorias)
-      .catch(() => setCategorias([]));
-  }, []);
-
-  // Verificar plan del usuario (igual que en Header)
-  useEffect(() => {
-    const fetchPlan = async () => {
-      const user = JSON.parse(localStorage.getItem('user'));
-      const token = localStorage.getItem('token') || user?.token;
-      if (!token) return setPlan(null);
-      try {
-        const res = await fetch('/api/subscriptions/my-plan', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) return setPlan(null);
-        const data = await res.json();
-        // Si tu backend devuelve { suscripcion: { nombre: 'premium', ... } }
-        if (data.suscripcion && data.suscripcion.nombre) {
-          setPlan(
-            data.suscripcion.nombre.charAt(0).toUpperCase() +
-            data.suscripcion.nombre.slice(1)
-          );
-        } else if (data.plan) {
-          setPlan(
-            data.plan.charAt(0).toUpperCase() + data.plan.slice(1)
-          );
-        } else {
-          setPlan(null);
-        }
-      } catch {
-        setPlan(null);
-      }
-    };
-    fetchPlan();
-  }, [id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, plan]);
 
   // Eliminar archivo actual (solo del frontend, se elimina en el backend al guardar)
   const handleRemoveArchivo = (contentId) => {
