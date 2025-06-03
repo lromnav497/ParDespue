@@ -53,13 +53,23 @@ const EditarCapsula = () => {
     const fetchPlan = async () => {
       const user = JSON.parse(localStorage.getItem('user'));
       const token = localStorage.getItem('token') || user?.token;
-      if (!token) return setPlan(null);
+      console.log('[EditarCapsula] user:', user);
+      console.log('[EditarCapsula] token:', token);
+      if (!token) {
+        console.log('[EditarCapsula] No token, setPlan(null)');
+        return setPlan(null);
+      }
       try {
         const res = await fetch('/api/subscriptions/my-plan', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        if (!res.ok) return setPlan(null);
+        console.log('[EditarCapsula] /api/subscriptions/my-plan status:', res.status);
+        if (!res.ok) {
+          console.log('[EditarCapsula] /api/subscriptions/my-plan not ok, setPlan(null)');
+          return setPlan(null);
+        }
         const data = await res.json();
+        console.log('[EditarCapsula] /api/subscriptions/my-plan data:', data);
         if (data.suscripcion && data.suscripcion.nombre) {
           setPlan(
             data.suscripcion.nombre.charAt(0).toUpperCase() +
@@ -72,7 +82,8 @@ const EditarCapsula = () => {
         } else {
           setPlan(null);
         }
-      } catch {
+      } catch (err) {
+        console.log('[EditarCapsula] Error en fetchPlan:', err);
         setPlan(null);
       }
     };
@@ -81,25 +92,33 @@ const EditarCapsula = () => {
 
   // Esperar a que el plan esté cargado antes de pedir la cápsula
   useEffect(() => {
-    if (plan === null) return; // Espera a que el plan esté definido
+    if (plan === null) {
+      console.log('[EditarCapsula] plan es null, no pido cápsula');
+      return; // Espera a que el plan esté definido
+    }
+    console.log('[EditarCapsula] plan detectado:', plan);
     const fetchCapsula = async () => {
       setLoading(true);
       setError(null);
       try {
         const user = JSON.parse(localStorage.getItem('user'));
         const token = localStorage.getItem('token') || user?.token;
+        console.log('[EditarCapsula] Pido cápsula con token:', token);
         const res = await fetch(`/api/capsules/${id}/edit`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
+        console.log('[EditarCapsula] /api/capsules/'+id+'/edit status:', res.status);
         if (!res.ok) {
           const data = await res.json();
+          console.log('[EditarCapsula] Error al pedir cápsula:', data);
           setError(data.message || 'No tienes permiso para editar esta cápsula.');
           setLoading(false);
           return;
         }
         const data = await res.json();
+        console.log('[EditarCapsula] Cápsula recibida:', data);
         setCapsula(data);
         setForm({
           Title: data.Title || '',
@@ -124,6 +143,7 @@ const EditarCapsula = () => {
             : []
         );
       } catch (err) {
+        console.log('[EditarCapsula] Error al cargar la cápsula:', err);
         setError('Error al cargar la cápsula.');
       }
       setLoading(false);
