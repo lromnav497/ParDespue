@@ -75,7 +75,10 @@ const Header = () => {
       });
       if (res.ok) {
         const data = await res.json();
-        setNotifications(data.slice(0, 3)); // Solo las 3 más recientes
+        // Filtra solo las notificaciones con Sent_Date <= ahora
+        const now = new Date();
+        const visibles = data.filter(n => new Date(n.Sent_Date) <= now);
+        setNotifications(visibles.slice(0, 3)); // Solo las 3 más recientes
       }
     };
     fetchNotifications();
