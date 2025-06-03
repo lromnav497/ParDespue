@@ -301,7 +301,7 @@ const EditarCapsula = () => {
       }
 
       alert('Cápsula actualizada correctamente');
-      navigate(`/vercapsula/${id}`);
+      navigate(`/capsulas`);
     } catch (err) {
       alert('Error al guardar: ' + err.message);
     }
