@@ -67,6 +67,9 @@ const SubscriptionController = {
       const userId = req.user.id;
       const subId = req.params.id;
       const { priceId } = req.body; // El priceId de Stripe para el plan
+      if (!priceId) {
+        return res.status(400).json({ message: 'Falta el priceId de Stripe.' });
+      }
 
       // Busca el usuario y su email
       const user = await UserModel.findById(userId);
