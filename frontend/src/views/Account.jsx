@@ -493,7 +493,7 @@ const MisSuscripciones = () => {
         setRenewMonths={setRenewMonths}
         loading={renewLoading}
         suscripcion={suscripcion} // <-- Debe ser un objeto con .id
-        token={token}
+        token={localStorage.getItem('token')}
         plan={planSeleccionado} // <-- Debe ser un objeto con .stripePriceId
       />
 
