@@ -60,10 +60,9 @@ const Suscripciones = () => {
   }, [location.search]);
 
   // Mapea los precios de Stripe a tus planes
-  const getStripePrice = (nickname) => {
-    // Busca el nickname exacto
+  const getStripePrice = (interval) => {
     const price = stripePrices.find(
-      p => p.nickname && p.nickname.toLowerCase() === nickname.toLowerCase()
+      p => p.recurring && p.recurring.interval === interval
     );
     return price
       ? {
@@ -90,7 +89,7 @@ const Suscripciones = () => {
     {
       name: "Premium",
       icon: faCrown,
-      price: getStripePrice(billing === 'monthly' ? 'mensual' : 'anual')?.amount,
+      price: getStripePrice(billing === 'monthly' ? 'month' : 'year')?.amount,
       features: [
         "Cápsulas ilimitadas",
         "50 GB de almacenamiento",
@@ -99,7 +98,7 @@ const Suscripciones = () => {
       ],
       cta: "Obtener Premium",
       popular: true,
-      stripePriceId: getStripePrice(billing === 'monthly' ? 'mensual' : 'anual')?.id
+      stripePriceId: getStripePrice(billing === 'monthly' ? 'month' : 'year')?.id
     }
   ];
 
