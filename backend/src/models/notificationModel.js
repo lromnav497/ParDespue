@@ -28,7 +28,7 @@ const NotificationModel = {
 
   getAll: async (userId) => {
     const [rows] = await db.execute(
-      `SELECT * FROM Notifications WHERE User_ID = ? ORDER BY Sent_Date DESC`,
+      `SELECT * FROM Notifications WHERE User_ID = ? AND Sent_Date <= NOW() ORDER BY Sent_Date DESC`,
       [userId]
     );
     return rows;
