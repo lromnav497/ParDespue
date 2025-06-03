@@ -1,4 +1,6 @@
 const SubscriptionModel = require('../models/subscriptionModel');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const UserModel = require('../models/userModel'); // Asegúrate de tener el modelo de usuario importado
 
 const SubscriptionController = {
   getUserPlan: async (req, res) => {
@@ -64,9 +66,25 @@ const SubscriptionController = {
     try {
       const userId = req.user.id;
       const subId = req.params.id;
-      const { months } = req.body;
-      // Llama a tu modelo para renovar la suscripción
-      await SubscriptionModel.renew(subId, months, userId);
+      const { priceId } = req.body; // El priceId de Stripe para el plan
+
+      // Busca el usuario y su email
+      const user = await UserModel.findById(userId);
+
+      // Crea una nueva suscripción en Stripe
+      const customer = await stripe.customers.list({ email: user.email });
+      const customerId = customer.data[0].id;
+
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Guarda el nuevo Stripe_Subscription_ID en tu BD y actualiza fechas, etc.
+      await SubscriptionModel.renew(subId, userId, subscription.id);
+
       res.json({ success: true });
     } catch (err) {
       res.status(500).json({ message: err.message || 'Error al renovar suscripción' });
@@ -77,7 +95,18 @@ const SubscriptionController = {
     try {
       const userId = req.user.id;
       const subId = req.params.id;
-      // Llama a tu modelo para cancelar la suscripción
+
+      // Busca el Stripe Subscription ID en tu BD
+      const [rows] = await SubscriptionModel.db.execute(
+        'SELECT Stripe_Subscription_ID FROM Subscriptions WHERE Subscription_ID = ? AND User_ID = ?',
+        [subId, userId]
+      );
+      if (rows.length && rows[0].Stripe_Subscription_ID) {
+        // Cancela en Stripe
+        await stripe.subscriptions.update(rows[0].Stripe_Subscription_ID, { cancel_at_period_end: true });
+      }
+
+      // Cancela en tu BD
       await SubscriptionModel.cancel(subId, userId);
       res.json({ success: true });
     } catch (err) {

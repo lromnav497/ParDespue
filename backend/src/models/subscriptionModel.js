@@ -27,19 +27,21 @@ const SubscriptionModel = {
   },
 
   // Renovar suscripción y crear transacción
-  renew: async (subId, months, userId) => {
-    await db.query(
+  renew: async (subId, userId, stripeSubscriptionId) => {
+    // Actualiza la fecha de fin y el Stripe_Subscription_ID
+    await db.execute(
       `UPDATE Subscriptions 
-       SET End_Date = DATE_ADD(End_Date, INTERVAL ? MONTH)
+       SET End_Date = DATE_ADD(End_Date, INTERVAL 1 YEAR), Stripe_Subscription_ID = ?
        WHERE Subscription_ID = ? AND User_ID = ? AND Status = 'active'`,
-      [months, subId, userId]
+      [stripeSubscriptionId, subId, userId]
     );
+    // Obtiene el tipo de suscripción para calcular el monto
     const [rows] = await db.execute(
       'SELECT Type FROM Subscriptions WHERE Subscription_ID = ?',
       [subId]
     );
     let amount = 0;
-    if (rows.length && rows[0].Type === 'premium') amount = 99.99 * months;
+    if (rows.length && rows[0].Type === 'premium') amount = 99.99;
     if (amount > 0) {
       await SubscriptionModel.createTransaction(
         subId,
@@ -52,7 +54,7 @@ const SubscriptionModel = {
 
   // Cancelar suscripción (NO crea transacción)
   cancel: async (subId, userId) => {
-    await db.query(
+    await db.execute(
       'UPDATE Subscriptions SET Status = ? WHERE Subscription_ID = ? AND User_ID = ?',
       ['canceled', subId, userId]
     );
