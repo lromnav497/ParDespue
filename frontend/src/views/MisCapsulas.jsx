@@ -20,7 +20,7 @@ const MisCapsulas = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [pendingAction, setPendingAction] = useState(null); // { type, capsula }
-  const [plan, setPlan] = useState('Básico');
+  const [plan, setPlan] = useState(null);
   const navigate = useNavigate();
   const location = useLocation(); // <-- Hook para leer el state
 
@@ -51,20 +51,37 @@ const MisCapsulas = () => {
     fetchCapsulas();
   }, [userId]);
 
-  // Efecto para obtener el plan del usuario
+  // Efecto para obtener el plan del usuario (igual que en Header)
   useEffect(() => {
     const fetchPlan = async () => {
       const user = JSON.parse(localStorage.getItem('user'));
       const token = localStorage.getItem('token') || user?.token;
       if (!token) return;
-      const res = await fetch('/api/subscriptions/my-plan', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setPlan(data.plan || 'Básico');
+      try {
+        const res = await fetch('/api/subscriptions/my-plan', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) return setPlan(null);
+        const data = await res.json();
+        // Si tu backend devuelve { suscripcion: { nombre: 'premium', ... } }
+        if (data.suscripcion && data.suscripcion.nombre) {
+          setPlan(
+            data.suscripcion.nombre.charAt(0).toUpperCase() +
+            data.suscripcion.nombre.slice(1)
+          );
+        } else if (data.plan) {
+          setPlan(
+            data.plan.charAt(0).toUpperCase() + data.plan.slice(1)
+          );
+        } else {
+          setPlan(null);
+        }
+      } catch {
+        setPlan(null);
+      }
     };
     fetchPlan();
-  }, []);
+  }, [userId]);
 
   function getEstado(capsula) {
     const ahora = new Date();
