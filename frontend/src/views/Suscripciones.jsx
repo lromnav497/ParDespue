@@ -257,16 +257,16 @@ const Suscripciones = () => {
                 } ${loading && selectedPlan === plan.name ? 'opacity-60 cursor-not-allowed' : ''}`}
                 disabled={
                   loading ||
-                  (plan.name === "Premium" && currentPlan === "Premium") ||
-                  (plan.name === "Básico" && currentPlan === "Básico")
+                  currentPlan === "Premium" ||
+                  currentPlan === "Básico"
                 }
                 onClick={() => handleSubscribe(plan)}
               >
                 {loading && selectedPlan === plan.name
                   ? 'Procesando...'
-                  : (plan.name === "Premium" && currentPlan === "Premium")
+                  : currentPlan === "Premium"
                     ? 'Ya tienes Premium'
-                    : (plan.name === "Básico" && currentPlan === "Básico")
+                    : currentPlan === "Básico"
                       ? 'Ya tienes Básico'
                       : plan.cta}
               </button>
