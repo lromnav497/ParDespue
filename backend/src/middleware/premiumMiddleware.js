@@ -7,7 +7,7 @@ const requirePremium = async (req, res, next) => {
     if (!userId) return res.status(401).json({ message: 'No autenticado.' });
 
     const plan = await SubscriptionModel.getUserPlan(userId);
-    if (plan !== 'Premium') {
+    if (!plan || (plan.nombre && plan.nombre.toLowerCase() !== 'premium')) {
       return res.status(403).json({ message: 'Solo usuarios Premium pueden editar cápsulas.' });
     }
     next();

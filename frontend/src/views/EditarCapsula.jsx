@@ -70,15 +70,17 @@ const EditarCapsula = () => {
         }
         const data = await res.json();
         console.log('[EditarCapsula] /api/subscriptions/my-plan data:', data);
+        // Forzar a string y lowercase para evitar problemas de mayúsculas/minúsculas
+        let planName = null;
         if (data.suscripcion && data.suscripcion.nombre) {
-          setPlan(
-            data.suscripcion.nombre.charAt(0).toUpperCase() +
-            data.suscripcion.nombre.slice(1)
-          );
+          planName = String(data.suscripcion.nombre).toLowerCase();
         } else if (data.plan) {
-          setPlan(
-            data.plan.charAt(0).toUpperCase() + data.plan.slice(1)
-          );
+          planName = String(data.plan).toLowerCase();
+        }
+        if (planName === 'premium') {
+          setPlan('Premium');
+        } else if (planName === 'básico' || planName === 'basico') {
+          setPlan('Básico');
         } else {
           setPlan(null);
         }
