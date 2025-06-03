@@ -151,6 +151,10 @@ const Suscripciones = () => {
     }, 1000);
   };
 
+  if (plans[1].name === "Premium" && !plans[1].price) {
+    return <div className="text-center text-white">Cargando precios de Stripe...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 py-16">
       <div className="container mx-auto px-4">
@@ -216,14 +220,16 @@ const Suscripciones = () => {
                   {plan.name}
                 </h3>
                 <div className="text-white mb-4">
-                  {plan.price > 0 ? (
+                  {plan.name === "Básico" ? (
+                    <span className="text-4xl font-bold">Gratis</span>
+                  ) : plan.price ? (
                     <span className="text-4xl font-bold">
                       {Number(plan.price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                     </span>
                   ) : (
-                    <span className="text-4xl font-bold">Gratis</span>
+                    <span className="text-4xl font-bold">Cargando...</span>
                   )}
-                  {plan.price > 0 && (
+                  {plan.name === "Premium" && plan.price && (
                     <span className="text-gray-400 ml-2">
                       /{billing === 'monthly' ? 'mes' : 'año'}
                     </span>
