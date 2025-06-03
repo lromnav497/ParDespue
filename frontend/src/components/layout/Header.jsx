@@ -75,7 +75,7 @@ const Header = () => {
       });
       if (res.ok) {
         const data = await res.json();
-        setNotifications(data);
+        setNotifications(data.slice(0, 3)); // Solo las 3 más recientes
       }
     };
     fetchNotifications();
