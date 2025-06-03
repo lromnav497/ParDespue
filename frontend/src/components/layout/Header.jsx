@@ -217,7 +217,10 @@ const Header = () => {
                 className="flex items-center text-white hover:text-[#F5E050] transition-colors"
                 onClick={() => setMenuOpen(v => !v)}
               >
-                <FontAwesomeIcon icon={faUser} className="mr-2" />
+                {/* Solo muestra el icono si NO hay foto */}
+                {!user.profilePicture && (
+                  <FontAwesomeIcon icon={faUser} className="mr-2" />
+                )}
                 <span className="mr-2 flex items-center">
                   {user.name}
                   {user.profilePicture && (
@@ -225,6 +228,7 @@ const Header = () => {
                       src={user.profilePicture.startsWith('http') ? user.profilePicture : `${user.profilePicture}`}
                       alt="Foto de perfil"
                       className="ml-2 w-8 h-8 rounded-full object-cover border-2 border-[#F5E050]"
+                      style={{ background: "#fff" }}
                     />
                   )}
                   {plan === 'Premium' && (
