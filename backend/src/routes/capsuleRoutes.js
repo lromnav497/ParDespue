@@ -65,7 +65,7 @@ router.get('/:id/edit', authMiddleware, requirePremium, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-router.put('/:id', (req, res) => CapsuleController.update(req, res));
+router.put('/:id', authMiddleware, (req, res) => CapsuleController.update(req, res));
 router.delete('/:id', async (req, res) => {
   const capsuleId = req.params.id;
   const userId = req.body.userId || req.headers['x-user-id'];
