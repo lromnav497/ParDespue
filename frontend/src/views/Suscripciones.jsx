@@ -61,8 +61,9 @@ const Suscripciones = () => {
 
   // Mapea los precios de Stripe a tus planes
   const getStripePrice = (nickname) => {
+    // Busca el nickname exacto
     const price = stripePrices.find(
-      p => p.nickname && p.nickname.toLowerCase().includes(nickname.toLowerCase())
+      p => p.nickname && p.nickname.toLowerCase() === nickname.toLowerCase()
     );
     return price
       ? {
@@ -215,9 +216,13 @@ const Suscripciones = () => {
                   {plan.name}
                 </h3>
                 <div className="text-white mb-4">
-                  <span className="text-4xl font-bold">
-                    ${plan.price}
-                  </span>
+                  {plan.price > 0 ? (
+                    <span className="text-4xl font-bold">
+                      {Number(plan.price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                    </span>
+                  ) : (
+                    <span className="text-4xl font-bold">Gratis</span>
+                  )}
                   {plan.price > 0 && (
                     <span className="text-gray-400 ml-2">
                       /{billing === 'monthly' ? 'mes' : 'año'}
