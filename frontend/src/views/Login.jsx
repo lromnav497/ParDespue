@@ -99,15 +99,18 @@ const Login = () => {
               </div>
             </div>
 
-            <label className="flex items-center mt-2">
+            <div className="flex items-center mb-6 mt-2">
               <input
+                id="remember"
                 type="checkbox"
                 checked={remember}
                 onChange={e => setRemember(e.target.checked)}
-                className="mr-2"
+                className="accent-[#F5E050] w-4 h-4 rounded border-[#F5E050] focus:ring-[#F5E050] transition-all"
               />
-              Recordar sesión
-            </label>
+              <label htmlFor="remember" className="ml-2 text-gray-300 select-none cursor-pointer">
+                Mantener sesión iniciada
+              </label>
+            </div>
 
             <div className="flex justify-center">
               <button
