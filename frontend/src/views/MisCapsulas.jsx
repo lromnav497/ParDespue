@@ -246,7 +246,13 @@ const MisCapsulas = () => {
               >
                 <div className="relative">
                   <img 
-                    src={capsula.Cover_Image || "https://picsum.photos/400/300"} 
+                    src={
+                      capsula.Cover_Image
+                        ? (capsula.Cover_Image.startsWith('http')
+                            ? capsula.Cover_Image
+                            : `http://44.209.31.187${capsula.Cover_Image}`)
+                        : "https://picsum.photos/400/300"
+                    }
                     alt={capsula.Title}
                     className="w-full h-48 object-cover"
                   />

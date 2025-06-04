@@ -636,17 +636,7 @@ const CrearCapsula = () => {
     if (!resCapsule.ok) throw new Error(capsuleData.message || 'Error al crear cápsula');
     const capsuleId = capsuleData.Capsule_ID || capsuleData.id;
 
-    // 2. Si hay portada, súbela
-    if (coverImage) {
-      const formData = new FormData();
-      formData.append('cover_image', coverImage);
-      const token = localStorage.getItem('token');
-      await fetch(`/api/capsules/${capsuleId}/cover`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData
-      });
-    }
+    // Ya NO subas la portada aquí, porque ya se subió en el POST
 
     // 2. Sube los archivos con userId y capsuleId
     for (const archivo of formData.archivos) {
