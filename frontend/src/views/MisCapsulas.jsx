@@ -195,6 +195,32 @@ const MisCapsulas = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const randomImages = [
+    "https://picsum.photos/id/1015/400/300",
+    "https://picsum.photos/id/1016/400/300",
+    "https://picsum.photos/id/1018/400/300",
+    "https://picsum.photos/id/1020/400/300",
+    "https://picsum.photos/id/1024/400/300",
+    "https://picsum.photos/id/1025/400/300",
+    "https://picsum.photos/id/1027/400/300",
+    "https://picsum.photos/id/1035/400/300",
+    "https://picsum.photos/id/1041/400/300",
+    "https://picsum.photos/id/1043/400/300"
+  ];
+
+  const usedImages = new Set();
+
+  function getUniqueRandomImage() {
+    let available = randomImages.filter(img => !usedImages.has(img));
+    if (available.length === 0) {
+      usedImages.clear();
+      available = [...randomImages];
+    }
+    const img = available[Math.floor(Math.random() * available.length)];
+    usedImages.add(img);
+    return img;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Encabezado */}
@@ -234,90 +260,95 @@ const MisCapsulas = () => {
           {filteredCapsulas.length === 0 ? (
             <div className="col-span-3 text-center text-gray-400">No tienes cápsulas.</div>
           ) : (
-            filteredCapsulas.map(capsula => (
-              <div
-                key={capsula.Capsule_ID}
-                data-capsule-id={capsula.Capsule_ID}
-                className={`bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer relative ${
-                  String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')
-                    ? 'border-4 border-yellow-400 animate-shake'
-                    : ''
-                }`}
-                onClick={e => {
-                  e.stopPropagation();
-                  handleProtectedAction('ver', capsula);
-                  // Si era la destacada, la quitamos del highlight
-                  if (String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')) {
-                    localStorage.removeItem('highlight_capsule');
-                  }
-                }}
-              >
-                <div className="relative">
-                  <img 
-                    src={
-                      capsula.Cover_Image
-                        ? (capsula.Cover_Image.startsWith('http')
-                            ? capsula.Cover_Image
-                            : `http://44.209.31.187${capsula.Cover_Image}`)
-                        : "https://picsum.photos/400/300"
+            filteredCapsulas.map((capsula, idx) => {
+              let imageUrl;
+              if (capsula.Cover_Image) {
+                imageUrl = capsula.Cover_Image.startsWith('http')
+                  ? capsula.Cover_Image
+                  : `http://44.209.31.187:3000/api${capsula.Cover_Image}`;
+              } else {
+                imageUrl = getUniqueRandomImage();
+              }
+              
+              return (
+                <div
+                  key={capsula.Capsule_ID}
+                  data-capsule-id={capsula.Capsule_ID}
+                  className={`bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer relative ${
+                    String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')
+                      ? 'border-4 border-yellow-400 animate-shake'
+                      : ''
+                  }`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleProtectedAction('ver', capsula);
+                    // Si era la destacada, la quitamos del highlight
+                    if (String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')) {
+                      localStorage.removeItem('highlight_capsule');
                     }
-                    alt={capsula.Title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute top-4 right-4 flex gap-2">
-                    {getEstado(capsula) === 'programada' && plan && plan.toLowerCase() === 'premium' && (
-                      <button
-                        className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e]"
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleProtectedAction('editar', capsula);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faEdit} />
-                      </button>
-                    )}
-                    {capsula.Creator_User_ID === userId && (
-                      <button
-                        className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e]"
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleDelete(capsula.Capsule_ID);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    )}
+                  }}
+                >
+                  <div className="relative">
+                    <img 
+                      src={imageUrl}
+                      alt={capsula.Title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute top-4 right-4 flex gap-2">
+                      {getEstado(capsula) === 'programada' && plan && plan.toLowerCase() === 'premium' && (
+                        <button
+                          className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e]"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleProtectedAction('editar', capsula);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                      )}
+                      {capsula.Creator_User_ID === userId && (
+                        <button
+                          className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e]"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleDelete(capsula.Capsule_ID);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="text-[#F5E050] passero-font text-xl mb-2">
-                    {capsula.Title}
-                  </h3>
                   
-                  <div className="space-y-2 text-sm text-gray-300">
-                    <p className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={faClock} />
-                      Creada: {new Date(capsula.Creation_Date).toLocaleDateString()}
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={getEstado(capsula) === 'abierta' ? faUnlock : faClock} />
-                      Se abre: {new Date(capsula.Opening_Date).toLocaleDateString()}
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={faBoxArchive} />
-                      Categoría: {
-                        (capsula.Category && typeof capsula.Category === 'object' && capsula.Category.Name) ||
-                        (typeof capsula.Category === 'string' && capsula.Category) ||
-                        capsula.Category_Name ||
-                        'Sin categoría'
-                      }
-                    </p>
-                    <p className="text-gray-400">{capsula.Content}</p>
+                  <div className="p-4">
+                    <h3 className="text-[#F5E050] passero-font text-xl mb-2">
+                      {capsula.Title}
+                    </h3>
+                    
+                    <div className="space-y-2 text-sm text-gray-300">
+                      <p className="flex items-center gap-2">
+                        <FontAwesomeIcon icon={faClock} />
+                        Creada: {new Date(capsula.Creation_Date).toLocaleDateString()}
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <FontAwesomeIcon icon={getEstado(capsula) === 'abierta' ? faUnlock : faClock} />
+                        Se abre: {new Date(capsula.Opening_Date).toLocaleDateString()}
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <FontAwesomeIcon icon={faBoxArchive} />
+                        Categoría: {
+                          (capsula.Category && typeof capsula.Category === 'object' && capsula.Category.Name) ||
+                          (typeof capsula.Category === 'string' && capsula.Category) ||
+                          capsula.Category_Name ||
+                          'Sin categoría'
+                        }
+                      </p>
+                      <p className="text-gray-400">{capsula.Content}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       )}
