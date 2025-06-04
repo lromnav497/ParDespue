@@ -640,14 +640,18 @@ const CrearCapsula = () => {
 
     // 2. Sube los archivos con userId y capsuleId
     for (const archivo of formData.archivos) {
-      // Mueve el archivo del tmp al destino final
+      console.log('Moviendo archivo:', {
+        userId,
+        capsuleId,
+        tmpPath: archivo.tmpPath
+      });
       const resMove = await fetch('/api/upload/move', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
           capsuleId,
-          tmpPath: archivo.tmpPath // ej: /uploads/tmp/8/12345.jpg
+          tmpPath: archivo.tmpPath
         }),
       });
       const data = await resMove.json();
