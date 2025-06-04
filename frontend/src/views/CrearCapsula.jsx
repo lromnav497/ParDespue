@@ -708,8 +708,12 @@ const CrearCapsula = () => {
       setShowModal(true);
     }
 
-    alert('¡Cápsula creada con éxito!');
+    // alert('¡Cápsula creada con éxito!');
     // Redirige o limpia el formulario si quieres
+
+    // NUEVO: Guarda el ID y redirige
+    localStorage.setItem('highlight_capsule', capsuleId);
+    window.location.href = '/capsulas';
   } catch (err) {
     alert('Error al crear la cápsula: ' + err.message);
   }
