@@ -271,22 +271,26 @@ const InformacionGeneral = () => {
       <form className="space-y-6" onSubmit={handleSave}>
         <div className="bg-[#1a1a4a] p-6 rounded-lg">
           <div className="flex items-center mb-4">
-            <label className="w-20 h-20 rounded-full bg-[#F5E050] flex items-center justify-center overflow-hidden cursor-pointer group relative">
-              {profilePicture || newProfilePic ? (
+            <label className="relative group cursor-pointer">
+              {/* Imagen de perfil grande y estética */}
+              {(profilePicture || newProfilePic) ? (
                 <img
                   src={
                     newProfilePic
                       ? URL.createObjectURL(newProfilePic)
                       : profilePicture.startsWith('http')
                         ? profilePicture
-                        : `${profilePicture}`
+                        : `http://44.209.31.187/api${profilePicture}`
                   }
                   alt="Foto de perfil"
-                  className="w-full h-full object-cover group-hover:opacity-70 transition"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 group-hover:scale-105 bg-white"
                 />
               ) : (
-                <FontAwesomeIcon icon={faUser} className="text-[#2E2E7A] text-3xl" />
+                <div className="w-32 h-32 rounded-full bg-[#F5E050] flex items-center justify-center">
+                  <FontAwesomeIcon icon={faUser} className="text-[#2E2E7A] text-5xl" />
+                </div>
               )}
+              {/* Botón flotante para cambiar foto */}
               <input
                 type="file"
                 accept="image/*"
@@ -294,13 +298,10 @@ const InformacionGeneral = () => {
                 className="absolute inset-0 opacity-0 cursor-pointer"
                 title="Cambiar foto de perfil"
               />
-              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-[#2E2E7A] text-[#F5E050] text-xs px-2 py-1 rounded opacity-80 group-hover:opacity-100 pointer-events-none">
+              <span className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#2E2E7A] text-[#F5E050] text-xs px-3 py-1 rounded-full opacity-90 group-hover:opacity-100 pointer-events-none transition">
                 Cambiar foto
               </span>
             </label>
-            <div className="ml-4">
-              {/* Ya no hay botón de guardar foto */}
-            </div>
           </div>
           {error && <div className="text-red-400 mb-2">{error}</div>}
           {success && <div className="text-green-400 mb-2">{success}</div>}
