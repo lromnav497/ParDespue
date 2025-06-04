@@ -19,6 +19,17 @@ const categorias = [
 
 const PAGE_SIZE = 9;
 
+function getImageUrl(capsula) {
+  if (capsula.Cover_Image) {
+    return capsula.Cover_Image.startsWith('http')
+      ? capsula.Cover_Image
+      : `http://44.209.31.187:3000/api${capsula.Cover_Image}`;
+  } else {
+    // Imagen por defecto si no hay portada
+    return "https://picsum.photos/400/300";
+  }
+}
+
 const Explorar = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('todas');
@@ -119,7 +130,7 @@ const Explorar = () => {
                 style={{ textDecoration: 'none' }}
               >
                 <img 
-                  src={capsula.Cover_Image || "https://picsum.photos/400/300"} 
+                  src={getImageUrl(capsula)} 
                   alt={capsula.titulo}
                   className="w-full h-48 object-cover"
                 />
