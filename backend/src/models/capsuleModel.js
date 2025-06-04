@@ -67,6 +67,7 @@ const CapsuleModel = {
   },
 
   findPublicPaginated: async ({ page, pageSize, category, search }) => {
+    console.log('[findPublicPaginated] called with:', { page, pageSize, category, search });
     const offset = (page - 1) * pageSize;
     let baseQuery = `
       FROM Capsules c
@@ -107,6 +108,8 @@ const CapsuleModel = {
         ORDER BY c.Creation_Date DESC LIMIT ? OFFSET ?`,
       [...params, Number(pageSize), Number(offset)]
     );
+
+    console.log('[findPublicPaginated] total:', total, 'totalPages:', totalPages, 'rows:', rows.length);
 
     return { capsulas: rows, totalPages };
   },

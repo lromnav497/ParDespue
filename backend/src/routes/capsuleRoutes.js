@@ -152,6 +152,7 @@ router.put('/:id/cover', authMiddleware, uploadCover.single('cover_image'), asyn
 
 // Método nuevo para obtener cápsulas públicas paginadas
 router.get('/public-paginated', async (req, res) => {
+  console.log('[ROUTE] /public-paginated', req.query);
   const { page = 1, pageSize = 10, category, search } = req.query;
   try {
     const capsules = await capsuleModel.findPublicPaginated({
@@ -160,8 +161,10 @@ router.get('/public-paginated', async (req, res) => {
       category,
       search
     });
+    console.log('[ROUTE] /public-paginated response:', capsules);
     res.json(capsules);
   } catch (error) {
+    console.error('[ROUTE] /public-paginated ERROR:', error);
     res.status(500).json({ error: error.message });
   }
 });
