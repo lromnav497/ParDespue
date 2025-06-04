@@ -130,7 +130,7 @@ const Explorar = () => {
           ) : (
             capsulas.map(capsula => {
               let imageUrl;
-              if (capsula.Cover_Image) {
+              if (capsula.Cover_Image && capsula.Cover_Image !== "null" && capsula.Cover_Image !== "") {
                 imageUrl = capsula.Cover_Image.startsWith('http')
                   ? capsula.Cover_Image
                   : `http://44.209.31.187:3000/api${capsula.Cover_Image}`;
