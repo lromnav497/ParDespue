@@ -228,16 +228,27 @@ const Header = () => {
                       ? user.profilePicture
                       : `http://44.209.31.187/api${user.profilePicture}`;
                     return (
-                      <img
-                        src={imgUrl}
-                        alt="Foto de perfil"
-                        className="ml-2 w-12 h-12 rounded-full object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 hover:scale-105"
-                        style={{ background: "#fff" }}
-                        onError={e => { e.target.style.display = 'none'; }}
-                      />
+                      <span className="relative ml-2 inline-block">
+                        <img
+                          src={imgUrl}
+                          alt="Foto de perfil"
+                          className="w-12 h-12 rounded-full object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 hover:scale-105"
+                          style={{ background: "#fff" }}
+                          onError={e => { e.target.style.display = 'none'; }}
+                        />
+                        {plan === 'Premium' && (
+                          <FontAwesomeIcon
+                            icon={faCrown}
+                            className="absolute -top-2 -right-2 text-yellow-400 text-2xl drop-shadow"
+                            title="Usuario Premium"
+                            style={{ zIndex: 2 }}
+                          />
+                        )}
+                      </span>
                     );
                   })()}
-                  {plan === 'Premium' && (
+                  {/* Si NO hay foto, muestra la corona junto al nombre */}
+                  {!user.profilePicture && plan === 'Premium' && (
                     <FontAwesomeIcon icon={faCrown} className="ml-2 text-yellow-400" title="Usuario Premium" />
                   )}
                 </span>
