@@ -703,9 +703,8 @@ const CrearCapsula = () => {
 
     // Mostrar carrusel modal si hay archivos
     if (formData.archivos.length > 0) {
-      // Selecciona 3 archivos aleatorios
-      const shuffled = [...formData.archivos].sort(() => 0.5 - Math.random());
-      setCarruselArchivos(formData.archivos); // <-- pasa todos los archivos, no solo 3
+      setCreatedCapsuleId(capsuleId); // <-- Guarda el ID antes de mostrar el modal
+      setCarruselArchivos(formData.archivos);
       setShowModal(true);
     }
 
