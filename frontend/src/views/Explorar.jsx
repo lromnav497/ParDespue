@@ -19,6 +19,31 @@ const categorias = [
 
 const PAGE_SIZE = 9;
 
+const randomImages = [
+  "https://picsum.photos/id/1015/400/300",
+  "https://picsum.photos/id/1016/400/300",
+  "https://picsum.photos/id/1018/400/300",
+  "https://picsum.photos/id/1020/400/300",
+  "https://picsum.photos/id/1024/400/300",
+  "https://picsum.photos/id/1025/400/300",
+  "https://picsum.photos/id/1027/400/300",
+  "https://picsum.photos/id/1035/400/300",
+  "https://picsum.photos/id/1041/400/300",
+  "https://picsum.photos/id/1043/400/300"
+];
+
+let usedImages = new Set();
+function getUniqueRandomImage() {
+  let available = randomImages.filter(img => !usedImages.has(img));
+  if (available.length === 0) {
+    usedImages.clear();
+    available = [...randomImages];
+  }
+  const img = available[Math.floor(Math.random() * available.length)];
+  usedImages.add(img);
+  return img;
+}
+
 const Explorar = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('todas');
@@ -103,57 +128,67 @@ const Explorar = () => {
           {capsulas.length === 0 ? (
             <div className="col-span-3 text-center text-gray-400">No se encontraron cápsulas.</div>
           ) : (
-            capsulas.map(capsula => (
-              <Link
-                key={capsula.id}
-                to={`/vercapsula/${capsula.id}`}
-                onClick={e => {
-                  const ahora = new Date();
-                  const apertura = new Date(capsula.fechaApertura);
-                  if (apertura > ahora) {
-                    e.preventDefault();
-                    alert(`Esta cápsula aún no está disponible. Fecha de apertura: ${apertura.toLocaleDateString()}`);
-                  }
-                }}
-                className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:transform hover:scale-105 transition-all block"
-                style={{ textDecoration: 'none' }}
-              >
-                <img 
-                  src={capsula.Cover_Image || "https://picsum.photos/400/300"} 
-                  alt={capsula.titulo}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="text-[#F5E050] passero-font text-xl mb-2">
-                    {capsula.titulo}
-                  </h3>
-                  <p className="text-gray-300 text-sm mb-4">
-                    Por {capsula.autor} ({capsula.email})
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {capsula.tags?.map(tag => (
-                      <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs">{tag}</span>
-                    ))}
-                  </div>
-                  <div className="flex justify-between items-center text-sm text-gray-400">
-                    <div className="flex items-center gap-4">
+            capsulas.map(capsula => {
+              let imageUrl;
+              if (capsula.Cover_Image) {
+                imageUrl = capsula.Cover_Image.startsWith('http')
+                  ? capsula.Cover_Image
+                  : `http://44.209.31.187:3000/api${capsula.Cover_Image}`;
+              } else {
+                imageUrl = getUniqueRandomImage();
+              }
+              return (
+                <Link
+                  key={capsula.id}
+                  to={`/vercapsula/${capsula.id}`}
+                  onClick={e => {
+                    const ahora = new Date();
+                    const apertura = new Date(capsula.fechaApertura);
+                    if (apertura > ahora) {
+                      e.preventDefault();
+                      alert(`Esta cápsula aún no está disponible. Fecha de apertura: ${apertura.toLocaleDateString()}`);
+                    }
+                  }}
+                  className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:transform hover:scale-105 transition-all block"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <img 
+                    src={imageUrl}
+                    alt={capsula.titulo}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="text-[#F5E050] passero-font text-xl mb-2">
+                      {capsula.titulo}
+                    </h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      Por {capsula.autor} ({capsula.email})
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {capsula.tags?.map(tag => (
+                        <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs">{tag}</span>
+                      ))}
+                    </div>
+                    <div className="flex justify-between items-center text-sm text-gray-400">
+                      <div className="flex items-center gap-4">
+                        <span className="flex items-center">
+                          <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500" />
+                          {capsula.likes}
+                        </span>
+                        <span className="flex items-center">
+                          <FontAwesomeIcon icon={faEye} className="mr-1" />
+                          {capsula.vistas}
+                        </span>
+                      </div>
                       <span className="flex items-center">
-                        <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500" />
-                        {capsula.likes}
-                      </span>
-                      <span className="flex items-center">
-                        <FontAwesomeIcon icon={faEye} className="mr-1" />
-                        {capsula.vistas}
+                        <FontAwesomeIcon icon={faClock} className="mr-1" />
+                        Se abre: {new Date(capsula.fechaApertura).toLocaleDateString()}
                       </span>
                     </div>
-                    <span className="flex items-center">
-                      <FontAwesomeIcon icon={faClock} className="mr-1" />
-                      Se abre: {new Date(capsula.fechaApertura).toLocaleDateString()}
-                    </span>
                   </div>
-                </div>
-              </Link>
-            ))
+                </Link>
+              );
+            })
           )}
         </div>
       )}
