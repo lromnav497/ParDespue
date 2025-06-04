@@ -12,7 +12,20 @@ const CapsuleModel = {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [Title, Description, Creation_Date, Opening_Date, Privacy, Password, Creator_User_ID, Tags, Category_ID, Cover_Image]
     );
-    return { Capsule_ID: result.insertId, ...capsule };
+    // DEVUELVE SOLO EL ID Y LOS DATOS REALES
+    return {
+      Capsule_ID: result.insertId,
+      Title,
+      Description,
+      Creation_Date,
+      Opening_Date,
+      Privacy,
+      Password,
+      Creator_User_ID,
+      Tags,
+      Category_ID,
+      Cover_Image
+    };
   },
 
   // Obtener todas las cápsulas de un usuario
