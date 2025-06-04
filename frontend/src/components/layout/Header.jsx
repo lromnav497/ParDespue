@@ -228,7 +228,7 @@ const Header = () => {
                       src={
                         user.profilePicture.startsWith('http')
                           ? user.profilePicture
-                          : `${user.profilePicture}`
+                          : `http://44.209.31.187${user.profilePicture}`
                       }
                       alt="Foto de perfil"
                       className="ml-2 w-8 h-8 rounded-full object-cover border-2 border-[#F5E050]"
