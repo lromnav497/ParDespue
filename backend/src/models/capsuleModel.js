@@ -68,11 +68,7 @@ const CapsuleModel = {
 
   findPublicPaginated: async ({ page, pageSize, category, search }) => {
     const offset = (page - 1) * pageSize;
-    let query = `
-      SELECT 
-        c.Capsule_ID, c.Title, c.Description, c.Creation_Date, c.Opening_Date, 
-        c.Privacy, c.Tags, c.Cover_Image, 
-        u.Name as autor, u.Email as email
+    let baseQuery = `
       FROM Capsules c
       LEFT JOIN Users u ON c.Creator_User_ID = u.User_ID
       WHERE c.Privacy = 'public'
@@ -80,11 +76,11 @@ const CapsuleModel = {
     const params = [];
 
     if (category && category !== 'todas') {
-      query += ' AND c.Category_ID = ?';
+      baseQuery += ' AND c.Category_ID = ?';
       params.push(category);
     }
     if (search) {
-      query += ` AND (
+      baseQuery += ` AND (
         c.Title LIKE ? OR
         u.Name LIKE ? OR
         u.Email LIKE ? OR
@@ -93,11 +89,26 @@ const CapsuleModel = {
       params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY c.Creation_Date DESC LIMIT ? OFFSET ?';
-    params.push(Number(pageSize), Number(offset));
+    // 1. Obtener el total de cápsulas públicas para paginación
+    const [countRows] = await db.execute(
+      `SELECT COUNT(*) as total ${baseQuery}`,
+      params
+    );
+    const total = countRows[0]?.total || 0;
+    const totalPages = Math.ceil(total / pageSize);
 
-    const [rows] = await db.execute(query, params);
-    return rows;
+    // 2. Obtener las cápsulas públicas paginadas
+    const [rows] = await db.execute(
+      `SELECT 
+        c.Capsule_ID, c.Title, c.Description, c.Creation_Date, c.Opening_Date, 
+        c.Privacy, c.Tags, c.Cover_Image, 
+        u.Name as autor, u.Email as email
+        ${baseQuery}
+        ORDER BY c.Creation_Date DESC LIMIT ? OFFSET ?`,
+      [...params, Number(pageSize), Number(offset)]
+    );
+
+    return { capsulas: rows, totalPages };
   },
 
   update: async (id, data) => {
