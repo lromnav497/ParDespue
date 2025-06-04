@@ -161,6 +161,10 @@ const Explorar = () => {
                     src={imageUrl}
                     alt={capsula.titulo || capsula.Title}
                     className="w-full h-48 object-cover"
+                    onError={e => {
+                      e.target.onerror = null;
+                      e.target.src = getUniqueRandomImage();
+                    }}
                   />
                   <div className="p-4">
                     <h3 className="text-[#F5E050] passero-font text-xl mb-2">
