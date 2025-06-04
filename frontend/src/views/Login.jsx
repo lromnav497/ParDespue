@@ -99,7 +99,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="flex items-center mb-6 mt-2">
+            <div className="flex justify-center items-center mb-6 mt-2">
               <input
                 id="remember"
                 type="checkbox"

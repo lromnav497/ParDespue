@@ -267,21 +267,30 @@ const CrearCapsula = () => {
                 ))}
               </div>
             </div>
-            <div>
-              <label className="block text-white mb-2">Imagen de portada</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={e => setCoverImage(e.target.files[0])}
-                className="w-full"
-              />
-              {coverImage && (
-                <img
-                  src={URL.createObjectURL(coverImage)}
-                  alt="Portada"
-                  className="mt-2 w-40 h-28 object-cover rounded"
+            <div className="mb-4 flex flex-col items-center">
+              <label className="relative group cursor-pointer">
+                {coverImage ? (
+                  <img
+                    src={URL.createObjectURL(coverImage)}
+                    alt="Portada"
+                    className="w-40 h-32 rounded-lg object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 group-hover:scale-105 bg-white"
+                  />
+                ) : (
+                  <div className="w-40 h-32 rounded-lg bg-[#F5E050] flex items-center justify-center">
+                    <FontAwesomeIcon icon={faImage} className="text-[#2E2E7A] text-4xl" />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => setCoverImage(e.target.files[0])}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  title="Subir imagen de portada"
                 />
-              )}
+                <span className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#2E2E7A] text-[#F5E050] text-xs px-3 py-1 rounded-full opacity-90 group-hover:opacity-100 pointer-events-none transition">
+                  {coverImage ? 'Cambiar portada' : 'Subir portada'}
+                </span>
+              </label>
             </div>
           </div>
         );
@@ -465,6 +474,20 @@ const CrearCapsula = () => {
           <div className="space-y-8 text-white">
       {/* Información */}
       <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2">
+        {/* Portada */}
+        <div className="flex justify-center mb-4">
+          {coverImage ? (
+            <img
+              src={URL.createObjectURL(coverImage)}
+              alt="Portada"
+              className="w-40 h-32 rounded-lg object-cover border-4 border-[#F5E050] shadow-lg"
+            />
+          ) : (
+            <div className="w-40 h-32 rounded-lg bg-[#F5E050] flex items-center justify-center">
+              <FontAwesomeIcon icon={faImage} className="text-[#2E2E7A] text-4xl" />
+            </div>
+          )}
+        </div>
         <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
           <FontAwesomeIcon icon={faBoxArchive} /> Información
         </h3>
@@ -587,22 +610,27 @@ const CrearCapsula = () => {
       return;
     }
 
-    // 1. Crear la cápsula (sin portada)
+    // 1. Crear la cápsula (con portada)
+    const formDataCapsule = new FormData();
+    formDataCapsule.append('Title', formData.nombre);
+    formDataCapsule.append('Description', formData.descripcion);
+    formDataCapsule.append('Creation_Date', new Date().toISOString().slice(0, 19).replace('T', ' '));
+    formDataCapsule.append('Opening_Date', formData.fechaApertura);
+    formDataCapsule.append('Privacy', privacyValue);
+    formDataCapsule.append('Tags', formData.tags.join(','));
+    formDataCapsule.append('Creator_User_ID', userId);
+    formDataCapsule.append('Password', privacyValue === 'private' ? formData.password : '');
+    formDataCapsule.append('Category_ID', formData.categoriaId);
+    formDataCapsule.append('notificaciones', formData.notificaciones);
+    if (coverImage) {
+      formDataCapsule.append('cover_image', coverImage);
+    }
+
+    const token = localStorage.getItem('token');
     const resCapsule = await fetch('/api/capsules', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        Title: formData.nombre,
-        Description: formData.descripcion,
-        Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-        Opening_Date: formData.fechaApertura,
-        Privacy: privacyValue,
-        Tags: formData.tags.join(','),
-        Creator_User_ID: userId,
-        Password: privacyValue === 'private' ? formData.password : null,
-        Category_ID: formData.categoriaId,
-        notificaciones: formData.notificaciones // <-- AÑADIDO para notificación
-      }),
+      headers: { Authorization: `Bearer ${token}` },
+      body: formDataCapsule,
     });
     const capsuleData = await resCapsule.json();
     if (!resCapsule.ok) throw new Error(capsuleData.message || 'Error al crear cápsula');

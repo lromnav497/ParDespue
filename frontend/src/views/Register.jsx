@@ -140,14 +140,31 @@ const Register = () => {
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Foto de perfil</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={e => setProfilePicture(e.target.files[0])}
-              className="w-full"
-            />
+          <div className="mb-6 flex flex-col items-center">
+            <label className="relative group cursor-pointer">
+              {/* Imagen de perfil grande y estética */}
+              {profilePicture ? (
+                <img
+                  src={URL.createObjectURL(profilePicture)}
+                  alt="Foto de perfil"
+                  className="w-28 h-28 rounded-full object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 group-hover:scale-105 bg-white"
+                />
+              ) : (
+                <div className="w-28 h-28 rounded-full bg-[#F5E050] flex items-center justify-center">
+                  <FontAwesomeIcon icon={faUser} className="text-[#2E2E7A] text-4xl" />
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={e => setProfilePicture(e.target.files[0])}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                title="Subir foto de perfil"
+              />
+              <span className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#2E2E7A] text-[#F5E050] text-xs px-3 py-1 rounded-full opacity-90 group-hover:opacity-100 pointer-events-none transition">
+                {profilePicture ? 'Cambiar foto' : 'Subir foto'}
+              </span>
+            </label>
           </div>
 
           {error && <div className="text-red-400 text-center mb-4">{error}</div>}

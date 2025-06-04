@@ -7,19 +7,56 @@ const requirePremium = require('../middleware/premiumMiddleware');
 const { authMiddleware } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
+// Configuración de Multer para portada
 const coverStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/capsule_covers/');
+    const dir = 'uploads/capsule_covers/';
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, Date.now() + ext);
+    cb(null, Date.now() + path.extname(file.originalname));
   }
 });
 const uploadCover = multer({ storage: coverStorage });
 
-router.post('/', (req, res) => CapsuleController.create(req, res));
+// Crear cápsula con portada
+router.post(
+  '/',
+  authMiddleware,
+  uploadCover.single('cover_image'),
+  async (req, res) => {
+    try {
+      const {
+        Title, Description, Creation_Date, Opening_Date,
+        Privacy, Tags, Creator_User_ID, Password, Category_ID, notificaciones
+      } = req.body;
+      let coverImageUrl = null;
+      if (req.file) {
+        coverImageUrl = `/uploads/capsule_covers/${req.file.filename}`;
+      }
+      // Crea la cápsula con la portada
+      const result = await capsuleModel.create({
+        Title,
+        Description,
+        Creation_Date,
+        Opening_Date,
+        Privacy,
+        Tags,
+        Creator_User_ID,
+        Password,
+        Category_ID,
+        Cover_Image: coverImageUrl,
+        notificaciones
+      });
+      res.json({ Capsule_ID: result.insertId, id: result.insertId });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
 router.get('/privacy/:privacy', async (req, res) => {
     try {
         const capsules = await capsuleModel.findByPrivacy(req.params.privacy);
