@@ -108,6 +108,7 @@ const getStoredUser = () => {
       name: user.name || user.Name,
       email: user.email || user.Email,
       role: user.role || user.Role,
+      profilePicture: user.profilePicture || user.Profile_Picture || '', // <-- AGREGA ESTA LÍNEA
     };
   } catch {
     return null;
