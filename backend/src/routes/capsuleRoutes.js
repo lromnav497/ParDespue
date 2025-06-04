@@ -51,8 +51,8 @@ router.post(
         Cover_Image: coverImageUrl,
         notificaciones
       });
-      // ¡ESTO ES LO IMPORTANTE!
-      res.json({ Capsule_ID: result.insertId, id: result.insertId });
+      // RESPONDE CON EL OBJETO COMPLETO QUE YA INCLUYE Capsule_ID
+      res.json(result);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
