@@ -104,7 +104,8 @@ const CapsuleModel = {
         c.Creator_User_ID as creatorId,
         u.Name as autor,
         u.Email as email,
-        cat.Name as categoria
+        cat.Name as categoria,
+        c.Cover_Image as cover_image   
       FROM Capsules c
       JOIN Users u ON c.Creator_User_ID = u.User_ID
       JOIN Categories cat ON c.Category_ID = cat.Category_ID
