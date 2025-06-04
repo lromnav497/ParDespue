@@ -115,8 +115,15 @@ class CapsuleController extends GeneralController {
     // Nuevo método para obtener cápsulas públicas con paginación
     async getPublicCapsules(req, res) {
         try {
-            const capsules = await this.model.findPublic();
-            res.json(capsules); // <-- debe ser un array
+            // Lee los parámetros de la query
+            const page = parseInt(req.query.page) || 1;
+            const pageSize = parseInt(req.query.pageSize) || 9;
+            const category = req.query.category || '';
+            const search = req.query.search || '';
+
+            // Usa el método paginado del modelo
+            const result = await this.model.findPublicPaginated({ page, pageSize, category, search });
+            res.json(result); // { capsulas, totalPages }
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
