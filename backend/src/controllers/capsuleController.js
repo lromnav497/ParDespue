@@ -41,7 +41,8 @@ class CapsuleController extends GeneralController {
                 Password = null,
                 Creator_User_ID,
                 Tags,
-                Category_ID
+                Category_ID,
+                Cover_Image
             } = req.body;
 
             // Agrega este log:
@@ -75,7 +76,8 @@ class CapsuleController extends GeneralController {
                 Password,
                 Creator_User_ID,
                 Tags,
-                Category_ID
+                Category_ID,
+                Cover_Image
             });
 
             // Enviar notificación si corresponde
@@ -91,6 +93,7 @@ class CapsuleController extends GeneralController {
                 });
             }
 
+            // RESPONDE CON EL OBJETO QUE INCLUYE Capsule_ID
             res.status(201).json(newCapsule);
         } catch (err) {
             res.status(500).json({ message: err.message || 'Error al crear la cápsula.' });

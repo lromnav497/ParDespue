@@ -12,7 +12,6 @@ const CapsuleModel = {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [Title, Description, Creation_Date, Opening_Date, Privacy, Password, Creator_User_ID, Tags, Category_ID, Cover_Image]
     );
-    // DEVUELVE SOLO EL ID Y LOS DATOS REALES
     return {
       Capsule_ID: result.insertId,
       Title,
