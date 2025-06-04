@@ -701,12 +701,9 @@ const CrearCapsula = () => {
       }
     }
 
-    // Mostrar carrusel modal si hay archivos
-    if (formData.archivos.length > 0) {
-      setCreatedCapsuleId(capsuleId); // <-- Guarda el ID antes de mostrar el modal
-      setCarruselArchivos(formData.archivos);
-      setShowModal(true);
-    }
+    setCreatedCapsuleId(capsuleId);
+    setCarruselArchivos(formData.archivos);
+    setShowModal(true);
 
     // alert('¡Cápsula creada con éxito!');
     // Redirige o limpia el formulario si quieres
