@@ -50,6 +50,7 @@ const Explorar = () => {
       });
       const res = await fetch(`/api/capsules/public?${params.toString()}`);
       const data = await res.json();
+      console.log("Cápsulas recibidas:", data.capsulas); // <-- Agrega esto
       setCapsulas(data.capsulas || []);
       setTotalPages(data.totalPages || 1);
       setLoading(false);
