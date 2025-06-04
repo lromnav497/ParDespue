@@ -633,8 +633,11 @@ const CrearCapsula = () => {
       body: formDataCapsule,
     });
     const capsuleData = await resCapsule.json();
-    if (!resCapsule.ok) throw new Error(capsuleData.message || 'Error al crear cápsula');
+    console.log('Respuesta creación cápsula:', capsuleData);
     const capsuleId = capsuleData.Capsule_ID || capsuleData.id;
+    if (!resCapsule.ok || !capsuleId) {
+      throw new Error(capsuleData.message || 'Error al crear cápsula (ID no recibido)');
+    }
 
     // Ya NO subas la portada aquí, porque ya se subió en el POST
 
