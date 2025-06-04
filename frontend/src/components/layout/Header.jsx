@@ -228,20 +228,20 @@ const Header = () => {
                       ? user.profilePicture
                       : `http://44.209.31.187/api${user.profilePicture}`;
                     return (
-                      <span className="relative ml-2 inline-block">
+                      <span className="relative ml-2 inline-block group">
                         <img
                           src={imgUrl}
                           alt="Foto de perfil"
-                          className="w-12 h-12 rounded-full object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 hover:scale-105"
-                          style={{ background: "#fff" }}
+                          className="w-14 h-14 rounded-full object-cover border-4 border-[#F5E050] shadow-xl transition-transform duration-200 group-hover:scale-105 group-hover:ring-4 group-hover:ring-[#F5E050]/50 bg-white"
+                          style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}
                           onError={e => { e.target.style.display = 'none'; }}
                         />
                         {plan === 'Premium' && (
                           <FontAwesomeIcon
                             icon={faCrown}
-                            className="absolute -top-2 -right-2 text-yellow-400 text-2xl drop-shadow"
+                            className="absolute -top-2 -right-2 text-yellow-400 text-2xl drop-shadow-lg"
                             title="Usuario Premium"
-                            style={{ zIndex: 2 }}
+                            style={{ zIndex: 2, filter: 'drop-shadow(0 2px 4px #0008)' }}
                           />
                         )}
                       </span>
