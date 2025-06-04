@@ -130,7 +130,12 @@ const Explorar = () => {
           ) : (
             capsulas.map(capsula => {
               let imageUrl;
-              if (capsula.Cover_Image && capsula.Cover_Image !== "null" && capsula.Cover_Image !== "") {
+              if (
+                capsula.Cover_Image &&
+                capsula.Cover_Image !== "null" &&
+                capsula.Cover_Image !== null &&
+                capsula.Cover_Image !== ""
+              ) {
                 imageUrl = capsula.Cover_Image.startsWith('http')
                   ? capsula.Cover_Image
                   : `http://44.209.31.187:3000/api${capsula.Cover_Image}`;
@@ -139,22 +144,22 @@ const Explorar = () => {
               }
               return (
                 <Link
-                  key={capsula.id}
-                  to={`/vercapsula/${capsula.id}`}
+                  key={capsula.id || capsula.Capsule_ID}
+                  to={`/vercapsula/${capsula.id || capsula.Capsule_ID}`}
+                  className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:transform hover:scale-105 transition-all block"
+                  style={{ textDecoration: 'none' }}
                   onClick={e => {
                     const ahora = new Date();
-                    const apertura = new Date(capsula.fechaApertura);
+                    const apertura = new Date(capsula.fechaApertura || capsula.Opening_Date);
                     if (apertura > ahora) {
                       e.preventDefault();
                       alert(`Esta cápsula aún no está disponible. Fecha de apertura: ${apertura.toLocaleDateString()}`);
                     }
                   }}
-                  className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:transform hover:scale-105 transition-all block"
-                  style={{ textDecoration: 'none' }}
                 >
                   <img 
                     src={imageUrl}
-                    alt={capsula.titulo}
+                    alt={capsula.titulo || capsula.Title}
                     className="w-full h-48 object-cover"
                   />
                   <div className="p-4">
