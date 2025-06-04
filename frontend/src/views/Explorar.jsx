@@ -20,10 +20,10 @@ const categorias = [
 const PAGE_SIZE = 9;
 
 function getImageUrl(capsula) {
-  if (capsula.Cover_Image) {
-    return capsula.Cover_Image.startsWith('http')
-      ? capsula.Cover_Image
-      : `http://44.209.31.187:3000/api${capsula.Cover_Image}`;
+  if (capsula.cover_image) {
+    return capsula.cover_image.startsWith('http')
+      ? capsula.cover_image
+      : `http://44.209.31.187:3000/api${capsula.cover_image}`;
   } else {
     // Imagen por defecto si no hay portada
     return "https://picsum.photos/400/300";
