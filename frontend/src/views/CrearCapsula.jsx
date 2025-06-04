@@ -44,6 +44,7 @@ const CrearCapsula = () => {
   const [plan, setPlan] = useState('Básico');
   const [planMsg, setPlanMsg] = useState('');
   const [coverImage, setCoverImage] = useState(null);
+  const [createdCapsuleId, setCreatedCapsuleId] = useState(null);
 
   useEffect(() => {
     fetch('/api/categories')
@@ -712,8 +713,8 @@ const CrearCapsula = () => {
     // Redirige o limpia el formulario si quieres
 
     // NUEVO: Guarda el ID y redirige
-    localStorage.setItem('highlight_capsule', capsuleId);
-    window.location.href = '/capsulas';
+    // localStorage.setItem('highlight_capsule', capsuleId);
+    // window.location.href = '/capsulas';
   } catch (err) {
     alert('Error al crear la cápsula: ' + err.message);
   }
@@ -789,6 +790,7 @@ const CrearCapsula = () => {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         archivos={carruselArchivos}
+        capsuleId={createdCapsuleId} // <-- pásalo aquí
       />
     </div>
   );

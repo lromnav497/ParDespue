@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'; // <-- Importa esto
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMusic } from '@fortawesome/free-solid-svg-icons';
 
-const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
+const CapsuleCreatedModal = ({ isOpen, onClose, archivos, capsuleId }) => {
   const [current, setCurrent] = useState(0);
   const navigate = useNavigate(); // <-- Hook para navegar
 
@@ -33,8 +33,11 @@ const CapsuleCreatedModal = ({ isOpen, onClose, archivos }) => {
 
   // Cambia el handler del botón cerrar:
   const handleClose = () => {
+    if (capsuleId) {
+      localStorage.setItem('highlight_capsule', capsuleId);
+    }
     if (onClose) onClose();
-    navigate('/capsulas', { state: { filter: 'programada' } }); // <-- Pasa el filtro por state
+    navigate('/capsulas');
   };
 
   return (
