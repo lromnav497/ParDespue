@@ -152,6 +152,23 @@ const InformacionGeneral = () => {
     try {
       const storedUser = getStoredUser();
       const token = localStorage.getItem('token');
+      // Si hay nueva foto, primero súbela
+      let updatedProfilePicture = profilePicture;
+      if (newProfilePic) {
+        const formData = new FormData();
+        formData.append('profile_picture', newProfilePic);
+        const resPic = await fetch(`/api/users/${storedUser.id}/profile-picture`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+        const dataPic = await resPic.json();
+        if (resPic.ok && dataPic.profilePicture) {
+          updatedProfilePicture = dataPic.profilePicture;
+          setProfilePicture(updatedProfilePicture);
+        }
+      }
+      // Ahora actualiza los datos de usuario
       const res = await fetch(`/api/users/${storedUser.id}`, {
         method: 'PUT',
         headers: {
@@ -161,29 +178,26 @@ const InformacionGeneral = () => {
         body: JSON.stringify({ Name: name, Email: email }),
       });
       const data = await res.json();
-      console.log('Respuesta backend:', data); // <-- Añade esto
       if (!res.ok) {
         setError(data.message || 'Error al actualizar');
         setLoading(false);
         return;
       }
+      // Actualiza localStorage con la nueva foto si cambió
       const user = data.user || {};
       const updatedUser = {
         id: user.id || user.User_ID,
         name: user.name || user.Name,
         email: user.email || user.Email,
         role: user.role || user.Role,
+        profilePicture: updatedProfilePicture,
       };
-      if (updatedUser.id) {
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        setName(updatedUser.name);
-        setEmail(updatedUser.email);
-        setSuccess('Datos actualizados correctamente');
-        window.dispatchEvent(new Event('user-updated')); // <-- Añade esto
-      } else {
-        setError('No se pudo actualizar el usuario en localStorage');
-      }
-      console.log('Usuario actualizado:', updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setName(updatedUser.name);
+      setEmail(updatedUser.email);
+      setSuccess('Datos actualizados correctamente');
+      window.dispatchEvent(new Event('user-updated'));
+      setNewProfilePic(null);
       setLoading(false);
     } catch (err) {
       setError('Error de conexión');
@@ -257,46 +271,35 @@ const InformacionGeneral = () => {
       <form className="space-y-6" onSubmit={handleSave}>
         <div className="bg-[#1a1a4a] p-6 rounded-lg">
           <div className="flex items-center mb-4">
-            <div className="w-20 h-20 rounded-full bg-[#F5E050] flex items-center justify-center overflow-hidden">
-              {profilePicture ? (
-                <img src={profilePicture.startsWith('http') ? profilePicture : `${profilePicture}`} alt="Foto de perfil" className="w-full h-full object-cover" />
+            <label className="w-20 h-20 rounded-full bg-[#F5E050] flex items-center justify-center overflow-hidden cursor-pointer group relative">
+              {profilePicture || newProfilePic ? (
+                <img
+                  src={
+                    newProfilePic
+                      ? URL.createObjectURL(newProfilePic)
+                      : profilePicture.startsWith('http')
+                        ? profilePicture
+                        : `${profilePicture}`
+                  }
+                  alt="Foto de perfil"
+                  className="w-full h-full object-cover group-hover:opacity-70 transition"
+                />
               ) : (
                 <FontAwesomeIcon icon={faUser} className="text-[#2E2E7A] text-3xl" />
               )}
-            </div>
-            <div className="ml-4">
               <input
                 type="file"
                 accept="image/*"
                 onChange={e => setNewProfilePic(e.target.files[0])}
-                className="block text-sm text-gray-400"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                title="Cambiar foto de perfil"
               />
-              <button
-                type="button"
-                className="mt-2 bg-[#F5E050] text-[#2E2E7A] px-4 py-1 rounded-full font-bold"
-                onClick={async () => {
-                  if (!newProfilePic) return;
-                  const formData = new FormData();
-                  formData.append('profile_picture', newProfilePic);
-                  const token = localStorage.getItem('token');
-                  const res = await fetch(`/api/users/${storedUser.id}/profile-picture`, {
-                    method: 'PUT',
-                    headers: { Authorization: `Bearer ${token}` },
-                    body: formData
-                  });
-                  const data = await res.json();
-                  if (res.ok) {
-                    setProfilePicture(data.profilePicture);
-                    // Actualiza localStorage
-                    const user = JSON.parse(localStorage.getItem('user'));
-                    user.profilePicture = data.profilePicture;
-                    localStorage.setItem('user', JSON.stringify(user));
-                    window.dispatchEvent(new Event('user-updated'));
-                  }
-                }}
-              >
-                Guardar foto
-              </button>
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-[#2E2E7A] text-[#F5E050] text-xs px-2 py-1 rounded opacity-80 group-hover:opacity-100 pointer-events-none">
+                Cambiar foto
+              </span>
+            </label>
+            <div className="ml-4">
+              {/* Ya no hay botón de guardar foto */}
             </div>
           </div>
           {error && <div className="text-red-400 mb-2">{error}</div>}

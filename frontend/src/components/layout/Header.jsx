@@ -227,12 +227,11 @@ const Header = () => {
                     const imgUrl = user.profilePicture.startsWith('http')
                       ? user.profilePicture
                       : `http://44.209.31.187/api${user.profilePicture}`;
-                    console.log('URL de imagen de perfil:', imgUrl);
                     return (
                       <img
                         src={imgUrl}
                         alt="Foto de perfil"
-                        className="ml-2 w-8 h-8 rounded-full object-cover border-2 border-[#F5E050]"
+                        className="ml-2 w-12 h-12 rounded-full object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 hover:scale-105"
                         style={{ background: "#fff" }}
                         onError={e => { e.target.style.display = 'none'; }}
                       />
