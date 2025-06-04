@@ -62,7 +62,7 @@ const Explorar = () => {
         category: selectedCategory !== 'todas' ? selectedCategory : '',
         search: searchTerm
       });
-      const res = await fetch(`/api/capsules/public?${params.toString()}`);
+      const res = await fetch(`/api/capsules/public-paginated?${params.toString()}`);
       const data = await res.json();
       setCapsulas(data.capsulas || []);
       setTotalPages(data.totalPages || 1);
