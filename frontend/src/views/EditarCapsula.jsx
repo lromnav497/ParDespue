@@ -465,22 +465,51 @@ const EditarCapsula = () => {
             {/* Imagen de portada */}
             <div>
               <label className="block text-white mb-2">Imagen de portada</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={e => {
-                  setCoverImage(e.target.files[0]);
-                  setCoverPreview(URL.createObjectURL(e.target.files[0]));
-                }}
-                className="w-full"
-              />
-              {coverPreview && (
-                <img
-                  src={coverPreview}
-                  alt="Portada"
-                  className="mt-2 w-40 h-28 object-cover rounded"
-                />
-              )}
+              <div className="flex items-center gap-6">
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="cover-upload"
+                    style={{ display: 'none' }}
+                    onChange={e => {
+                      setCoverImage(e.target.files[0]);
+                      setCoverPreview(URL.createObjectURL(e.target.files[0]));
+                    }}
+                  />
+                  <label htmlFor="cover-upload" className="cursor-pointer">
+                    {coverPreview ? (
+                      <img
+                        src={coverPreview.startsWith('blob:')
+                          ? coverPreview
+                          : coverPreview.startsWith('http')
+                            ? coverPreview
+                            : `http://44.209.31.187:3000/api${coverPreview}`}
+                        alt="Portada"
+                        className="w-48 h-32 object-cover rounded-lg border-4 border-[#F5E050] shadow-lg hover:opacity-80 transition"
+                        title="Haz clic para cambiar la portada"
+                      />
+                    ) : (
+                      <div className="w-48 h-32 flex flex-col items-center justify-center bg-[#1a1a4a] border-2 border-dashed border-[#3d3d9e] rounded-lg cursor-pointer hover:border-[#F5E050] transition">
+                        <FontAwesomeIcon icon={faImage} className="text-4xl text-[#F5E050] mb-2" />
+                        <span className="text-white">Elegir imagen</span>
+                      </div>
+                    )}
+                  </label>
+                </div>
+                {coverPreview && (
+                  <button
+                    type="button"
+                    className="ml-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-400"
+                    onClick={() => {
+                      setCoverImage(null);
+                      setCoverPreview('');
+                    }}
+                  >
+                    Quitar
+                  </button>
+                )}
+              </div>
             </div>
             {/* Archivos actuales */}
             <div>
