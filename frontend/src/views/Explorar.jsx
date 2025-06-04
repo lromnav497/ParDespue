@@ -129,16 +129,18 @@ const Explorar = () => {
             <div className="col-span-3 text-center text-gray-400">No se encontraron cápsulas.</div>
           ) : (
             capsulas.map(capsula => {
+              // Intenta obtener la portada con varios nombres posibles
+              const portada = capsula.Cover_Image || capsula.cover_image || capsula.cover || null;
               let imageUrl;
               if (
-                capsula.Cover_Image &&
-                capsula.Cover_Image !== "null" &&
-                capsula.Cover_Image !== null &&
-                capsula.Cover_Image !== ""
+                portada &&
+                portada !== "null" &&
+                portada !== null &&
+                portada !== ""
               ) {
-                imageUrl = capsula.Cover_Image.startsWith('http')
-                  ? capsula.Cover_Image
-                  : `http://44.209.31.187:3000/api${capsula.Cover_Image}`;
+                imageUrl = portada.startsWith('http')
+                  ? portada
+                  : `http://44.209.31.187:3000/api${portada}`;
               } else {
                 imageUrl = getUniqueRandomImage();
               }

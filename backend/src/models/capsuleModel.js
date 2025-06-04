@@ -68,70 +68,36 @@ const CapsuleModel = {
 
   findPublicPaginated: async ({ page, pageSize, category, search }) => {
     const offset = (page - 1) * pageSize;
-    let where = "WHERE c.Privacy = 'public'";
+    let query = `
+      SELECT 
+        c.Capsule_ID, c.Title, c.Description, c.Creation_Date, c.Opening_Date, 
+        c.Privacy, c.Tags, c.Cover_Image, 
+        u.Name as autor, u.Email as email
+      FROM Capsules c
+      LEFT JOIN Users u ON c.Creator_User_ID = u.User_ID
+      WHERE c.Privacy = 'public'
+    `;
     const params = [];
 
-    // Filtro por categoría (por nombre)
     if (category && category !== 'todas') {
-      where += " AND cat.Name = ?";
+      query += ' AND c.Category_ID = ?';
       params.push(category);
     }
-
-    // Filtro de búsqueda avanzada
     if (search) {
-      where += ` AND (
+      query += ` AND (
         c.Title LIKE ? OR
-        c.Tags LIKE ? OR
         u.Name LIKE ? OR
         u.Email LIKE ? OR
-        cat.Name LIKE ? OR
-        DATE_FORMAT(c.Opening_Date, '%Y-%m-%d') LIKE ?
+        c.Tags LIKE ?
       )`;
-      const like = `%${search}%`;
-      params.push(like, like, like, like, like, like);
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
-    // Consulta principal
-    const [rows] = await db.query(
-      `SELECT 
-        c.Capsule_ID as id,
-        c.Title as titulo,
-        c.Tags as tags,
-        c.Creation_Date as fechaCreacion,
-        c.Opening_Date as fechaApertura,
-        c.Privacy as privacidad,
-        c.Password as password,
-        c.Creator_User_ID as creatorId,
-        u.Name as autor,
-        u.Email as email,
-        cat.Name as categoria
-      FROM Capsules c
-      JOIN Users u ON c.Creator_User_ID = u.User_ID
-      JOIN Categories cat ON c.Category_ID = cat.Category_ID
-      ${where}
-      ORDER BY c.Opening_Date DESC
-      LIMIT ? OFFSET ?`,
-      [...params, pageSize, offset]
-    );
+    query += ' ORDER BY c.Creation_Date DESC LIMIT ? OFFSET ?';
+    params.push(Number(pageSize), Number(offset));
 
-    // Total para paginación
-    const [[{ total }]] = await db.query(
-      `SELECT COUNT(DISTINCT c.Capsule_ID) as total
-      FROM Capsules c
-      JOIN Users u ON c.Creator_User_ID = u.User_ID
-      JOIN Categories cat ON c.Category_ID = cat.Category_ID
-      ${where}`,
-      params
-    );
-
-    return {
-      capsulas: rows.map(row => ({
-        ...row,
-        tags: row.tags ? row.tags.split(',').map(t => t.trim()) : [],
-        categoria: row.categoria
-      })),
-      totalPages: Math.ceil(total / pageSize)
-    };
+    const [rows] = await db.execute(query, params);
+    return rows;
   },
 
   update: async (id, data) => {
