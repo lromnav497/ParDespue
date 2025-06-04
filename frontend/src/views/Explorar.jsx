@@ -17,8 +17,6 @@ const categorias = [
   { id: 'Others', nombre: 'Otros' }
 ];
 
-const PAGE_SIZE = 9;
-
 const randomImages = [
   "https://picsum.photos/id/1015/400/300",
   "https://picsum.photos/id/1016/400/300",
@@ -56,16 +54,10 @@ const Explorar = () => {
   useEffect(() => {
     const fetchCapsulas = async () => {
       setLoading(true);
-      const params = new URLSearchParams({
-        page,
-        pageSize: PAGE_SIZE,
-        category: selectedCategory !== 'todas' ? selectedCategory : '',
-        search: searchTerm
-      });
-      const res = await fetch(`/api/capsules/public-paginated?${params.toString()}`);
+      const res = await fetch(`/api/capsules/public`);
       const data = await res.json();
-      setCapsulas(data.capsulas || []);
-      setTotalPages(data.totalPages || 1);
+      setCapsulas(data || []);
+      setTotalPages(1); // Ya no hay paginación
       setLoading(false);
     };
     fetchCapsulas();
