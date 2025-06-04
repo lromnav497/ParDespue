@@ -226,7 +226,7 @@ const Header = () => {
                   {user.profilePicture && (() => {
                     const imgUrl = user.profilePicture.startsWith('http')
                       ? user.profilePicture
-                      : `http://44.209.31.187${user.profilePicture}`;
+                      : `http://44.209.31.187/api${user.profilePicture}`;
                     console.log('URL de imagen de perfil:', imgUrl);
                     return (
                       <img
