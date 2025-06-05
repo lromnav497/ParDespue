@@ -159,15 +159,16 @@ const Explorar = () => {
                   <h3 className="text-[#F5E050] passero-font text-xl mb-2">
                     {capsula.titulo}
                   </h3>
-                  <p className="text-gray-300 text-sm mb-4">
-                    Por {capsula.autor} ({capsula.email})
+                  <p className="text-gray-300 text-sm mb-2">
+                    {capsula.descripcion}
                   </p>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {capsula.tags?.map(tag => (
                       <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs">{tag}</span>
                     ))}
                   </div>
-                  <div className="flex justify-between items-center text-sm text-gray-400">
+                  <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
+                    <span className="bg-[#3d3d9e] text-white px-2 py-1 rounded">{capsula.categoria}</span>
                     <div className="flex items-center gap-4">
                       <span className="flex items-center">
                         <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500" />
@@ -178,8 +179,12 @@ const Explorar = () => {
                         {capsula.views ?? capsula.Views ?? 0}
                       </span>
                     </div>
-                    <span className="flex items-center">
-                      <FontAwesomeIcon icon={faClock} className="mr-1" />
+                  </div>
+                  <div className="flex justify-between items-center text-xs text-gray-400">
+                    <span>
+                      Creada: {new Date(capsula.fechaCreacion).toLocaleDateString()}
+                    </span>
+                    <span>
                       Se abre: {new Date(capsula.fechaApertura).toLocaleDateString()}
                     </span>
                   </div>

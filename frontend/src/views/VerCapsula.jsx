@@ -96,12 +96,14 @@ const VerCapsula = () => {
     if (liked) {
       await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'DELETE' });
       setLiked(false);
-      setLikes(likes - 1);
     } else {
       await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'POST' });
       setLiked(true);
-      setLikes(likes + 1);
     }
+    // Refresca los datos de la cápsula para obtener el contador real
+    const res = await fetchWithAuth(`/api/capsules/${id}`);
+    const data = await res.json();
+    setLikes(data.Likes ?? data.likes ?? 0);
     setLikeLoading(false);
   };
 
