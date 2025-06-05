@@ -100,6 +100,7 @@ const VerCapsula = () => {
   }, [capsula, id]);
 
   const handleLike = async () => {
+    if (likeLoading) return; // <-- Esto evita doble click
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) return alert('Debes iniciar sesión para dar me gusta');
     setLikeLoading(true);
