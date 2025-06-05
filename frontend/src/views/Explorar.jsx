@@ -4,7 +4,8 @@ import {
   faSearch, 
   faHeart, 
   faEye, 
-  faClock 
+  faClock,
+  faLock
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 
@@ -135,62 +136,80 @@ const Explorar = () => {
           {capsulas.length === 0 ? (
             <div className="col-span-3 text-center text-gray-400">No se encontraron cápsulas.</div>
           ) : (
-            capsulas.map(capsula => (
-              <Link
-                key={capsula.id}
-                to={`/vercapsula/${capsula.id}`}
-                onClick={e => {
-                  const ahora = new Date();
-                  const apertura = new Date(capsula.fechaApertura);
-                  if (apertura > ahora) {
-                    e.preventDefault();
-                    alert(`Esta cápsula aún no está disponible. Fecha de apertura: ${apertura.toLocaleDateString()}`);
-                  }
-                }}
-                className="bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:transform hover:scale-105 transition-all block"
-                style={{ textDecoration: 'none' }}
-              >
-                <img 
-                  src={getImageUrl(capsula)} 
-                  alt={capsula.titulo}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="text-[#F5E050] passero-font text-xl mb-2">
-                    {capsula.titulo}
-                  </h3>
-                  <p className="text-gray-300 text-sm mb-2">
-                    {capsula.descripcion}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {capsula.tags?.map(tag => (
-                      <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs">{tag}</span>
-                    ))}
-                  </div>
-                  <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
-                    <span className="bg-[#3d3d9e] text-white px-2 py-1 rounded">{capsula.categoria}</span>
-                    <div className="flex items-center gap-4">
-                      <span className="flex items-center">
-                        <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500" />
-                        {capsula.likes ?? capsula.Likes ?? 0}
-                      </span>
-                      <span className="flex items-center">
-                        <FontAwesomeIcon icon={faEye} className="mr-1" />
-                        {capsula.views ?? capsula.Views ?? 0}
-                      </span>
+            capsulas.map(capsula => {
+              const ahora = new Date();
+              const apertura = new Date(capsula.fechaApertura);
+              const disabled = apertura > ahora;
+              return (
+                <div
+                  key={capsula.id}
+                  className={`relative bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg transition-all block
+                    ${disabled ? 'opacity-60 pointer-events-none select-none' : 'hover:scale-105'}
+                  `}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Link
+                    to={`/vercapsula/${capsula.id}`}
+                    tabIndex={disabled ? -1 : 0}
+                    aria-disabled={disabled}
+                    style={{ pointerEvents: disabled ? 'none' : 'auto' }}
+                  >
+                    <img 
+                      src={getImageUrl(capsula)} 
+                      alt={capsula.titulo}
+                      className="w-full h-48 object-cover"
+                    />
+                    {disabled && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10">
+                        <FontAwesomeIcon icon={faLock} className="text-4xl text-[#F5E050] mb-2" />
+                        <span className="text-[#F5E050] text-sm font-bold flex items-center gap-2">
+                          <span role="img" aria-label="chain">⛓️</span>
+                          No disponible hasta {apertura.toLocaleDateString()}
+                          <span role="img" aria-label="chain">⛓️</span>
+                        </span>
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <h3 className="text-[#F5E050] passero-font text-xl mb-2">
+                        {capsula.titulo}
+                      </h3>
+                      <p className="text-gray-300 text-sm mb-2">
+                        {capsula.descripcion}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {capsula.tags?.map(tag => (
+                          <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs">{tag}</span>
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
+                        <span className="bg-[#3d3d9e] text-white px-2 py-1 rounded">{capsula.categoria}</span>
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center">
+                            <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500" />
+                            {capsula.likes ?? capsula.Likes ?? 0}
+                          </span>
+                          <span className="flex items-center">
+                            <FontAwesomeIcon icon={faEye} className="mr-1" />
+                            {capsula.views ?? capsula.Views ?? 0}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center text-xs text-gray-400">
+                        <span>
+                          Creada: {new Date(capsula.fechaCreacion).toLocaleDateString()}
+                        </span>
+                        <span>
+                          Se abre: {apertura.toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="mt-2 text-xs text-[#F5E050] font-semibold">
+                        Creador: {capsula.creador || capsula.creatorName || capsula.email || `Usuario #${capsula.Creator_User_ID}`}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex justify-between items-center text-xs text-gray-400">
-                    <span>
-                      Creada: {new Date(capsula.fechaCreacion).toLocaleDateString()}
-                    </span>
-                    <span>
-                      Se abre: {new Date(capsula.fechaApertura).toLocaleDateString()}
-                    </span>
-                  </div>
+                  </Link>
                 </div>
-              </Link>
-            ))
+              );
+            })
           )}
         </div>
       )}
