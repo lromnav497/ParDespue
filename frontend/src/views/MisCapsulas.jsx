@@ -330,16 +330,6 @@ const MisCapsulas = () => {
                       ? 'border-4 border-yellow-400 animate-shake'
                       : ''
                   } ${disabled ? 'opacity-60' : ''}`}
-                  onClick={e => {
-                    e.stopPropagation();
-                    // Solo permitir ver si está abierta o eres premium
-                    if (!disabled || isPremium) {
-                      handleProtectedAction('ver', capsula);
-                      if (String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')) {
-                        localStorage.removeItem('highlight_capsule');
-                      }
-                    }
-                  }}
                 >
                   <div className="relative">
                     <img 
@@ -348,14 +338,14 @@ const MisCapsulas = () => {
                       className="w-full h-48 object-cover"
                     />
                     {disabled && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10 pointer-events-none select-none">
                         <FontAwesomeIcon icon={faLock} className="text-4xl text-[#F5E050] mb-2" />
                         <span className="text-[#F5E050] text-sm font-bold flex items-center gap-2">
                           No disponible hasta {apertura.toLocaleDateString()}
                         </span>
                       </div>
                     )}
-                    <div className="absolute top-4 right-4 flex gap-2">
+                    <div className="absolute top-4 right-4 flex gap-2 z-20">
                       {/* Solo mostrar editar si es premium y está programada */}
                       {puedeEditar && (
                         <button
@@ -381,6 +371,21 @@ const MisCapsulas = () => {
                         </button>
                       )}
                     </div>
+                    {/* Si NO está disabled o eres premium, puedes ver la cápsula haciendo click en la imagen */}
+                    {(!disabled || isPremium) && (
+                      <button
+                        className="absolute inset-0 w-full h-full z-10"
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleProtectedAction('ver', capsula);
+                          if (String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')) {
+                            localStorage.removeItem('highlight_capsule');
+                          }
+                        }}
+                        aria-label="Ver cápsula"
+                      />
+                    )}
                   </div>
                   
                   <div className="p-4">
