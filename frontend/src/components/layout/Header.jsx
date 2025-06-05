@@ -88,17 +88,18 @@ const Header = () => {
   // Marcar notificaciones como leídas al abrir el dropdown
   const handleBellClick = () => {
     setNotifOpen(v => !v);
-    if (!notifOpen) {
-      // Marcar como leídas en localStorage
+    if (!notifOpen && notifications.length > 0) {
       if (user) {
-        localStorage.setItem(`notificaciones_leidas_${user.id}`, 'true');
+        const ultimaFecha = notifications[0].Sent_Date;
+        localStorage.setItem(`notificaciones_leidas_${user.id}`, ultimaFecha);
       }
-      // No borres las notificaciones, solo el badge se ocultará
     }
   };
 
-  // Determinar si mostrar el badge
-  const showBadge = notifications.length > 0 && !(user && localStorage.getItem(`notificaciones_leidas_${user.id}`) === 'true');
+  const ultimaLeida = user && localStorage.getItem(`notificaciones_leidas_${user.id}`);
+  const showBadge = notifications.length > 0 && notifications.some(n => {
+    return !ultimaLeida || new Date(n.Sent_Date) > new Date(ultimaLeida);
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('user');
