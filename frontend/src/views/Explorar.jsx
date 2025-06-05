@@ -70,6 +70,14 @@ const Explorar = () => {
     };
   }, [searchTerm, selectedCategory, page]);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchCapsulas();
+    }, 20000); // cada 20 segundos
+
+    return () => clearInterval(intervalId);
+  }, [searchTerm, selectedCategory, page]);
+
   // Handler para el buscador
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
