@@ -17,6 +17,7 @@ import {
   faHeart
 } from '@fortawesome/free-solid-svg-icons';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
+import Modal from '../components/modals/Modal';
 
 function getImageUrl(capsula) {
   if (capsula.Cover_Image || capsula.cover_image) {
@@ -44,6 +45,8 @@ const VerCapsula = () => {
   const [comentLoading, setComentLoading] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [comentarioEditado, setComentarioEditado] = useState('');
+  const [modal, setModal] = useState({ open: false, title: '', message: '' });
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     const fetchCapsula = async () => {
@@ -457,12 +460,7 @@ const VerCapsula = () => {
                       </button>
                       <button
                         className="text-xs text-red-400 underline"
-                        onClick={async () => {
-                          if (window.confirm('¿Eliminar este comentario?')) {
-                            await fetch(`/api/comments/${com.Comment_ID}`, { method: 'DELETE' });
-                            setComentarios(prev => prev.filter(c => c.Comment_ID !== com.Comment_ID));
-                          }
-                        }}
+                        onClick={() => setDeleteTarget(com.Comment_ID)}
                       >
                         Eliminar
                       </button>
@@ -474,6 +472,41 @@ const VerCapsula = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de confirmación */}
+      <Modal
+        isOpen={modal.open}
+        onClose={() => setModal({ ...modal, open: false })}
+        title={modal.title}
+      >
+        <div>{modal.message}</div>
+      </Modal>
+
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Confirmar eliminación"
+      >
+        <div>¿Eliminar este comentario?</div>
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            className="bg-gray-700 text-white px-4 py-2 rounded"
+            onClick={() => setDeleteTarget(null)}
+          >
+            Cancelar
+          </button>
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded"
+            onClick={async () => {
+              await fetch(`/api/comments/${deleteTarget}`, { method: 'DELETE' });
+              setComentarios(prev => prev.filter(c => c.Comment_ID !== deleteTarget));
+              setDeleteTarget(null);
+            }}
+          >
+            Eliminar
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };
