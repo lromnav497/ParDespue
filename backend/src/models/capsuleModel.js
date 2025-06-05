@@ -174,9 +174,18 @@ const CapsuleModel = {
   },
 
   addLike: async (capsuleId, userId) => {
-    // Evita duplicados: crea una tabla CapsuleLikes (Capsule_ID, User_ID)
-    await db.execute('INSERT IGNORE INTO CapsuleLikes (Capsule_ID, User_ID) VALUES (?, ?)', [capsuleId, userId]);
-    await db.execute('UPDATE Capsules SET Likes = Likes + 1 WHERE Capsule_ID = ?', [capsuleId]);
+    // Intenta insertar el like solo si no existe
+    const [result] = await db.execute(
+      'INSERT IGNORE INTO CapsuleLikes (Capsule_ID, User_ID) VALUES (?, ?)',
+      [capsuleId, userId]
+    );
+    // Solo suma si se insertó un nuevo like
+    if (result.affectedRows > 0) {
+      await db.execute(
+        'UPDATE Capsules SET Likes = Likes + 1 WHERE Capsule_ID = ?',
+        [capsuleId]
+      );
+    }
   },
 
   removeLike: async (capsuleId, userId) => {
