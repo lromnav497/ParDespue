@@ -329,12 +329,15 @@ const MisCapsulas = () => {
                     String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')
                       ? 'border-4 border-yellow-400 animate-shake'
                       : ''
-                  } ${disabled ? 'opacity-60 pointer-events-none select-none' : ''}`}
+                  } ${disabled ? 'opacity-60' : ''}`}
                   onClick={e => {
                     e.stopPropagation();
-                    handleProtectedAction('ver', capsula);
-                    if (String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')) {
-                      localStorage.removeItem('highlight_capsule');
+                    // Solo permitir ver si está abierta o eres premium
+                    if (!disabled || isPremium) {
+                      handleProtectedAction('ver', capsula);
+                      if (String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')) {
+                        localStorage.removeItem('highlight_capsule');
+                      }
                     }
                   }}
                 >
