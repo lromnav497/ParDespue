@@ -100,20 +100,26 @@ const VerCapsula = () => {
   }, [capsula, id]);
 
   const handleLike = async () => {
-    if (likeLoading) return; // <-- Esto evita doble click
+    if (likeLoading) return;
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) return alert('Debes iniciar sesión para dar me gusta');
     setLikeLoading(true);
+    let newLiked = liked;
     if (liked) {
-      await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'DELETE' });
-      setLiked(false);
+      const res = await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'DELETE' });
+      if (res.ok) {
+        setLiked(false);
+        setLikes(likes - 1);
+        newLiked = false;
+      }
     } else {
-      await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'POST' });
-      setLiked(true);
+      const res = await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'POST' });
+      if (res.ok) {
+        setLiked(true);
+        setLikes(likes + 1);
+        newLiked = true;
+      }
     }
-    // Refresca los datos de la cápsula para obtener el contador real
-    const res = await fetchWithAuth(`/api/capsules/${id}`);
-    const data = await res.json();
     setLikeLoading(false);
   };
 
