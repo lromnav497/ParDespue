@@ -325,18 +325,21 @@ const MisCapsulas = () => {
                 <div
                   key={capsula.Capsule_ID}
                   data-capsule-id={capsula.Capsule_ID}
-                  className={`bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer relative ${
+                  className={`bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-default relative ${
                     String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')
                       ? 'border-4 border-yellow-400 animate-shake'
                       : ''
                   }`}
-                  // No onClick aquí, para que no sea clickable si está cerrada
+                  // No onClick aquí, para que no sea clickable nunca el card
+                  tabIndex={-1}
                 >
                   <div className="relative">
                     <img 
                       src={imageUrl}
                       alt={capsula.Title}
                       className={`w-full h-48 object-cover ${disabled ? 'opacity-60' : ''}`}
+                      draggable={false}
+                      style={{ userSelect: 'none', pointerEvents: 'none' }}
                     />
                     {/* Overlay de "No disponible" solo visual, no bloquea botones */}
                     {disabled && (
