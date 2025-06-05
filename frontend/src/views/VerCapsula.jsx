@@ -38,6 +38,13 @@ const VerCapsula = () => {
   const [likes, setLikes] = useState(0);
   const [likeLoading, setLikeLoading] = useState(false);
 
+  // Nuevo estado para comentarios
+  const [comentarios, setComentarios] = useState([]);
+  const [nuevoComentario, setNuevoComentario] = useState('');
+  const [comentLoading, setComentLoading] = useState(false);
+  const [editandoId, setEditandoId] = useState(null);
+  const [comentarioEditado, setComentarioEditado] = useState('');
+
   useEffect(() => {
     const fetchCapsula = async () => {
       setLoading(true);
@@ -99,6 +106,20 @@ const VerCapsula = () => {
     }
   }, [capsula, id]);
 
+  // Cargar comentarios al montar
+  useEffect(() => {
+    const fetchComentarios = async () => {
+      try {
+        const res = await fetch(`/api/comments?Capsule_ID=${id}`);
+        const data = await res.json();
+        setComentarios(data);
+      } catch (err) {
+        setComentarios([]);
+      }
+    };
+    fetchComentarios();
+  }, [id]);
+
   const handleLike = async () => {
     if (likeLoading) return;
     const user = JSON.parse(localStorage.getItem('user'));
@@ -121,6 +142,39 @@ const VerCapsula = () => {
       }
     }
     setLikeLoading(false);
+  };
+
+  // Función para enviar comentario
+  const handleComentar = async (e) => {
+    e.preventDefault();
+    if (!nuevoComentario.trim()) return;
+    setComentLoading(true);
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      alert('Debes iniciar sesión para comentar');
+      setComentLoading(false);
+      return;
+    }
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': user.id
+      },
+      body: JSON.stringify({
+        Content: nuevoComentario,
+        Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        User_ID: user.id,
+        Capsule_ID: id
+      })
+    });
+    if (res.ok) {
+      setNuevoComentario('');
+      // Recarga comentarios
+      const data = await res.json();
+      setComentarios(prev => [...prev, { ...data, Name: user.name }]);
+    }
+    setComentLoading(false);
   };
 
   if (loading) {
@@ -322,6 +376,100 @@ const VerCapsula = () => {
                 <FontAwesomeIcon icon={faEye} />
                 {capsula.Views ?? capsula.views ?? 0}
               </span>
+            </div>
+          </div>
+
+          {/* Comentarios */}
+          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg mt-8">
+            <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
+              Comentarios
+            </h3>
+            <form onSubmit={handleComentar} className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={nuevoComentario}
+                onChange={e => setNuevoComentario(e.target.value)}
+                className="flex-1 px-3 py-2 rounded bg-gray-800 text-white border border-[#3d3d9e] focus:outline-none"
+                placeholder="Escribe un comentario..."
+                disabled={comentLoading}
+              />
+              <button
+                type="submit"
+                className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded font-bold"
+                disabled={comentLoading}
+              >
+                Comentar
+              </button>
+            </form>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {comentarios.length === 0 && (
+                <div className="text-gray-400">Sé el primero en comentar.</div>
+              )}
+              {comentarios.map(com => (
+                <div key={com.Comment_ID} className="bg-[#23236a] rounded p-2 text-sm">
+                  <span className="font-bold text-[#F5E050]">{com.Name || `Usuario #${com.User_ID}`}</span>
+                  <span className="ml-2 text-gray-400">{new Date(com.Creation_Date).toLocaleString()}</span>
+                  <div className="mt-1 text-white">
+                    {editandoId === com.Comment_ID ? (
+                      <form
+                        onSubmit={async e => {
+                          e.preventDefault();
+                          await fetch(`/api/comments/${com.Comment_ID}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ Content: comentarioEditado })
+                          });
+                          setComentarios(prev =>
+                            prev.map(c =>
+                              c.Comment_ID === com.Comment_ID
+                                ? { ...c, Content: comentarioEditado }
+                                : c
+                            )
+                          );
+                          setEditandoId(null);
+                        }}
+                      >
+                        <input
+                          className="bg-gray-800 text-white border border-[#3d3d9e] rounded px-2 py-1 w-full"
+                          value={comentarioEditado}
+                          onChange={e => setComentarioEditado(e.target.value)}
+                          autoFocus
+                        />
+                        <div className="flex gap-2 mt-1">
+                          <button type="submit" className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs font-bold">Guardar</button>
+                          <button type="button" className="bg-gray-700 text-white px-2 py-1 rounded text-xs" onClick={() => setEditandoId(null)}>Cancelar</button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>{com.Content}</>
+                    )}
+                  </div>
+                  {user && user.id === com.User_ID && editandoId !== com.Comment_ID && (
+                    <div className="flex gap-2 mt-1">
+                      <button
+                        className="text-xs text-[#F5E050] underline"
+                        onClick={() => {
+                          setEditandoId(com.Comment_ID);
+                          setComentarioEditado(com.Content);
+                        }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="text-xs text-red-400 underline"
+                        onClick={async () => {
+                          if (window.confirm('¿Eliminar este comentario?')) {
+                            await fetch(`/api/comments/${com.Comment_ID}`, { method: 'DELETE' });
+                            setComentarios(prev => prev.filter(c => c.Comment_ID !== com.Comment_ID));
+                          }
+                        }}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
