@@ -330,6 +330,7 @@ const MisCapsulas = () => {
                       ? 'border-4 border-yellow-400 animate-shake'
                       : ''
                   } ${disabled ? 'opacity-60' : ''}`}
+                  // No onClick aquí, para que no sea clickable si está cerrada
                 >
                   <div className="relative">
                     <img 
@@ -337,31 +338,47 @@ const MisCapsulas = () => {
                       alt={capsula.Title}
                       className="w-full h-48 object-cover"
                     />
+                    {/* Overlay de "No disponible" solo visual, no bloquea botones */}
                     {disabled && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10 pointer-events-none select-none">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10 select-none pointer-events-none">
                         <FontAwesomeIcon icon={faLock} className="text-4xl text-[#F5E050] mb-2" />
                         <span className="text-[#F5E050] text-sm font-bold flex items-center gap-2">
                           No disponible hasta {apertura.toLocaleDateString()}
                         </span>
                       </div>
                     )}
+                    {/* Botones SIEMPRE por encima del overlay */}
                     <div className="absolute top-4 right-4 flex gap-2 z-20">
-                      {/* Solo mostrar editar si es premium y está programada */}
-                      {puedeEditar && (
-                        <button
-                          className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e]"
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleProtectedAction('editar', capsula);
-                          }}
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                        </button>
+                      {/* CAPSULA CERRADA: solo premium puede editar/eliminar */}
+                      {disabled && isPremium && (
+                        <>
+                          <button
+                            className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e] shadow-lg"
+                            style={{ opacity: 1, pointerEvents: 'auto' }}
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleProtectedAction('editar', capsula);
+                            }}
+                          >
+                            <FontAwesomeIcon icon={faEdit} />
+                          </button>
+                          <button
+                            className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e] shadow-lg"
+                            style={{ opacity: 1, pointerEvents: 'auto' }}
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleDelete(capsula.Capsule_ID);
+                            }}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </>
                       )}
-                      {/* Eliminar siempre para premium, y para básico solo si está abierta */}
-                      {puedeEliminar && capsula.Creator_User_ID === userId && (
+                      {/* CAPSULA ABIERTA: cualquier usuario puede eliminar, nadie puede editar */}
+                      {!disabled && capsula.Creator_User_ID === userId && (
                         <button
-                          className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e]"
+                          className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e] shadow-lg"
+                          style={{ opacity: 1, pointerEvents: 'auto' }}
                           onClick={e => {
                             e.stopPropagation();
                             handleDelete(capsula.Capsule_ID);
@@ -371,7 +388,7 @@ const MisCapsulas = () => {
                         </button>
                       )}
                     </div>
-                    {/* Si NO está disabled o eres premium, puedes ver la cápsula haciendo click en la imagen */}
+                    {/* Solo puedes ver la cápsula si está abierta o eres premium */}
                     {(!disabled || isPremium) && (
                       <button
                         className="absolute inset-0 w-full h-full z-10"
