@@ -192,7 +192,27 @@ const VerCapsula = () => {
                 <p><span className="text-[#F5E050]">Descripción:</span> {capsula.Description || 'Sin descripción'}</p>
                 <p><span className="text-[#F5E050]">Fecha de apertura:</span> {new Date(capsula.Opening_Date).toLocaleDateString()}</p>
                 <p><span className="text-[#F5E050]">Fecha de creación:</span> {new Date(capsula.Creation_Date).toLocaleDateString()}</p>
-                <p><span className="text-[#F5E050]">Tags:</span> {capsula.Tags || 'Ninguno'}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#F5E050]">Tags:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {(Array.isArray(capsula.Tags)
+                      ? capsula.Tags
+                      : typeof capsula.Tags === "string"
+                        ? capsula.Tags.split(',').map(t => t.trim()).filter(Boolean)
+                        : []
+                    ).map(tag => (
+                      <span
+                        key={tag}
+                        className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {(!capsula.Tags || (Array.isArray(capsula.Tags) && capsula.Tags.length === 0)) && (
+                      <span className="text-gray-400">Ninguno</span>
+                    )}
+                  </div>
+                </div>
                 <p><span className="text-[#F5E050]">Categoría:</span>{" "}
                   {capsula.Category?.Name || capsula.Category || capsula.Category_Name || 'Sin categoría'}
                 </p>
