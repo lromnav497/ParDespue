@@ -27,35 +27,16 @@ router.post(
   '/',
   authMiddleware,
   uploadCover.single('cover_image'),
-  async (req, res) => {
-    try {
-      const {
-        Title, Description, Creation_Date, Opening_Date,
-        Privacy, Tags, Creator_User_ID, Password, Category_ID, notificaciones
-      } = req.body;
-      let coverImageUrl = null;
-      if (req.file) {
-        coverImageUrl = `/uploads/capsule_covers/${req.file.filename}`;
-      }
-      // Crea la cápsula con la portada
-      const result = await capsuleModel.create({
-        Title,
-        Description,
-        Creation_Date,
-        Opening_Date,
-        Privacy,
-        Tags,
-        Creator_User_ID,
-        Password,
-        Category_ID,
-        Cover_Image: coverImageUrl,
-        notificaciones
-      });
-      // Cambia esta línea:
-      res.json({ Capsule_ID: result.Capsule_ID, id: result.Capsule_ID });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+  (req, res) => {
+    // Si hay portada, agrega la ruta al body para el controller
+    if (req.file) {
+      req.body.Cover_Image = `/uploads/capsule_covers/${req.file.filename}`;
     }
+    // Convierte notificaciones a booleano real
+    if (typeof req.body.notificaciones === 'string') {
+      req.body.notificaciones = req.body.notificaciones === 'true';
+    }
+    CapsuleController.create(req, res);
   }
 );
 router.get('/privacy/:privacy', async (req, res) => {
