@@ -11,6 +11,7 @@ import {
   faBoxArchive
 } from '@fortawesome/free-solid-svg-icons';
 import PasswordModal from '../components/modals/PasswordModal'; // importa el modal
+import Modal from '../components/modals/Modal';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const MisCapsulas = () => {
@@ -21,6 +22,7 @@ const MisCapsulas = () => {
   const [passwordError, setPasswordError] = useState('');
   const [pendingAction, setPendingAction] = useState(null); // { type, capsula }
   const [plan, setPlan] = useState(null);
+  const [modal, setModal] = useState({ open: false, title: '', message: '' });
   const navigate = useNavigate();
   const location = useLocation(); // <-- Hook para leer el state
 
@@ -101,20 +103,52 @@ const MisCapsulas = () => {
   ];
 
   const handleDelete = async (capsuleId) => {
-    if (!window.confirm('¿Seguro que quieres eliminar esta cápsula?')) return;
-    const user = JSON.parse(localStorage.getItem('user'));
-    const res = await fetch(`/api/capsules/${capsuleId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.id }),
+    setModal({
+      open: true,
+      title: 'Confirmar eliminación',
+      message: (
+        <div>
+          <div>¿Seguro que quieres eliminar esta cápsula?</div>
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              className="bg-gray-700 text-white px-4 py-2 rounded"
+              onClick={() => setModal({ open: false, title: '', message: '' })}
+            >
+              Cancelar
+            </button>
+            <button
+              className="bg-red-500 text-white px-4 py-2 rounded"
+              onClick={async () => {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const res = await fetch(`/api/capsules/${capsuleId}`, {
+                  method: 'DELETE',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ userId: user.id }),
+                });
+                if (res.ok) {
+                  setCapsulas(prev => prev.filter(c => c.Capsule_ID !== capsuleId));
+                  setModal({
+                    open: true,
+                    title: 'Eliminada',
+                    message: 'Cápsula eliminada correctamente'
+                  });
+                  setTimeout(() => setModal({ open: false, title: '', message: '' }), 1500);
+                } else {
+                  const data = await res.json();
+                  setModal({
+                    open: true,
+                    title: 'Error',
+                    message: data.message || 'No se pudo eliminar'
+                  });
+                }
+              }}
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+      )
     });
-    if (res.ok) {
-      setCapsulas(prev => prev.filter(c => c.Capsule_ID !== capsuleId));
-      alert('Cápsula eliminada correctamente');
-    } else {
-      const data = await res.json();
-      alert(data.message || 'No se pudo eliminar');
-    }
   };
 
   // Función para verificar contraseña (puedes hacer un endpoint real, aquí es ejemplo)
@@ -135,13 +169,21 @@ const MisCapsulas = () => {
     const ahora = new Date();
     const apertura = new Date(capsula.Opening_Date);
     if (type === 'ver' && apertura > ahora) {
-      alert(`Esta cápsula aún no está disponible. Fecha de apertura: ${apertura.toLocaleDateString()}`);
+      setModal({
+        open: true,
+        title: 'No disponible',
+        message: `Esta cápsula aún no está disponible. Fecha de apertura: ${apertura.toLocaleDateString()}`
+      });
       return;
     }
     const user = JSON.parse(localStorage.getItem('user'));
     // Si es privada y no es el creador, no dejar pasar
     if (capsula.Privacy === 'private' && user?.id !== capsula.Creator_User_ID) {
-      alert('Solo el creador puede acceder a esta cápsula privada.');
+      setModal({
+        open: true,
+        title: 'Acceso restringido',
+        message: 'Solo el creador puede acceder a esta cápsula privada.'
+      });
       return;
     }
     // Si tiene contraseña, pide contraseña
@@ -273,6 +315,12 @@ const MisCapsulas = () => {
                 imageUrl = getUniqueRandomImage();
               }
 
+              // Permisos para editar/eliminar
+              const isPremium = plan && plan.toLowerCase() === 'premium';
+              // Premium: puede editar/eliminar siempre. Básico: solo eliminar si abierta.
+              const puedeEditar = isPremium && disabled;
+              const puedeEliminar = isPremium || !disabled;
+
               return (
                 <div
                   key={capsula.Capsule_ID}
@@ -285,7 +333,6 @@ const MisCapsulas = () => {
                   onClick={e => {
                     e.stopPropagation();
                     handleProtectedAction('ver', capsula);
-                    // Si era la destacada, la quitamos del highlight
                     if (String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')) {
                       localStorage.removeItem('highlight_capsule');
                     }
@@ -306,7 +353,8 @@ const MisCapsulas = () => {
                       </div>
                     )}
                     <div className="absolute top-4 right-4 flex gap-2">
-                      {getEstado(capsula) === 'programada' && plan && plan.toLowerCase() === 'premium' && (
+                      {/* Solo mostrar editar si es premium y está programada */}
+                      {puedeEditar && (
                         <button
                           className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e]"
                           onClick={e => {
@@ -317,7 +365,8 @@ const MisCapsulas = () => {
                           <FontAwesomeIcon icon={faEdit} />
                         </button>
                       )}
-                      {capsula.Creator_User_ID === userId && (
+                      {/* Eliminar siempre para premium, y para básico solo si está abierta */}
+                      {puedeEliminar && capsula.Creator_User_ID === userId && (
                         <button
                           className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e]"
                           onClick={e => {
@@ -371,6 +420,15 @@ const MisCapsulas = () => {
         onSubmit={handlePasswordSubmit}
         error={passwordError}
       />
+
+      {/* Modal general */}
+      <Modal
+        isOpen={modal.open}
+        onClose={() => setModal({ open: false, title: '', message: '' })}
+        title={modal.title}
+      >
+        <div>{modal.message}</div>
+      </Modal>
 
       {/* Agrega animación shake */}
       <style>

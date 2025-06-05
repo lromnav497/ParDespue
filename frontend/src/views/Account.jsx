@@ -12,6 +12,7 @@ import RenewSubscriptionModal from '../components/modals/RenewSubscriptionModal'
 import ConfirmCancelSubscriptionModal from '../components/modals/ConfirmCancelSubscriptionModal';
 import MisCapsulas from './MisCapsulas'; // Asegúrate de que la ruta es correcta
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
+import Modal from '../components/modals/Modal';
 
 const Account = () => {
   const [activeSection, setActiveSection] = useState('general');
@@ -131,6 +132,7 @@ const InformacionGeneral = () => {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [profilePicture, setProfilePicture] = useState('');
   const [newProfilePic, setNewProfilePic] = useState(null);
+  const [modal, setModal] = useState({ open: false, title: '', message: '' });
 
   // Sincroniza con localStorage al montar
   useEffect(() => {
@@ -180,7 +182,7 @@ const InformacionGeneral = () => {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.message || 'Error al actualizar');
+        setModal({ open: true, title: 'Error', message: data.message || 'Error al actualizar' });
         setLoading(false);
         return;
       }
@@ -201,7 +203,7 @@ const InformacionGeneral = () => {
       setNewProfilePic(null);
       setLoading(false);
     } catch (err) {
-      setError('Error de conexión');
+      setModal({ open: true, title: 'Error', message: 'Error de conexión' });
       setLoading(false);
     }
   };
@@ -241,7 +243,7 @@ const InformacionGeneral = () => {
       });
       const data = await res.json();
       if (!res.ok) {
-        setPasswordError(data.message || 'Error al cambiar la contraseña');
+        setModal({ open: true, title: 'Error', message: data.message || 'Error al cambiar la contraseña' });
         setPasswordLoading(false);
         return;
       }
@@ -251,7 +253,7 @@ const InformacionGeneral = () => {
       setRepeatPassword('');
       setPasswordLoading(false);
     } catch (err) {
-      setPasswordError('Error de conexión');
+      setModal({ open: true, title: 'Error', message: 'Error de conexión' });
       setPasswordLoading(false);
     }
   };
@@ -383,6 +385,14 @@ const InformacionGeneral = () => {
           </button>
         </form>
       </div>
+
+      <Modal
+        isOpen={modal.open}
+        onClose={() => setModal({ open: false, title: '', message: '' })}
+        title={modal.title}
+      >
+        <div>{modal.message}</div>
+      </Modal>
     </div>
   );
 };

@@ -14,6 +14,7 @@ import {
   faTag
 } from '@fortawesome/free-solid-svg-icons';
 import CapsuleCreatedModal from '../components/modals/CapsuleCreatedModal';
+import Modal from '../components/modals/Modal';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const CrearCapsula = () => {
@@ -45,6 +46,7 @@ const CrearCapsula = () => {
   const [planMsg, setPlanMsg] = useState('');
   const [coverImage, setCoverImage] = useState(null);
   const [createdCapsuleId, setCreatedCapsuleId] = useState(null);
+  const [errorModal, setErrorModal] = useState({ open: false, message: '' });
 
   useEffect(() => {
     fetch('/api/categories')
@@ -138,7 +140,7 @@ const CrearCapsula = () => {
     if (!file) return;
 
     if (!userId) {
-      alert('No se detectó el usuario. Por favor, inicia sesión de nuevo.');
+      setErrorModal({ open: true, message: 'No se detectó el usuario. Por favor, inicia sesión de nuevo.' });
       return;
     }
 
@@ -594,127 +596,127 @@ const CrearCapsula = () => {
   };
 
   const handleCreateCapsule = async () => {
-  try {
-    // Mapeo de privacidad del frontend al backend
-    const privacyMap = {
-      'privada': 'private',
-      'grupos': 'group',
-      'publica': 'public'
-    };
-    const privacyValue = privacyMap[formData.privacidad] || 'private';
+    try {
+      // Mapeo de privacidad del frontend al backend
+      const privacyMap = {
+        'privada': 'private',
+        'grupos': 'group',
+        'publica': 'public'
+      };
+      const privacyValue = privacyMap[formData.privacidad] || 'private';
 
-    // VALIDACIÓN DE FECHAS
-    const fechaCreacion = new Date();
-    const fechaApertura = new Date(formData.fechaApertura);
-    if (fechaApertura <= fechaCreacion) {
-      alert('La fecha de apertura debe ser posterior a la fecha de creación.');
-      return;
-    }
+      // VALIDACIÓN DE FECHAS
+      const fechaCreacion = new Date();
+      const fechaApertura = new Date(formData.fechaApertura);
+      if (fechaApertura <= fechaCreacion) {
+        setErrorModal({ open: true, message: 'La fecha de apertura debe ser posterior a la fecha de creación.' });
+        return;
+      }
 
-    // 1. Crear la cápsula (con portada)
-    const formDataCapsule = new FormData();
-    formDataCapsule.append('Title', formData.nombre);
-    formDataCapsule.append('Description', formData.descripcion);
-    formDataCapsule.append('Creation_Date', new Date().toISOString().slice(0, 19).replace('T', ' '));
-    formDataCapsule.append('Opening_Date', formData.fechaApertura);
-    formDataCapsule.append('Privacy', privacyValue);
-    formDataCapsule.append('Tags', formData.tags.join(','));
-    formDataCapsule.append('Creator_User_ID', userId);
-    formDataCapsule.append('Password', privacyValue === 'private' ? formData.password : '');
-    formDataCapsule.append('Category_ID', formData.categoriaId);
-    formDataCapsule.append('notificaciones', formData.notificaciones);
-    if (coverImage) {
-      formDataCapsule.append('cover_image', coverImage);
-    }
+      // 1. Crear la cápsula (con portada)
+      const formDataCapsule = new FormData();
+      formDataCapsule.append('Title', formData.nombre);
+      formDataCapsule.append('Description', formData.descripcion);
+      formDataCapsule.append('Creation_Date', new Date().toISOString().slice(0, 19).replace('T', ' '));
+      formDataCapsule.append('Opening_Date', formData.fechaApertura);
+      formDataCapsule.append('Privacy', privacyValue);
+      formDataCapsule.append('Tags', formData.tags.join(','));
+      formDataCapsule.append('Creator_User_ID', userId);
+      formDataCapsule.append('Password', privacyValue === 'private' ? formData.password : '');
+      formDataCapsule.append('Category_ID', formData.categoriaId);
+      formDataCapsule.append('notificaciones', formData.notificaciones);
+      if (coverImage) {
+        formDataCapsule.append('cover_image', coverImage);
+      }
 
-    const token = localStorage.getItem('token');
-    const resCapsule = await fetch('/api/capsules', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formDataCapsule,
-    });
-    const capsuleData = await resCapsule.json();
-    console.log('Respuesta creación cápsula:', capsuleData);
-    const capsuleId = capsuleData.Capsule_ID || capsuleData.id;
-    if (!resCapsule.ok || !capsuleId) {
-      throw new Error(capsuleData.message || 'Error al crear cápsula (ID no recibido)');
-    }
-
-    // Ya NO subas la portada aquí, porque ya se subió en el POST
-
-    // 2. Sube los archivos con userId y capsuleId
-    for (const archivo of formData.archivos) {
-      console.log('Moviendo archivo:', {
-        userId,
-        capsuleId,
-        tmpPath: archivo.tmpPath
-      });
-      const resMove = await fetch('/api/upload/move', {
+      const token = localStorage.getItem('token');
+      const resCapsule = await fetch('/api/capsules', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        headers: { Authorization: `Bearer ${token}` },
+        body: formDataCapsule,
+      });
+      const capsuleData = await resCapsule.json();
+      console.log('Respuesta creación cápsula:', capsuleData);
+      const capsuleId = capsuleData.Capsule_ID || capsuleData.id;
+      if (!resCapsule.ok || !capsuleId) {
+        throw new Error(capsuleData.message || 'Error al crear cápsula (ID no recibido)');
+      }
+
+      // Ya NO subas la portada aquí, porque ya se subió en el POST
+
+      // 2. Sube los archivos con userId y capsuleId
+      for (const archivo of formData.archivos) {
+        console.log('Moviendo archivo:', {
           userId,
           capsuleId,
           tmpPath: archivo.tmpPath
-        }),
-      });
-      const data = await resMove.json();
-      if (resMove.ok) {
-        // Actualiza el archivo en el array
-        archivo.path = data.filePath;
-        delete archivo.tmpPath;
-
-        // Guarda en Contents
-        await fetch('/api/contents', {
+        });
+        const resMove = await fetch('/api/upload/move', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            Type: getTypeFromMime(archivo.type),
-            File_Path: data.filePath, // nueva ruta definitiva
-            Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-            Capsule_ID: capsuleId,
+            userId,
+            capsuleId,
+            tmpPath: archivo.tmpPath
           }),
         });
-      }
-    }
+        const data = await resMove.json();
+        if (resMove.ok) {
+          // Actualiza el archivo en el array
+          archivo.path = data.filePath;
+          delete archivo.tmpPath;
 
-    // 3. Manejo de destinatarios para grupos
-    if (privacyValue === 'group' && formData.recipients && formData.recipients.length > 0) {
-      // Obtén los roles desde el backend o usa IDs fijos si sabes cuáles son
-      const roleMap = { 'Reader': 2, 'Collaborator': 3 }; // Según tu tabla Roles
-      for (const recipient of formData.recipients) {
-        // Busca el usuario por email (puedes hacer un fetch al backend para obtener el User_ID)
-        const resUser = await fetch(`/api/users/email/${recipient.email}`);
-        const userData = await resUser.json();
-        if (resUser.ok && userData.User_ID) {
-          await fetch('/api/recipients', {
+          // Guarda en Contents
+          await fetch('/api/contents', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              User_ID: userData.User_ID,
+              Type: getTypeFromMime(archivo.type),
+              File_Path: data.filePath, // nueva ruta definitiva
+              Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
               Capsule_ID: capsuleId,
-              Role_ID: roleMap[recipient.role]
             }),
           });
         }
-        // Si el usuario no existe, puedes mostrar un error o ignorar
       }
+
+      // 3. Manejo de destinatarios para grupos
+      if (privacyValue === 'group' && formData.recipients && formData.recipients.length > 0) {
+        // Obtén los roles desde el backend o usa IDs fijos si sabes cuáles son
+        const roleMap = { 'Reader': 2, 'Collaborator': 3 }; // Según tu tabla Roles
+        for (const recipient of formData.recipients) {
+          // Busca el usuario por email (puedes hacer un fetch al backend para obtener el User_ID)
+          const resUser = await fetch(`/api/users/email/${recipient.email}`);
+          const userData = await resUser.json();
+          if (resUser.ok && userData.User_ID) {
+            await fetch('/api/recipients', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                User_ID: userData.User_ID,
+                Capsule_ID: capsuleId,
+                Role_ID: roleMap[recipient.role]
+              }),
+            });
+          }
+          // Si el usuario no existe, puedes mostrar un error o ignorar
+        }
+      }
+
+      setCreatedCapsuleId(capsuleId);
+      setCarruselArchivos(formData.archivos);
+      setShowModal(true);
+
+      // alert('¡Cápsula creada con éxito!');
+      // Redirige o limpia el formulario si quieres
+
+      // NUEVO: Guarda el ID y redirige
+      // localStorage.setItem('highlight_capsule', capsuleId);
+      // window.location.href = '/capsulas';
+    } catch (err) {
+      setErrorModal({ open: true, message: 'Error al crear la cápsula: ' + err.message });
     }
-
-    setCreatedCapsuleId(capsuleId);
-    setCarruselArchivos(formData.archivos);
-    setShowModal(true);
-
-    // alert('¡Cápsula creada con éxito!');
-    // Redirige o limpia el formulario si quieres
-
-    // NUEVO: Guarda el ID y redirige
-    // localStorage.setItem('highlight_capsule', capsuleId);
-    // window.location.href = '/capsulas';
-  } catch (err) {
-    alert('Error al crear la cápsula: ' + err.message);
-  }
-};
+  };
 
   // Función para mapear MIME a ENUM
   function getTypeFromMime(mime) {
@@ -786,8 +788,17 @@ const CrearCapsula = () => {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         archivos={carruselArchivos}
-        capsuleId={createdCapsuleId} // <-- pásalo aquí
+        capsuleId={createdCapsuleId}
       />
+
+      {/* Modal de error */}
+      <Modal
+        isOpen={errorModal.open}
+        onClose={() => setErrorModal({ open: false, message: '' })}
+        title="Error"
+      >
+        <div className="text-red-600">{errorModal.message}</div>
+      </Modal>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faCrown, faUser } from '@fortawesome/free-solid-svg-icons';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
 import { useLocation } from 'react-router-dom';
+import Modal from '../components/modals/Modal';
 
 const Suscripciones = () => {
   const [billing, setBilling] = useState('monthly');
@@ -11,6 +12,7 @@ const Suscripciones = () => {
   const [loading, setLoading] = useState(false);
   const [currentPlan, setCurrentPlan] = useState('Básico');
   const [stripePrices, setStripePrices] = useState([]);
+  const [modal, setModal] = useState({ open: false, title: '', message: '' });
   const location = useLocation();
 
   // Obtiene los precios de Stripe al montar
@@ -114,7 +116,11 @@ const Suscripciones = () => {
     const token = localStorage.getItem('token') || user?.token;
 
     if (!token) {
-      setMensaje('Debes iniciar sesión para cambiar de plan.');
+      setModal({
+        open: true,
+        title: 'Aviso',
+        message: 'Debes iniciar sesión para cambiar de plan.'
+      });
       setLoading(false);
       return;
     }
@@ -137,18 +143,30 @@ const Suscripciones = () => {
         if (res.ok && data.url) {
           window.location.href = data.url;
         } else {
-          setMensaje('Error al iniciar el pago con Stripe');
+          setModal({
+            open: true,
+            title: 'Error',
+            message: 'Error al iniciar el pago con Stripe'
+          });
           setLoading(false);
         }
       } catch (err) {
-        setMensaje('Error de conexión con Stripe');
+        setModal({
+          open: true,
+          title: 'Error',
+          message: 'Error de conexión con Stripe'
+        });
         setLoading(false);
       }
       return;
     }
 
     setTimeout(() => {
-      setMensaje("¡Ya tienes el plan Básico activado!");
+      setModal({
+        open: true,
+        title: 'Aviso',
+        message: '¡Ya tienes el plan Básico activado!'
+      });
       setLoading(false);
     }, 1000);
   };
@@ -312,6 +330,15 @@ const Suscripciones = () => {
             </div>
           </div>
         </div>
+
+        {/* Modal general */}
+        <Modal
+          isOpen={modal.open}
+          onClose={() => setModal({ open: false, title: '', message: '' })}
+          title={modal.title}
+        >
+          <div>{modal.message}</div>
+        </Modal>
       </div>
     </div>
   );

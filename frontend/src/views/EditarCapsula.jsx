@@ -5,6 +5,7 @@ import {
   faSave, faTimes, faTrash, faImage, faVideo, faFileAlt, faMusic, faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 import PasswordModal from '../components/modals/PasswordModal';
+import Modal from '../components/modals/Modal';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 function toMySQLDateTime(dateString) {
@@ -47,6 +48,7 @@ const EditarCapsula = () => {
   const [plan, setPlan] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
   const [coverPreview, setCoverPreview] = useState('');
+  const [modal, setModal] = useState({ open: false, title: '', message: '' });
 
   // Cargar categorías
   useEffect(() => {
@@ -205,7 +207,11 @@ const EditarCapsula = () => {
     const fechaCreacion = new Date(capsula.Creation_Date);
     const fechaApertura = new Date(form.Opening_Date);
     if (fechaApertura <= fechaCreacion) {
-      alert('La fecha de apertura debe ser posterior a la fecha de creación.');
+      setModal({
+        open: true,
+        title: 'Fecha inválida',
+        message: 'La fecha de apertura debe ser posterior a la fecha de creación.'
+      });
       setLoading(false);
       return;
     }
@@ -223,12 +229,20 @@ const EditarCapsula = () => {
 
     // VALIDACIÓN DE CAMPOS OBLIGATORIOS
     if (!form.Title || !form.Opening_Date) {
-      alert('Debes completar todos los campos obligatorios.');
+      setModal({
+        open: true,
+        title: 'Campos obligatorios',
+        message: 'Debes completar todos los campos obligatorios.'
+      });
       setLoading(false);
       return;
     }
     if (!form.Category_ID) {
-      alert('Debes seleccionar una categoría.');
+      setModal({
+        open: true,
+        title: 'Categoría requerida',
+        message: 'Debes seleccionar una categoría.'
+      });
       setLoading(false);
       return;
     }
@@ -315,10 +329,18 @@ const EditarCapsula = () => {
         });
       }
 
-      alert('Cápsula actualizada correctamente');
-      navigate(`/capsulas`);
+      setModal({
+        open: true,
+        title: 'Éxito',
+        message: 'Cápsula actualizada correctamente'
+      });
+      setTimeout(() => navigate(`/capsulas`), 1200);
     } catch (err) {
-      alert('Error al guardar: ' + err.message);
+      setModal({
+        open: true,
+        title: 'Error',
+        message: 'Error al guardar: ' + err.message
+      });
     }
     setLoading(false);
   };
@@ -632,6 +654,13 @@ const EditarCapsula = () => {
           </form>
         </div>
       </div>
+      <Modal
+        isOpen={modal.open}
+        onClose={() => setModal({ open: false, title: '', message: '' })}
+        title={modal.title}
+      >
+        <div>{modal.message}</div>
+      </Modal>
       {showPasswordModal && (
         <PasswordModal
           isOpen={showPasswordModal}
