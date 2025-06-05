@@ -51,7 +51,8 @@ router.post(
         Cover_Image: coverImageUrl,
         notificaciones
       });
-      res.json({ Capsule_ID: result.insertId, id: result.insertId });
+      // Cambia esta línea:
+      res.json({ Capsule_ID: result.Capsule_ID, id: result.Capsule_ID });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
