@@ -39,23 +39,35 @@ const Explorar = () => {
   const [loading, setLoading] = useState(false);
 
   // Fetch cápsulas públicas con filtros y paginación
+  const fetchCapsulas = async () => {
+    setLoading(true);
+    const params = new URLSearchParams({
+      page,
+      pageSize: PAGE_SIZE,
+      category: selectedCategory !== 'todas' ? selectedCategory : '',
+      search: searchTerm
+    });
+    const res = await fetch(`/api/capsules/public?${params.toString()}`);
+    const data = await res.json();
+    setCapsulas(data.capsulas || []);
+    setTotalPages(data.totalPages || 1);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchCapsulas = async () => {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page,
-        pageSize: PAGE_SIZE,
-        category: selectedCategory !== 'todas' ? selectedCategory : '',
-        search: searchTerm
-      });
-      const res = await fetch(`/api/capsules/public?${params.toString()}`);
-      const data = await res.json();
-      console.log("Cápsulas recibidas:", data.capsulas); // <-- Agrega esto
-      setCapsulas(data.capsulas || []);
-      setTotalPages(data.totalPages || 1);
-      setLoading(false);
-    };
     fetchCapsulas();
+  }, [searchTerm, selectedCategory, page]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchCapsulas();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [searchTerm, selectedCategory, page]);
 
   // Handler para el buscador
