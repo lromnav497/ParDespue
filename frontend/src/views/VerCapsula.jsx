@@ -114,7 +114,6 @@ const VerCapsula = () => {
     // Refresca los datos de la cápsula para obtener el contador real
     const res = await fetchWithAuth(`/api/capsules/${id}`);
     const data = await res.json();
-    setLikes(data.Likes ?? data.likes ?? 0);
     setLikeLoading(false);
   };
 
