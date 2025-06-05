@@ -26,6 +26,7 @@ const VerCapsula = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(0);
+  const [likeLoading, setLikeLoading] = useState(false);
 
   useEffect(() => {
     const fetchCapsula = async () => {
@@ -91,6 +92,7 @@ const VerCapsula = () => {
   const handleLike = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) return alert('Debes iniciar sesión para dar me gusta');
+    setLikeLoading(true);
     if (liked) {
       await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'DELETE' });
       setLiked(false);
@@ -100,6 +102,7 @@ const VerCapsula = () => {
       setLiked(true);
       setLikes(likes + 1);
     }
+    setLikeLoading(false);
   };
 
   if (loading) {
@@ -272,6 +275,7 @@ const VerCapsula = () => {
               <button
                 className={`flex items-center gap-1 px-3 py-1 rounded-full ${liked ? 'bg-pink-500 text-white' : 'bg-gray-700 text-pink-500'}`}
                 onClick={handleLike}
+                disabled={likeLoading}
               >
                 <FontAwesomeIcon icon={faHeart} />
                 {likes}
