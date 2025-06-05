@@ -329,14 +329,14 @@ const MisCapsulas = () => {
                     String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')
                       ? 'border-4 border-yellow-400 animate-shake'
                       : ''
-                  } ${disabled ? 'opacity-60' : ''}`}
+                  }`}
                   // No onClick aquí, para que no sea clickable si está cerrada
                 >
                   <div className="relative">
                     <img 
                       src={imageUrl}
                       alt={capsula.Title}
-                      className="w-full h-48 object-cover"
+                      className={`w-full h-48 object-cover ${disabled ? 'opacity-60' : ''}`}
                     />
                     {/* Overlay de "No disponible" solo visual, no bloquea botones */}
                     {disabled && (
@@ -347,8 +347,8 @@ const MisCapsulas = () => {
                         </span>
                       </div>
                     )}
-                    {/* Botones SIEMPRE por encima del overlay */}
-                    <div className="absolute top-4 right-4 flex gap-2 z-20">
+                    {/* Botones SIEMPRE por encima del overlay y sin opacidad */}
+                    <div className="absolute top-4 right-4 flex gap-2 z-30">
                       {/* CAPSULA CERRADA: solo premium puede editar/eliminar */}
                       {disabled && isPremium && (
                         <>
