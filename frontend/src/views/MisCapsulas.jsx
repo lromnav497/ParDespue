@@ -261,6 +261,9 @@ const MisCapsulas = () => {
             <div className="col-span-3 text-center text-gray-400">No tienes cápsulas.</div>
           ) : (
             filteredCapsulas.map((capsula, idx) => {
+              const ahora = new Date();
+              const apertura = new Date(capsula.Opening_Date);
+              const disabled = apertura > ahora;
               let imageUrl;
               if (capsula.Cover_Image) {
                 imageUrl = capsula.Cover_Image.startsWith('http')
@@ -269,7 +272,7 @@ const MisCapsulas = () => {
               } else {
                 imageUrl = getUniqueRandomImage();
               }
-              
+
               return (
                 <div
                   key={capsula.Capsule_ID}
@@ -278,7 +281,7 @@ const MisCapsulas = () => {
                     String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')
                       ? 'border-4 border-yellow-400 animate-shake'
                       : ''
-                  }`}
+                  } ${disabled ? 'opacity-60 pointer-events-none select-none' : ''}`}
                   onClick={e => {
                     e.stopPropagation();
                     handleProtectedAction('ver', capsula);
@@ -294,6 +297,14 @@ const MisCapsulas = () => {
                       alt={capsula.Title}
                       className="w-full h-48 object-cover"
                     />
+                    {disabled && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10">
+                        <FontAwesomeIcon icon={faLock} className="text-4xl text-[#F5E050] mb-2" />
+                        <span className="text-[#F5E050] text-sm font-bold flex items-center gap-2">
+                          No disponible hasta {apertura.toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
                     <div className="absolute top-4 right-4 flex gap-2">
                       {getEstado(capsula) === 'programada' && plan && plan.toLowerCase() === 'premium' && (
                         <button
