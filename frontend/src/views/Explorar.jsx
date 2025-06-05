@@ -163,9 +163,7 @@ const Explorar = () => {
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10">
                         <FontAwesomeIcon icon={faLock} className="text-4xl text-[#F5E050] mb-2" />
                         <span className="text-[#F5E050] text-sm font-bold flex items-center gap-2">
-                          <span role="img" aria-label="chain">⛓️</span>
                           No disponible hasta {apertura.toLocaleDateString()}
-                          <span role="img" aria-label="chain">⛓️</span>
                         </span>
                       </div>
                     )}
@@ -203,7 +201,7 @@ const Explorar = () => {
                         </span>
                       </div>
                       <div className="mt-2 text-xs text-[#F5E050] font-semibold">
-                        Creador: {capsula.creador || capsula.creatorName || capsula.email || `Usuario #${capsula.Creator_User_ID}`}
+                        Creador: {capsula.creador || capsula.creatorName || capsula.username || 'Desconocido'}
                       </div>
                     </div>
                   </Link>
