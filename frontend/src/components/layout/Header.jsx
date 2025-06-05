@@ -68,6 +68,8 @@ const Header = () => {
   // Cargar notificaciones recientes cuando hay usuario
   useEffect(() => {
     if (!user) return;
+    let intervalId;
+
     const fetchNotifications = async () => {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -76,13 +78,18 @@ const Header = () => {
       });
       if (res.ok) {
         const data = await res.json();
-        // Filtra solo las notificaciones con Sent_Date <= ahora
         const now = new Date();
         const visibles = data.filter(n => new Date(n.Sent_Date) <= now);
-        setNotifications(visibles.slice(0, 3)); // Solo las 3 más recientes
+        setNotifications(visibles.slice(0, 3));
       }
     };
-    fetchNotifications();
+
+    fetchNotifications(); // Llama al cargar
+
+    // Llama cada 30 segundos
+    intervalId = setInterval(fetchNotifications, 30000);
+
+    return () => clearInterval(intervalId);
   }, [user]);
 
   // Marcar notificaciones como leídas al abrir el dropdown
