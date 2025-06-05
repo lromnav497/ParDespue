@@ -174,25 +174,19 @@ const CapsuleModel = {
   },
 
   addLike: async (capsuleId, userId) => {
-    // Intenta insertar el like solo si no existe
-    const [result] = await db.execute(
+    // Solo inserta el like, el trigger suma el contador
+    await db.execute(
       'INSERT IGNORE INTO CapsuleLikes (Capsule_ID, User_ID) VALUES (?, ?)',
       [capsuleId, userId]
     );
-    // Solo suma si se insertó un nuevo like
-    if (result.affectedRows > 0) {
-      await db.execute(
-        'UPDATE Capsules SET Likes = Likes + 1 WHERE Capsule_ID = ?',
-        [capsuleId]
-      );
-    }
   },
 
   removeLike: async (capsuleId, userId) => {
-    const [result] = await db.execute('DELETE FROM CapsuleLikes WHERE Capsule_ID = ? AND User_ID = ?', [capsuleId, userId]);
-    if (result.affectedRows > 0) {
-      await db.execute('UPDATE Capsules SET Likes = Likes - 1 WHERE Capsule_ID = ? AND Likes > 0', [capsuleId]);
-    }
+    // Solo borra el like, el trigger resta el contador
+    await db.execute(
+      'DELETE FROM CapsuleLikes WHERE Capsule_ID = ? AND User_ID = ?',
+      [capsuleId, userId]
+    );
   },
 
   userLiked: async (capsuleId, userId) => {
