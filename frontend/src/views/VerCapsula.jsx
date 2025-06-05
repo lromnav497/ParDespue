@@ -152,33 +152,6 @@ const VerCapsula = () => {
   return (
     <div className="min-h-screen bg-gray-900 py-8">
       <div className="container mx-auto px-4">
-        {/* Portada */}
-        <div className="flex justify-center mb-8">
-          <img
-            src={getImageUrl(capsula)}
-            alt="Portada"
-            className="rounded-xl shadow-lg max-h-80 object-cover w-full md:w-2/3"
-            style={{ background: "#1a1a4a" }}
-          />
-        </div>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-6 justify-center">
-          {(Array.isArray(capsula.Tags)
-            ? capsula.Tags
-            : typeof capsula.Tags === "string"
-              ? capsula.Tags.split(',').map(t => t.trim()).filter(Boolean)
-              : []
-          ).map(tag => (
-            <span
-              key={tag}
-              className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
         {/* Resto de la información */}
         <div className="space-y-8 text-white">
           {/* Información */}
