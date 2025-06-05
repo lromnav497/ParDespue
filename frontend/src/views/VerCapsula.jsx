@@ -13,7 +13,8 @@ import {
   faImage,
   faVideo,
   faEye,
-  faEyeSlash
+  faEyeSlash,
+  faHeart
 } from '@fortawesome/free-solid-svg-icons';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
@@ -23,6 +24,8 @@ const VerCapsula = () => {
   const [archivos, setArchivos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likes, setLikes] = useState(0);
 
   useEffect(() => {
     const fetchCapsula = async () => {
@@ -66,6 +69,38 @@ const VerCapsula = () => {
     };
     fetchArchivos();
   }, [id]);
+
+  useEffect(() => {
+    // Sumar una visualización al cargar
+    fetch(`/api/capsules/${id}/view`, { method: 'POST' });
+  }, [id]);
+
+  useEffect(() => {
+    if (capsula) {
+      setLikes(capsula.Likes ?? capsula.likes ?? 0);
+      // Saber si el usuario ya dio like
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        fetchWithAuth(`/api/capsules/${id}/liked`)
+          .then(res => res.json())
+          .then(data => setLiked(data.liked));
+      }
+    }
+  }, [capsula, id]);
+
+  const handleLike = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return alert('Debes iniciar sesión para dar me gusta');
+    if (liked) {
+      await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'DELETE' });
+      setLiked(false);
+      setLikes(likes - 1);
+    } else {
+      await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'POST' });
+      setLiked(true);
+      setLikes(likes + 1);
+    }
+  };
 
   if (loading) {
     return <div className="text-center text-[#F5E050] py-10">Cargando cápsula...</div>;
@@ -226,6 +261,26 @@ const VerCapsula = () => {
               </p>
             )}
             {/* Puedes agregar destinatarios, notificaciones, etc. aquí */}
+          </div>
+
+          {/* Interacciones */}
+          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg">
+            <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
+              <FontAwesomeIcon icon={faHeart} /> Interacciones
+            </h3>
+            <div className="flex items-center gap-4 mt-2">
+              <button
+                className={`flex items-center gap-1 px-3 py-1 rounded-full ${liked ? 'bg-pink-500 text-white' : 'bg-gray-700 text-pink-500'}`}
+                onClick={handleLike}
+              >
+                <FontAwesomeIcon icon={faHeart} />
+                {likes}
+              </button>
+              <span className="flex items-center gap-1 text-gray-400">
+                <FontAwesomeIcon icon={faEye} />
+                {capsula.Views ?? capsula.views ?? 0}
+              </span>
+            </div>
           </div>
         </div>
       </div>

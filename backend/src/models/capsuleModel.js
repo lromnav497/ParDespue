@@ -167,6 +167,28 @@ const CapsuleModel = {
     // 4. Ahora elimina la cápsula
     return capsuleGeneralModel.delete(id);
   },
+
+  addView: async (capsuleId) => {
+    await db.execute('UPDATE Capsules SET Views = Views + 1 WHERE Capsule_ID = ?', [capsuleId]);
+  },
+
+  addLike: async (capsuleId, userId) => {
+    // Evita duplicados: crea una tabla CapsuleLikes (Capsule_ID, User_ID)
+    await db.execute('INSERT IGNORE INTO CapsuleLikes (Capsule_ID, User_ID) VALUES (?, ?)', [capsuleId, userId]);
+    await db.execute('UPDATE Capsules SET Likes = Likes + 1 WHERE Capsule_ID = ?', [capsuleId]);
+  },
+
+  removeLike: async (capsuleId, userId) => {
+    const [result] = await db.execute('DELETE FROM CapsuleLikes WHERE Capsule_ID = ? AND User_ID = ?', [capsuleId, userId]);
+    if (result.affectedRows > 0) {
+      await db.execute('UPDATE Capsules SET Likes = Likes - 1 WHERE Capsule_ID = ? AND Likes > 0', [capsuleId]);
+    }
+  },
+
+  userLiked: async (capsuleId, userId) => {
+    const [rows] = await db.execute('SELECT 1 FROM CapsuleLikes WHERE Capsule_ID = ? AND User_ID = ?', [capsuleId, userId]);
+    return rows.length > 0;
+  },
 };
 
 module.exports = CapsuleModel;

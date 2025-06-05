@@ -151,11 +151,11 @@ const Explorar = () => {
                     <div className="flex items-center gap-4">
                       <span className="flex items-center">
                         <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500" />
-                        {capsula.likes}
+                        {capsula.likes ?? 0}
                       </span>
                       <span className="flex items-center">
                         <FontAwesomeIcon icon={faEye} className="mr-1" />
-                        {capsula.vistas}
+                        {capsula.views ?? 0}
                       </span>
                     </div>
                     <span className="flex items-center">

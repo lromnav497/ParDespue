@@ -148,5 +148,9 @@ router.put('/:id/cover', authMiddleware, uploadCover.single('cover_image'), asyn
     res.status(500).json({ error: error.message });
   }
 });
+router.post('/:id/view', async (req, res) => CapsuleController.addView(req, res));
+router.post('/:id/like', authMiddleware, async (req, res) => CapsuleController.addLike(req, res));
+router.delete('/:id/like', authMiddleware, async (req, res) => CapsuleController.removeLike(req, res));
+router.get('/:id/liked', authMiddleware, async (req, res) => CapsuleController.userLiked(req, res));
 
 module.exports = router;

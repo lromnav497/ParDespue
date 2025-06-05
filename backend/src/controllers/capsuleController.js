@@ -171,6 +171,49 @@ class CapsuleController extends GeneralController {
             res.status(500).json({ error: error.message });
         }
     }
+
+    async addView(req, res) {
+        try {
+            const { id } = req.params;
+            await this.model.addView(id);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    }
+
+    async addLike(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+            await this.model.addLike(id, userId);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    }
+
+    async removeLike(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+            await this.model.removeLike(id, userId);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    }
+
+    async userLiked(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+            const liked = await this.model.userLiked(id, userId);
+            res.json({ liked });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    }
 }
 
 module.exports = new CapsuleController();
