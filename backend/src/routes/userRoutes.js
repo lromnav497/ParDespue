@@ -7,7 +7,6 @@ const bcrypt = require('bcryptjs');
 const db = require('../config/db'); // Asegúrate de tener la configuración de la base de datos
 const multer = require('multer');
 const path = require('path');
-const { Parser } = require('json2csv');
 
 const router = express.Router(); // Usa un router limpio
 
@@ -142,14 +141,7 @@ router.get('/me/export', authMiddleware, async (req, res) => {
     const [rows] = await db.query('CALL GetAllUserData(?)', [userId]);
     // El resultado de un CALL es un array de arrays, el primero es el resultado
     const data = rows[0];
-
-    // Convierte a CSV
-    const parser = new Parser();
-    const csv = parser.parse(data);
-
-    res.header('Content-Type', 'text/csv');
-    res.attachment('mis_datos.csv');
-    res.send(csv);
+    res.json(data);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al exportar los datos' });
