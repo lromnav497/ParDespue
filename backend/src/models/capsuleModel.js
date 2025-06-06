@@ -151,32 +151,14 @@ const CapsuleModel = {
   },
 
   delete: async (id) => {
-    // 1. Obtener los paths de los archivos asociados a la cápsula y el id del usuario
-    const [capsule] = await db.execute('SELECT Creator_User_ID FROM Capsules WHERE Capsule_ID = ?', [id]);
-    const userId = capsule[0]?.Creator_User_ID;
+    // Elimina likes asociados
+    await db.query('DELETE FROM CapsuleLikes WHERE Capsule_ID = ?', [id]);
+    // Elimina comentarios asociados (si tienes)
+    await db.query('DELETE FROM Comments WHERE Capsule_ID = ?', [id]);
+    // Elimina otros hijos si existen...
 
-    const [contents] = await db.execute('SELECT File_Path FROM Contents WHERE Capsule_ID = ?', [id]);
-    // 2. Eliminar los archivos físicos
-    for (const content of contents) {
-      if (content.File_Path && userId) {
-        // Nuevo path organizado: uploads/<id_usuario>/<id_capsula>/<archivo>
-        const filePath = path.join(__dirname, '../../uploads', String(userId), String(id), content.File_Path);
-        try {
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-          }
-        } catch (err) {
-          console.error('Error eliminando archivo:', filePath, err);
-        }
-      }
-    }
-    // 3. Elimina relaciones en tablas hijas primero
-    await db.execute('DELETE FROM Contents WHERE Capsule_ID = ?', [id]);
-    await db.execute('DELETE FROM Recipients WHERE Capsule_ID = ?', [id]);
-    await db.execute('DELETE FROM Comments WHERE Capsule_ID = ?', [id]);
-    await db.execute('DELETE FROM Notifications WHERE Capsule_ID = ?', [id]);
-    // 4. Ahora elimina la cápsula
-    return capsuleGeneralModel.delete(id);
+    // Ahora sí elimina la cápsula
+    await db.query('DELETE FROM Capsules WHERE Capsule_ID = ?', [id]);
   },
 
   addView: async (capsuleId) => {
