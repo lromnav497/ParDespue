@@ -97,18 +97,40 @@ router.get('/:id/edit', authMiddleware, requirePremium, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-router.put('/:id', authMiddleware, (req, res) => CapsuleController.update(req, res));
-router.delete('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   const capsuleId = req.params.id;
-  const userId = req.body.userId || req.headers['x-user-id'];
+  const userId = req.user.id;
+  const isAdmin = req.user.role === 'administrator';
 
-  try {
-    // Usa el método del modelo, que ya elimina todo correctamente
-    await capsuleModel.delete(capsuleId);
-    res.json({ message: 'Cápsula eliminada correctamente.' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error al eliminar la cápsula', error: err.message });
+  // Busca la cápsula
+  const capsule = await capsuleModel.findById(capsuleId);
+  if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
+
+  // Solo dueño, premium o admin pueden editar
+  if (capsule.Creator_User_ID !== userId && !isAdmin) {
+    return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
   }
+
+  // ...actualiza la cápsula...
+  CapsuleController.update(req, res);
+});
+
+router.delete('/:id', authMiddleware, async (req, res) => {
+  const capsuleId = req.params.id;
+  const userId = req.user.id;
+  const isAdmin = req.user.role === 'administrator';
+
+  // Busca la cápsula
+  const capsule = await capsuleModel.findById(capsuleId);
+  if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
+
+  // Solo dueño, premium o admin pueden eliminar
+  if (capsule.Creator_User_ID !== userId && !isAdmin) {
+    return res.status(403).json({ message: 'No tienes permiso para eliminar esta cápsula.' });
+  }
+
+  await capsuleModel.delete(capsuleId);
+  res.json({ message: 'Cápsula eliminada correctamente.' });
 });
 router.post('/:id/check-password', async (req, res) => {
   const { password } = req.body;

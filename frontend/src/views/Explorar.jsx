@@ -92,6 +92,9 @@ const Explorar = () => {
     setPage(1);
   };
 
+  const user = JSON.parse(localStorage.getItem('user'));
+  const isAdmin = user?.role === 'administrator';
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Barra de búsqueda y filtros */}
@@ -141,6 +144,10 @@ const Explorar = () => {
               const ahora = new Date();
               const apertura = new Date(capsula.fechaApertura);
               const disabled = apertura > ahora;
+              const isPremium = user?.premium;
+              const puedeEditar = (isPremium && disabled) || isAdmin;
+              const puedeEliminar = isPremium || !disabled || isAdmin;
+              
               return (
                 <div
                   key={capsula.id}

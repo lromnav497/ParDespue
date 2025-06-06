@@ -118,29 +118,32 @@ router.post('/register', upload.single('profile_picture'), async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const { email, password, remember } = req.body;
-    try {
-        const user = await userModel.findByEmail(email);
-        if (!user) {
-            return res.status(400).json({ message: 'Usuario o contraseña incorrectos' });
-        }
-        if (!user.Verified) {
-            return res.status(403).json({ message: 'Usuario no verificado. Revisa tu correo para activarlo.' });
-        }
-        const valid = await bcrypt.compare(password, user.Password);
-        if (!valid) {
-            return res.status(400).json({ message: 'Usuario o contraseña incorrectos' });
-        }
-        // Genera el token
-        const token = jwt.sign(
-          { id: user.User_ID, email: user.Email, role: user.Role, Profile_Picture: user.Profile_Picture },
-          process.env.JWT_SECRET,
-          { expiresIn: remember ? '30d' : '2h' } // Si remember, sin expiración
-        );
-        res.json({ token, user: { id: user.User_ID, name: user.Name, email: user.Email, role: user.Role, Profile_Picture: user.Profile_Picture } });
-    } catch (error) {
-        res.status(500).json({ error: error.message }); 
+  const { email, password } = req.body;
+  try {
+    const user = await userModel.findByEmail(email);
+    if (!user) {
+      return res.status(400).json({ message: 'Usuario o contraseña incorrectos' });
     }
+    if (user.VerificationToken === 'banned') {
+      return res.status(403).json({ message: 'Usuario baneado. Contacta al administrador.' });
+    }
+    if (!user.Verified) {
+      return res.status(403).json({ message: 'Usuario no verificado. Revisa tu correo para activarlo.' });
+    }
+    const valid = await bcrypt.compare(password, user.Password);
+    if (!valid) {
+      return res.status(400).json({ message: 'Usuario o contraseña incorrectos' });
+    }
+    // Genera el token
+    const token = jwt.sign(
+      { id: user.User_ID, email: user.Email, role: user.Role, Profile_Picture: user.Profile_Picture },
+      process.env.JWT_SECRET,
+      { expiresIn: remember ? '30d' : '2h' } // Si remember, sin expiración
+    );
+    res.json({ token, user: { id: user.User_ID, name: user.Name, email: user.Email, role: user.Role, Profile_Picture: user.Profile_Picture } });
+  } catch (error) {
+    res.status(500).json({ error: error.message }); 
+  }
 });
 
 router.get('/verify/:token', async (req, res) => {

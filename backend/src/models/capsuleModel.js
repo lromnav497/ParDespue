@@ -136,6 +136,16 @@ const CapsuleModel = {
     };
   },
 
+  findAll: async () => {
+    const [rows] = await db.execute(
+      `SELECT c.*, u.Name as CreatorName, u.Email as CreatorEmail
+       FROM Capsules c
+       JOIN Users u ON c.Creator_User_ID = u.User_ID
+       ORDER BY c.Creation_Date DESC`
+    );
+    return rows;
+  },
+
   update: async (id, data) => {
     return capsuleGeneralModel.update(id, data);
   },

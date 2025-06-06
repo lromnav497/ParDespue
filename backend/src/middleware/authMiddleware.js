@@ -23,4 +23,6 @@ const roleMiddleware = (requiredRole) => (req, res, next) => {
     next();
 };
 
-module.exports = { authMiddleware, roleMiddleware };
+const isAdmin = (req) => req.user && req.user.role === 'administrator';
+
+module.exports = { authMiddleware, roleMiddleware, isAdmin };

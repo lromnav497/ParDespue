@@ -292,6 +292,25 @@ const Header = () => {
                   >
                     Configuración
                   </Link>
+                  {/* Botones solo para administrador */}
+                  {user?.role === 'administrator' && (
+                    <>
+                      <Link
+                        to="/todas-capsulas"
+                        className="block px-4 py-2 text-[#F5E050] hover:bg-[#1a1a4a] font-bold"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Todas las Cápsulas
+                      </Link>
+                      <Link
+                        to="/panel-moderacion"
+                        className="block px-4 py-2 text-[#F5E050] hover:bg-[#1a1a4a] font-bold"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Panel Moderación
+                      </Link>
+                    </>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-white hover:bg-[#1a1a4a] flex items-center"

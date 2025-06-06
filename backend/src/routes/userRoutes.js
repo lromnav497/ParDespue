@@ -2,7 +2,7 @@ const express = require('express');
 const UserController = require('../controllers/userController');
 const createGeneralRouter = require('./generalRoutes');
 const userModel = require('../models/userModel');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const { authMiddleware, roleMiddleware } = require('../middleware/authMiddleware');
 const bcrypt = require('bcryptjs');
 const db = require('../config/db'); // Asegúrate de tener la configuración de la base de datos
 const multer = require('multer');
@@ -111,6 +111,26 @@ router.put('/:id/profile-picture', authMiddleware, upload.single('profile_pictur
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// Listar todos los usuarios (solo admin)
+router.get('/all', authMiddleware, roleMiddleware('administrator'), async (req, res) => {
+  const [users] = await userModel.getAll();
+  res.json(users);
+});
+
+// Banear usuario (solo admin)
+router.put('/:id/ban', authMiddleware, roleMiddleware('administrator'), async (req, res) => {
+  const userId = req.params.id;
+  await userModel.update(userId, { VerificationToken: 'banned' });
+  res.json({ message: 'Usuario baneado' });
+});
+
+// Desbanear usuario (solo admin)
+router.put('/:id/unban', authMiddleware, roleMiddleware('administrator'), async (req, res) => {
+  const userId = req.params.id;
+  await userModel.update(userId, { VerificationToken: null });
+  res.json({ message: 'Usuario desbaneado' });
 });
 
 // LUEGO agrega las rutas generales
