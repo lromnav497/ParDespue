@@ -86,25 +86,28 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Para editar la cápsula (permite premium o dueño)
-router.get('/:id/edit', authMiddleware, requirePremium, async (req, res) => {
+// Para editar la cápsula (permite premium, dueño o administrador)
+router.get('/:id/edit', authMiddleware, async (req, res) => {
   const capsuleId = req.params.id;
   const userId = req.user.id;
+  const userRole = req.user.role;
   try {
     const capsule = await capsuleModel.findById(capsuleId);
     if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
 
-    // Permitir si es el dueño o si es premium
     const plan = req.user.plan || req.user.Plan || req.user.tipoPlan;
     const isPremium = plan && plan.toLowerCase() === 'premium';
-    if (Number(userId) !== capsule.Creator_User_ID && !isPremium) {
+    const isAdmin = userRole === 'administrator';
+
+    // Permitir si es el dueño, premium o administrador
+    if (Number(userId) !== capsule.Creator_User_ID && !isPremium && !isAdmin) {
       return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
     }
 
-    // NO permitir editar si la cápsula ya está abierta
+    // NO permitir editar si la cápsula ya está abierta (excepto admin)
     const ahora = new Date();
     const apertura = new Date(capsule.Opening_Date);
-    if (apertura <= ahora) {
+    if (apertura <= ahora && !isAdmin) {
       return res.status(403).json({ message: 'No se puede editar una cápsula que ya está abierta.' });
     }
 
@@ -188,7 +191,6 @@ router.post('/:id/view', async (req, res) => CapsuleController.addView(req, res)
 router.post('/:id/like', authMiddleware, async (req, res) => CapsuleController.addLike(req, res));
 router.delete('/:id/like', authMiddleware, async (req, res) => CapsuleController.removeLike(req, res));
 router.get('/:id/liked', authMiddleware, async (req, res) => CapsuleController.userLiked(req, res));
-// ¡Pon esto ANTES de cualquier ruta con /:id!
 
 
 module.exports = router;
