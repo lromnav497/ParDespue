@@ -2,7 +2,10 @@ const pool = require('../config/db');
 
 const UserModel = {
   findByEmail: async (email) => {
-    const [rows] = await pool.query('SELECT * FROM Users WHERE Email = ?', [email]);
+    const [rows] = await pool.query(
+      'SELECT * FROM Users WHERE Email = ? LIMIT 1',
+      [email]
+    );
     return rows[0];
   },
   create: async (user) => {

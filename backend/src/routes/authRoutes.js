@@ -142,7 +142,8 @@ router.post('/login', async (req, res) => {
     );
     res.json({ token, user: { id: user.User_ID, name: user.Name, email: user.Email, role: user.Role, Profile_Picture: user.Profile_Picture } });
   } catch (error) {
-    res.status(500).json({ error: error.message }); 
+    console.error(error); // <-- Esto te mostrará el error real en consola
+    res.status(500).json({ message: 'Error interno del servidor' });
   }
 });
 
