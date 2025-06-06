@@ -71,6 +71,19 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+router.get('/all', authMiddleware, roleMiddleware('administrator'), async (req, res) => {
+  try {
+    console.log('[LOG] GET /api/capsules/all called');
+    const capsules = await capsuleModel.findAll();
+    console.log('[LOG] Capsules found:', capsules.length);
+    res.json(capsules);
+  } catch (error) {
+    console.error('[ERROR] /api/capsules/all:', error);
+    res.status(500).json({ message: 'Error al obtener las cápsulas' });
+  }
+});
+
 // Para editar la cápsula (permite premium o dueño)
 router.get('/:id/edit', authMiddleware, requirePremium, async (req, res) => {
   const capsuleId = req.params.id;
@@ -158,16 +171,6 @@ router.post('/:id/like', authMiddleware, async (req, res) => CapsuleController.a
 router.delete('/:id/like', authMiddleware, async (req, res) => CapsuleController.removeLike(req, res));
 router.get('/:id/liked', authMiddleware, async (req, res) => CapsuleController.userLiked(req, res));
 // ¡Pon esto ANTES de cualquier ruta con /:id!
-router.get('/all', authMiddleware, roleMiddleware('administrator'), async (req, res) => {
-  try {
-    console.log('[LOG] GET /api/capsules/all called');
-    const capsules = await capsuleModel.findAll();
-    console.log('[LOG] Capsules found:', capsules.length);
-    res.json(capsules);
-  } catch (error) {
-    console.error('[ERROR] /api/capsules/all:', error);
-    res.status(500).json({ message: 'Error al obtener las cápsulas' });
-  }
-});
+
 
 module.exports = router;
