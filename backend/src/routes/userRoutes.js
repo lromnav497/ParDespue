@@ -142,7 +142,14 @@ router.get('/me/export', authMiddleware, async (req, res) => {
     const [rows] = await db.query('CALL GetAllUserData(?)', [userId]);
     // El resultado de un CALL es un array de arrays, el primero es el resultado
     const data = rows[0];
-    res.json(data);
+
+    // Convierte a CSV
+    const parser = new Parser();
+    const csv = parser.parse(data);
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment('mis_datos.csv');
+    res.send(csv);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al exportar los datos' });
