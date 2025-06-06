@@ -119,11 +119,13 @@ const MisCapsulas = () => {
             <button
               className="bg-red-500 text-white px-4 py-2 rounded"
               onClick={async () => {
-                const user = JSON.parse(localStorage.getItem('user'));
+                const token = localStorage.getItem('token');
                 const res = await fetch(`/api/capsules/${capsuleId}`, {
                   method: 'DELETE',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ userId: user.id }),
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  }
                 });
                 if (res.ok) {
                   setCapsulas(prev => prev.filter(c => c.Capsule_ID !== capsuleId));
