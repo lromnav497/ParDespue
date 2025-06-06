@@ -4,7 +4,7 @@ const CapsuleController = require('../controllers/capsuleController');
 const capsuleModel = require('../models/capsuleModel');
 const db = require('../config/db');
 const requirePremium = require('../middleware/premiumMiddleware');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const { authMiddleware, roleMiddleware } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -156,5 +156,14 @@ router.post('/:id/view', async (req, res) => CapsuleController.addView(req, res)
 router.post('/:id/like', authMiddleware, async (req, res) => CapsuleController.addLike(req, res));
 router.delete('/:id/like', authMiddleware, async (req, res) => CapsuleController.removeLike(req, res));
 router.get('/:id/liked', authMiddleware, async (req, res) => CapsuleController.userLiked(req, res));
+// Ruta para que el administrador vea todas las cápsulas
+router.get('/all', authMiddleware, roleMiddleware('administrator'), async (req, res) => {
+  try {
+    const capsules = await capsuleModel.findAll();
+    res.json(capsules);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener las cápsulas' });
+  }
+});
 
 module.exports = router;

@@ -137,7 +137,7 @@ const CapsuleModel = {
   },
 
   findAll: async () => {
-    const [rows] = await db.execute(
+    const [rows] = await db.query(
       `SELECT c.*, u.Name as CreatorName, u.Email as CreatorEmail
        FROM Capsules c
        JOIN Users u ON c.Creator_User_ID = u.User_ID

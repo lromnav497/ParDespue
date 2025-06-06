@@ -18,15 +18,21 @@ const TodasLasCapsulas = () => {
           </tr>
         </thead>
         <tbody>
-          {capsulas.map(c => (
-            <tr key={c.Capsule_ID}>
-              <td>{c.Capsule_ID}</td>
-              <td>{c.Title}</td>
-              <td>{c.CreatorName}</td>
-              <td>{c.CreatorEmail}</td>
-              <td>{new Date(c.Creation_Date).toLocaleDateString()}</td>
+          {Array.isArray(capsulas) && capsulas.length > 0 ? (
+            capsulas.map(c => (
+              <tr key={c.Capsule_ID}>
+                <td>{c.Capsule_ID}</td>
+                <td>{c.Title}</td>
+                <td>{c.CreatorName}</td>
+                <td>{c.CreatorEmail}</td>
+                <td>{new Date(c.Creation_Date).toLocaleDateString()}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={5} className="text-center">No hay cápsulas o no tienes permisos.</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>
