@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const jwt = require('jsonwebtoken');
 
 const UserModel = {
   findByEmail: async (email) => {
@@ -41,6 +42,14 @@ const UserModel = {
     const [rows] = await pool.query('SELECT * FROM Users');
     return [rows];
   },
+  generateToken: (user, remember) => {
+    const token = jwt.sign(
+      { id: user.User_ID, email: user.Email, role: user.Role, Profile_Picture: user.Profile_Picture },
+      process.env.JWT_SECRET,
+      { expiresIn: remember ? '30d' : '2h' } // Si remember, sin expiración
+    );
+    return token;
+  }
   // ...otros métodos...
 };
 

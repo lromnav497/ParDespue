@@ -118,7 +118,7 @@ router.post('/register', upload.single('profile_picture'), async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, remember } = req.body;
   try {
     const user = await userModel.findByEmail(email);
     if (!user) {
