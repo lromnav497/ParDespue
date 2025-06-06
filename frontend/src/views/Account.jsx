@@ -10,10 +10,14 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import RenewSubscriptionModal from '../components/modals/RenewSubscriptionModal';
 import ConfirmCancelSubscriptionModal from '../components/modals/ConfirmCancelSubscriptionModal';
-import MisCapsulas from './MisCapsulas'; // Asegúrate de que la ruta es correcta
+import MisCapsulas from './MisCapsulas';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
 import Modal from '../components/modals/Modal';
-import { saveAs } from 'file-saver'; // Instala con: npm install file-saver
+// Quita file-saver y csv
+
+// Agrega jsPDF y autoTable
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const Account = () => {
   const [activeSection, setActiveSection] = useState('general');
@@ -49,7 +53,7 @@ const Account = () => {
       case 'suscripciones':
         return <MisSuscripciones />;
       case 'capsulas':
-        return <MisCapsulas />; // Usa el componente real aquí
+        return <MisCapsulas />;
       case 'configuracion':
         return <Configuracion />;
       default:
@@ -585,7 +589,7 @@ const MisSuscripciones = () => {
 };
 
 const Configuracion = () => {
-  const handleExport = async () => {
+  const handleExportPDF = async () => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/users/me/export', {
@@ -595,8 +599,41 @@ const Configuracion = () => {
         alert('Error al exportar los datos');
         return;
       }
-      const blob = await res.blob();
-      saveAs(blob, 'mis_datos.csv');
+      const data = await res.json();
+
+      // Generar PDF
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text('Exportación de datos de usuario', 14, 18);
+
+      // Agrupa por tipo de dato
+      const tipos = [
+        'User', 'Capsule', 'Content', 'Notification', 'Subscription', 'Transaction', 'Recipient', 'Comment'
+      ];
+      let y = 28;
+      tipos.forEach(tipo => {
+        const rows = data.filter(row => row.DataType === tipo);
+        if (rows.length === 0) return;
+        doc.setFontSize(13);
+        doc.text(tipo, 14, y);
+        y += 4;
+        doc.autoTable({
+          startY: y,
+          head: [['ID', 'Descripción', 'Fecha', 'Info extra']],
+          body: rows.map(r => [
+            r.DataID,
+            r.Description,
+            r.CreatedAt ? ('' + r.CreatedAt).replace('T', ' ').slice(0, 19) : '',
+            r.AdditionalInfo || ''
+          ]),
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] },
+          margin: { left: 14, right: 14 }
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      });
+
+      doc.save('mis_datos.pdf');
     } catch (err) {
       alert('Error al exportar los datos');
     }
@@ -623,9 +660,9 @@ const Configuracion = () => {
           <h4 className="text-xl mb-4">Exportar mis datos</h4>
           <button
             className="bg-[#F5E050] text-[#2E2E7A] px-6 py-2 rounded-full font-bold"
-            onClick={handleExport}
+            onClick={handleExportPDF}
           >
-            Descargar toda mi información (.csv)
+            Descargar toda mi información (.pdf)
           </button>
         </div>
       </div>
