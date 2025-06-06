@@ -111,7 +111,7 @@ const TodasLasCapsulas = () => {
                   <td>
                     <button
                       className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded mr-2"
-                      onClick={() => window.location.href = `/editar-capsula/${c.Capsule_ID}`}
+                      onClick={() => window.location.href = `/editarcapsula/${c.Capsule_ID}`}
                       title="Editar"
                     >
                       Editar
