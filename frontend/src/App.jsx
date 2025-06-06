@@ -24,6 +24,8 @@ import VerifyEmail from './views/VerifyEmail';
 import ResendVerification from './views/ResendVerification';
 import ResetPassword from './views/ResetPassword';
 import Notificaciones from './views/Notificaciones';
+import TodasLasCapsulas from './views/TodasLasCapsulas';
+import PanelModeracion from './views/PanelModeracion';
 import './index.css';
 
 function App() {
@@ -70,6 +72,8 @@ function App() {
           <Route path="/resend-verification" element={<ResendVerification />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/notificaciones" element={<Notificaciones />} />
+          <Route path="/todas-capsulas" element={<TodasLasCapsulas />} />
+          <Route path="/panel-moderacion" element={<PanelModeracion />} />
         </Routes>
         <CookiesModal
           isOpen={showCookiesModal}
