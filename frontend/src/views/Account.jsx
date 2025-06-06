@@ -13,6 +13,7 @@ import ConfirmCancelSubscriptionModal from '../components/modals/ConfirmCancelSu
 import MisCapsulas from './MisCapsulas'; // Asegúrate de que la ruta es correcta
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
 import Modal from '../components/modals/Modal';
+import { saveAs } from 'file-saver'; // Instala con: npm install file-saver
 
 const Account = () => {
   const [activeSection, setActiveSection] = useState('general');
@@ -583,25 +584,53 @@ const MisSuscripciones = () => {
   );
 };
 
-const Configuracion = () => (
-  <div className="text-white">
-    <h3 className="text-2xl passero-font text-[#F5E050] mb-6">Configuración</h3>
-    <div className="space-y-4">
-      <div className="bg-[#1a1a4a] p-6 rounded-lg">
-        <h4 className="text-xl mb-4">Preferencias de notificación</h4>
-        <div className="space-y-3">
-          <label className="flex items-center space-x-3">
-            <input type="checkbox" className="form-checkbox text-[#F5E050]" />
-            <span>Notificaciones por email</span>
-          </label>
-          <label className="flex items-center space-x-3">
-            <input type="checkbox" className="form-checkbox text-[#F5E050]" />
-            <span>Notificaciones push</span>
-          </label>
+const Configuracion = () => {
+  const handleExport = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users/me/export', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        alert('Error al exportar los datos');
+        return;
+      }
+      const blob = await res.blob();
+      saveAs(blob, 'mis_datos.csv');
+    } catch (err) {
+      alert('Error al exportar los datos');
+    }
+  };
+
+  return (
+    <div className="text-white">
+      <h3 className="text-2xl passero-font text-[#F5E050] mb-6">Configuración</h3>
+      <div className="space-y-4">
+        <div className="bg-[#1a1a4a] p-6 rounded-lg">
+          <h4 className="text-xl mb-4">Preferencias de notificación</h4>
+          <div className="space-y-3">
+            <label className="flex items-center space-x-3">
+              <input type="checkbox" className="form-checkbox text-[#F5E050]" />
+              <span>Notificaciones por email</span>
+            </label>
+            <label className="flex items-center space-x-3">
+              <input type="checkbox" className="form-checkbox text-[#F5E050]" />
+              <span>Notificaciones push</span>
+            </label>
+          </div>
+        </div>
+        <div className="bg-[#1a1a4a] p-6 rounded-lg">
+          <h4 className="text-xl mb-4">Exportar mis datos</h4>
+          <button
+            className="bg-[#F5E050] text-[#2E2E7A] px-6 py-2 rounded-full font-bold"
+            onClick={handleExport}
+          >
+            Descargar toda mi información (.csv)
+          </button>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Account;

@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const db = require('../config/db'); // Asegúrate de tener la configuración de la base de datos
 const multer = require('multer');
 const path = require('path');
+const { Parser } = require('json2csv');
 
 const router = express.Router(); // Usa un router limpio
 
@@ -131,6 +132,28 @@ router.put('/:id/unban', authMiddleware, roleMiddleware('administrator'), async 
   const userId = req.params.id;
   await userModel.update(userId, { VerificationToken: null });
   res.json({ message: 'Usuario desbaneado' });
+});
+
+// Exportar datos del usuario en formato CSV
+router.get('/me/export', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    // Ejecuta el procedimiento almacenado
+    const [rows] = await db.query('CALL GetAllUserData(?)', [userId]);
+    // El resultado de un CALL es un array de arrays, el primero es el resultado
+    const data = rows[0];
+
+    // Convierte a CSV
+    const parser = new Parser();
+    const csv = parser.parse(data);
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment('mis_datos.csv');
+    res.send(csv);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al exportar los datos' });
+  }
 });
 
 // LUEGO agrega las rutas generales
