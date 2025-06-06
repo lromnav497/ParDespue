@@ -162,6 +162,7 @@ router.get('/all', authMiddleware, roleMiddleware('administrator'), async (req, 
     const capsules = await capsuleModel.findAll();
     res.json(capsules);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error al obtener las cápsulas' });
   }
 });
