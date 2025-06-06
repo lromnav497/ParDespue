@@ -49,6 +49,20 @@ router.get('/privacy/:privacy', async (req, res) => {
 });
 router.get('/user/:userId', (req, res) => CapsuleController.findByUser(req, res));
 router.get('/public', (req, res) => CapsuleController.getPublicCapsules(req, res));
+
+// ¡ESTA RUTA DEBE IR ANTES!
+router.get('/all', authMiddleware, roleMiddleware('administrator'), async (req, res) => {
+  try {
+    console.log('[LOG] GET /api/capsules/all called');
+    const capsules = await capsuleModel.findAll();
+    console.log('[LOG] Capsules found:', capsules.length);
+    res.json(capsules);
+  } catch (error) {
+    console.error('[ERROR] /api/capsules/all:', error);
+    res.status(500).json({ message: 'Error al obtener las cápsulas' });
+  }
+});
+
 // Obtener cápsula por ID con todos los campos y contenidos
 router.get('/:id', async (req, res) => {
   console.log('[LOG] GET /api/capsules/:id called with id:', req.params.id);
@@ -69,18 +83,6 @@ router.get('/:id', async (req, res) => {
     res.status(200).json(capsule);
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-});
-
-router.get('/all', authMiddleware, roleMiddleware('administrator'), async (req, res) => {
-  try {
-    console.log('[LOG] GET /api/capsules/all called');
-    const capsules = await capsuleModel.findAll();
-    console.log('[LOG] Capsules found:', capsules.length);
-    res.json(capsules);
-  } catch (error) {
-    console.error('[ERROR] /api/capsules/all:', error);
-    res.status(500).json({ message: 'Error al obtener las cápsulas' });
   }
 });
 
