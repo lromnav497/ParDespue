@@ -104,33 +104,32 @@ const EditarCapsula = () => {
 
   // Esperar a que el plan esté cargado antes de pedir la cápsula
   useEffect(() => {
-    if (plan === null) {
+    // Permitir acceso si es admin, aunque no tenga plan premium
+    const user = JSON.parse(localStorage.getItem('user'));
+    const isAdmin = user?.role === 'administrator';
+
+    if (plan === null && !isAdmin) {
       console.log('[EditarCapsula] plan es null, no pido cápsula');
-      return; // Espera a que el plan esté definido
+      return; // Espera a que el plan esté definido, salvo que sea admin
     }
-    console.log('[EditarCapsula] plan detectado:', plan);
+    console.log('[EditarCapsula] plan detectado:', plan, 'isAdmin:', isAdmin);
     const fetchCapsula = async () => {
       setLoading(true);
       setError(null);
       try {
-        const user = JSON.parse(localStorage.getItem('user'));
         const token = localStorage.getItem('token') || user?.token;
-        console.log('[EditarCapsula] Pido cápsula con token:', token);
         const res = await fetch(`/api/capsules/${id}/edit`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-        console.log('[EditarCapsula] /api/capsules/'+id+'/edit status:', res.status);
         if (!res.ok) {
           const data = await res.json();
-          console.log('[EditarCapsula] Error al pedir cápsula:', data);
           setError(data.message || 'No tienes permiso para editar esta cápsula.');
           setLoading(false);
           return;
         }
         const data = await res.json();
-        console.log('[EditarCapsula] Cápsula recibida:', data);
         setCapsula(data);
         setForm({
           Title: data.Title || '',
@@ -156,7 +155,6 @@ const EditarCapsula = () => {
             : []
         );
       } catch (err) {
-        console.log('[EditarCapsula] Error al cargar la cápsula:', err);
         setError('Error al cargar la cápsula.');
       }
       setLoading(false);
@@ -523,9 +521,19 @@ const EditarCapsula = () => {
                   <button
                     type="button"
                     className="ml-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-400"
-                    onClick={() => {
+                    onClick={async () => {
                       setCoverImage(null);
                       setCoverPreview('');
+                      // Llama al backend para eliminar la portada
+                      const token = localStorage.getItem('token');
+                      await fetch(`/api/capsules/${id}/cover`, {
+                        method: 'PUT',
+                        headers: { 
+                          'Authorization': `Bearer ${token}`,
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ remove: true })
+                      });
                     }}
                   >
                     Quitar

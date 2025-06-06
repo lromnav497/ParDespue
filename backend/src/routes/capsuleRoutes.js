@@ -160,6 +160,22 @@ router.post('/:id/check-password', async (req, res) => {
 // Subir/actualizar portada
 router.put('/:id/cover', authMiddleware, uploadCover.single('cover_image'), async (req, res) => {
   try {
+    // Si se pide eliminar la portada
+    if (req.body.remove === 'true' || req.body.remove === true) {
+      // Busca la cápsula para saber la imagen actual
+      const [rows] = await db.query('SELECT Cover_Image FROM Capsules WHERE Capsule_ID = ?', [req.params.id]);
+      const coverPath = rows[0]?.Cover_Image;
+      if (coverPath) {
+        const fs = require('fs');
+        const path = require('path');
+        const fullPath = path.join(__dirname, '..', '..', coverPath);
+        if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      }
+      await capsuleModel.update(req.params.id, { Cover_Image: null });
+      return res.json({ message: 'Portada eliminada', coverImage: null });
+    }
+
+    // Si se sube una nueva imagen
     if (!req.file) return res.status(400).json({ message: 'No se subió ninguna imagen' });
     const coverUrl = `/uploads/capsule_covers/${req.file.filename}`;
     await capsuleModel.update(req.params.id, { Cover_Image: coverUrl });
