@@ -592,13 +592,16 @@ const Configuracion = () => {
   const handleExportPDF = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('[PDF] Solicitando exportación...');
       const res = await fetch('/api/users/me/export', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const text = await res.text();
+      console.log('[PDF] Respuesta cruda del backend:', text);
       let data;
       try {
         data = JSON.parse(text);
+        console.log('[PDF] Datos parseados:', data);
       } catch (e) {
         alert('No se pudo leer la respuesta del servidor:\n' + text);
         return;
@@ -641,7 +644,9 @@ const Configuracion = () => {
       });
 
       doc.save('mis_datos.pdf');
+      console.log('[PDF] PDF generado y descargado');
     } catch (err) {
+      console.error('[PDF][ERROR]', err);
       alert('Error al exportar los datos');
     }
   };

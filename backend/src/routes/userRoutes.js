@@ -137,14 +137,16 @@ router.put('/:id/unban', authMiddleware, roleMiddleware('administrator'), async 
 router.get('/me/export', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log(`[EXPORT] Solicitud de exportación para userId: ${userId}`);
     // Ejecuta el procedimiento almacenado
     const [rows] = await db.query('CALL GetAllUserData(?)', [userId]);
+    console.log(`[EXPORT] Datos recibidos de la BD:`, rows && rows[0] ? rows[0].length : 0, 'registros');
     // El resultado de un CALL es un array de arrays, el primero es el resultado
     const data = rows[0];
     res.json(data);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al exportar los datos' });
+    console.error('[EXPORT][ERROR]', error);
+    res.status(500).json({ message: 'Error al exportar los datos', error: error.message });
   }
 });
 
