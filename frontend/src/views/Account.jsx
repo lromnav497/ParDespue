@@ -700,10 +700,10 @@ const Configuracion = () => {
           head: [['Campo', 'Valor']],
           body: [
             ['User_ID', extraerCampo(user.Description, 'User_ID')],
-            ['Nombre', extraerCampo(user.Description, 'Name')],
-            ['Email', extraerCampo(user.Description, 'Email')],
-            ['Rol', extraerCampo(user.Description, 'Role')],
-            ['Verificado', extraerCampo(user.Description, 'Verified')] // <-- Solo muestra el valor del backend
+            ['Nombre', limpiarTexto(extraerCampo(user.Description, 'Name'))],
+            ['Email', limpiarTexto(extraerCampo(user.Description, 'Email'))],
+            ['Rol', limpiarTexto(extraerCampo(user.Description, 'Role'))],
+            ['Verificado', limpiarTexto(extraerCampo(user.Description, 'Verified'))]
           ],
           styles: { fontSize: 10 },
           margin: { left: 14, right: 14 },
@@ -725,7 +725,7 @@ const Configuracion = () => {
             t.CreatedAt ? ('' + t.CreatedAt).replace('T', ' ').slice(0, 19) : '',
             extraerCampo(t.Description, 'Amount'),
             extraerCampo(t.Description, 'Payment_Method'),
-            extraerCampo(t.Description, 'Status'), // <-- Solo muestra el valor del backend
+            extraerCampo(t.Description, 'Status') ? limpiarTexto(extraerCampo(t.Description, 'Status')) : '',
             extraerCampo(t.Description, 'Subscription_ID')
           ]),
           styles: { fontSize: 10 },
@@ -839,5 +839,23 @@ const Configuracion = () => {
     </div>
   );
 };
+
+function limpiarTexto(texto) {
+  if (!texto) return '';
+  // Reemplaza caracteres problemáticos
+  return texto
+    .replace(/í/g, 'i')
+    .replace(/Í/g, 'I')
+    .replace(/é/g, 'e')
+    .replace(/É/g, 'E')
+    .replace(/á/g, 'a')
+    .replace(/Á/g, 'A')
+    .replace(/ó/g, 'o')
+    .replace(/Ó/g, 'O')
+    .replace(/ú/g, 'u')
+    .replace(/Ú/g, 'U')
+    .replace(/ñ/g, 'n')
+    .replace(/Ñ/g, 'N');
+}
 
 export default Account;
