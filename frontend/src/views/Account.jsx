@@ -17,7 +17,7 @@ import Modal from '../components/modals/Modal';
 
 // Agrega jsPDF y autoTable
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const Account = () => {
   const [activeSection, setActiveSection] = useState('general');
@@ -627,7 +627,7 @@ const Configuracion = () => {
         doc.setFontSize(13);
         doc.text(tipo, 14, y);
         y += 4;
-        doc.autoTable({
+        autoTable(doc, {
           startY: y,
           head: [['ID', 'Descripción', 'Fecha', 'Info extra']],
           body: rows.map(r => [
@@ -640,7 +640,7 @@ const Configuracion = () => {
           headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] },
           margin: { left: 14, right: 14 }
         });
-        y = doc.lastAutoTable.finalY + 8;
+        y = doc.lastAutoTable ? doc.lastAutoTable.finalY + 8 : y + 8;
       });
 
       doc.save('mis_datos.pdf');
