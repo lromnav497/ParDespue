@@ -639,7 +639,7 @@ const Configuracion = () => {
       doc.rect(0, 0, 210, 297, 'F'); // A4 completo (mm)
       doc.setTextColor(245, 224, 80); // Amarillo
       doc.setFontSize(32);
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('PasseroOne', 'bold');
       doc.text('ParDespue', 105, 80, { align: 'center' });
       doc.setFontSize(18);
       doc.setTextColor(255,255,255);
@@ -807,10 +807,9 @@ const Configuracion = () => {
         doc.text('Cápsulas que te gustaron', 14, 18);
         autoTable(doc, {
           startY: 24,
-          head: [['Capsule_ID', 'Fecha de Like']],
+          head: [['Capsule_ID']],
           body: capsuleLikes.map(like => [
-            extraerCampo(like.Description, 'Capsule_ID'),
-            extraerCampo(like.Description, 'Liked_At')
+            extraerCampo(like.Description, 'Capsule_ID')
           ]),
           styles: { fontSize: 10 },
           headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
