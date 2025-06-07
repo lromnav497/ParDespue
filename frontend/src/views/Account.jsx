@@ -684,6 +684,13 @@ const Configuracion = () => {
         }
 
         // Tabla de datos de usuario
+        // Función auxiliar robusta
+        function esVerdadero(valor) {
+          if (!valor) return false;
+          const v = String(valor).trim().toLowerCase();
+          return ['1', 'true', 'activo', 'active', 'completed', 'yes', 'si', 'sí'].includes(v);
+        }
+
         autoTable(doc, {
           startY: 38,
           head: [['Campo', 'Valor']],
@@ -694,10 +701,7 @@ const Configuracion = () => {
             ['Rol', extraerCampo(user.Description, 'Role')],
             [
               'Verificado',
-              (() => {
-                const v = extraerCampo(user.Description, 'Verified').toLowerCase();
-                return ['sí', 'si', 'activo', 'yes', 'true', '1'].includes(v) ? 'Sí' : 'No';
-              })()
+              esVerdadero(extraerCampo(user.Description, 'Verified')) ? 'Sí' : 'No'
             ]
           ],
           styles: { fontSize: 10 },
@@ -720,10 +724,7 @@ const Configuracion = () => {
             t.CreatedAt ? ('' + t.CreatedAt).replace('T', ' ').slice(0, 19) : '',
             extraerCampo(t.Description, 'Amount'),
             extraerCampo(t.Description, 'Payment_Method'),
-            // Estado con icono
-            ['1', 'true', 'activo', 'completed', 'yes', 'si', 'sí'].includes(extraerCampo(t.Description, 'Status').toLowerCase())
-              ? '✅'
-              : '❌',
+            esVerdadero(extraerCampo(t.Description, 'Status')) ? 'Sí' : 'No',
             extraerCampo(t.Description, 'Subscription_ID')
           ]),
           styles: { fontSize: 10 },
@@ -745,10 +746,7 @@ const Configuracion = () => {
             extraerCampo(s.Description, 'Type'),
             extraerCampo(s.Description, 'Start_Date'),
             extraerCampo(s.Description, 'End_Date'),
-            // Estado con icono
-            ['1', 'true', 'activo', 'completed', 'yes', 'si', 'sí'].includes(extraerCampo(s.Description, 'Status').toLowerCase())
-              ? '✅'
-              : '❌'
+            esVerdadero(extraerCampo(s.Description, 'Status')) ? 'Sí' : 'No'
           ]),
           styles: { fontSize: 10 },
           headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
