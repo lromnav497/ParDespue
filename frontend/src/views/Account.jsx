@@ -820,7 +820,7 @@ const Configuracion = () => {
           <h4 className="text-xl mb-4">Exportar mis datos</h4>
           <button
             className="bg-[#F5E050] text-[#2E2E7A] px-6 py-2 rounded-full font-bold"
-            onClick={handleExportPDF}
+            onClick={() => setShowPasswordModal(true)}
           >
             Descargar toda mi información (.pdf)
           </button>
