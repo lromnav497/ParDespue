@@ -593,6 +593,10 @@ const MisSuscripciones = () => {
 };
 
 const Configuracion = () => {
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [exportError, setExportError] = useState('');
+  const [password, setPassword] = useState('');
+
   const handleExportPDF = async (pwd) => {
     setShowPasswordModal(false);
     if (!pwd) return;
