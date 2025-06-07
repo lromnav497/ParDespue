@@ -623,14 +623,13 @@ const Configuracion = () => {
 
         // Imagen de perfil
         let y = 38;
-        if (user.Profile_Picture) {
+        const profilePicUrl = extraerCampo(user.Description, 'Profile_Picture');
+        if (profilePicUrl) {
           try {
-            // Si la imagen es relativa, ajusta la URL
-            let imgUrl = user.Profile_Picture;
+            let imgUrl = profilePicUrl;
             if (!imgUrl.startsWith('http')) {
               imgUrl = `http://44.209.31.187/api${imgUrl}`;
             }
-            // Carga la imagen y conviértela a base64
             const imgResp = await fetch(imgUrl);
             const imgBlob = await imgResp.blob();
             const imgData = await new Promise(resolve => {
@@ -650,14 +649,14 @@ const Configuracion = () => {
           startY: 38,
           head: [['Campo', 'Valor']],
           body: [
-            ['ID', user.DataID],
-            ['Nombre', user.Name || extraerCampo(user.Description, 'Nombre')],
-            ['Email', user.Email || extraerCampo(user.Description, 'Email')],
-            ['Rol', user.Role || extraerCampo(user.Description, 'Rol')],
-            ['Verificado', user.Verified !== undefined ? String(user.Verified) : ''],
-            ['Token de verificación', user.VerificationToken || ''],
-            ['Token de reseteo', user.ResetToken || ''],
-            ['Expira reseteo', user.ResetTokenExpires || ''],
+            ['User_ID', extraerCampo(user.Description, 'User_ID')],
+            ['Name', extraerCampo(user.Description, 'Name')],
+            ['Email', extraerCampo(user.Description, 'Email')],
+            ['Role', extraerCampo(user.Description, 'Role')],
+            ['Verified', extraerCampo(user.Description, 'Verified')],
+            ['VerificationToken', extraerCampo(user.Description, 'VerificationToken')],
+            ['ResetToken', extraerCampo(user.Description, 'ResetToken')],
+            ['ResetTokenExpires', extraerCampo(user.Description, 'ResetTokenExpires')],
           ],
           styles: { fontSize: 10 },
           margin: { left: 14, right: 14 },
@@ -832,7 +831,9 @@ const Configuracion = () => {
   // Función auxiliar para extraer campos de la descripción tipo "Campo: valor, Campo2: valor2"
   function extraerCampo(desc, campo) {
     if (!desc) return '';
-    const match = desc.match(new RegExp(`${campo}: ([^,]+)`));
+    // Busca el campo ignorando mayúsculas/minúsculas y espacios
+    const regex = new RegExp(`${campo}\\s*:\\s*([^,]+)`, 'i');
+    const match = desc.match(regex);
     return match ? match[1].trim() : '';
   }
 
