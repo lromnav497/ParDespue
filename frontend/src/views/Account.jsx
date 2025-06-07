@@ -592,16 +592,13 @@ const Configuracion = () => {
   const handleExportPDF = async () => {
     try {
       const token = localStorage.getItem('token');
-      console.log('[PDF] Solicitando exportación...');
       const res = await fetch('/api/users/me/export', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const text = await res.text();
-      console.log('[PDF] Respuesta cruda del backend:', text);
       let data;
       try {
         data = JSON.parse(text);
-        console.log('[PDF] Datos parseados:', data);
       } catch (e) {
         alert('No se pudo leer la respuesta del servidor:\n' + text);
         return;
@@ -644,19 +641,21 @@ const Configuracion = () => {
           }
         }
 
-        // Tabla de datos de usuario (sin contraseña)
+        // Tabla de datos de usuario (sin tokens ni verified como texto)
         autoTable(doc, {
           startY: 38,
           head: [['Campo', 'Valor']],
           body: [
             ['User_ID', extraerCampo(user.Description, 'User_ID')],
-            ['Name', extraerCampo(user.Description, 'Name')],
+            ['Nombre', extraerCampo(user.Description, 'Name')],
             ['Email', extraerCampo(user.Description, 'Email')],
-            ['Role', extraerCampo(user.Description, 'Role')],
-            ['Verified', extraerCampo(user.Description, 'Verified')],
-            ['VerificationToken', extraerCampo(user.Description, 'VerificationToken')],
-            ['ResetToken', extraerCampo(user.Description, 'ResetToken')],
-            ['ResetTokenExpires', extraerCampo(user.Description, 'ResetTokenExpires')],
+            ['Rol', extraerCampo(user.Description, 'Role')],
+            [
+              'Verificado',
+              extraerCampo(user.Description, 'Verified') === '1' || extraerCampo(user.Description, 'Verified').toLowerCase() === 'true'
+                ? '✅'
+                : '❌'
+            ]
           ],
           styles: { fontSize: 10 },
           margin: { left: 14, right: 14 },
@@ -676,10 +675,10 @@ const Configuracion = () => {
           body: transacciones.map(t => [
             t.DataID,
             t.CreatedAt ? ('' + t.CreatedAt).replace('T', ' ').slice(0, 19) : '',
-            t.Description?.match(/Monto: ([^,]+)/)?.[1] || '',
-            t.Description?.match(/Método: ([^,]+)/)?.[1] || '',
-            t.Description?.match(/Estado: ([^,]+)/)?.[1] || '',
-            t.AdditionalInfo || ''
+            extraerCampo(t.Description, 'Amount'),
+            extraerCampo(t.Description, 'Payment_Method'),
+            extraerCampo(t.Description, 'Status'),
+            extraerCampo(t.Description, 'Subscription_ID')
           ]),
           styles: { fontSize: 10 },
           headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
@@ -697,10 +696,10 @@ const Configuracion = () => {
           head: [['ID', 'Tipo', 'Inicio', 'Fin', 'Estado']],
           body: subs.map(s => [
             s.DataID,
-            s.Description?.match(/Tipo: ([^,]+)/)?.[1] || '',
-            s.CreatedAt ? ('' + s.CreatedAt).replace('T', ' ').slice(0, 19) : '',
-            s.AdditionalInfo?.match(/fin: (.+)/i)?.[1] || '',
-            s.Description?.match(/Estado: ([^,]+)/)?.[1] || ''
+            extraerCampo(s.Description, 'Type'),
+            extraerCampo(s.Description, 'Start_Date'),
+            extraerCampo(s.Description, 'End_Date'),
+            extraerCampo(s.Description, 'Status')
           ]),
           styles: { fontSize: 10 },
           headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
@@ -722,18 +721,18 @@ const Configuracion = () => {
             ]
           ],
           body: capsulas.map(c => [
-            c.DataID,
-            extraerCampo(c.Description, 'Título'),
-            extraerCampo(c.Description, 'Descripción'),
-            c.Creation_Date || '',
-            c.Opening_Date || '',
-            extraerCampo(c.Description, 'Privacidad'),
-            c.Creator_User_ID || '',
+            extraerCampo(c.Description, 'Capsule_ID'),
+            extraerCampo(c.Description, 'Title'),
+            extraerCampo(c.Description, 'Description'),
+            extraerCampo(c.Description, 'Creation_Date'),
+            extraerCampo(c.Description, 'Opening_Date'),
+            extraerCampo(c.Description, 'Privacy'),
+            extraerCampo(c.Description, 'Creator_User_ID'),
             extraerCampo(c.Description, 'Tags'),
-            c.AdditionalInfo || '',
-            c.Cover_Image || '',
-            c.Views || '',
-            c.Likes || ''
+            extraerCampo(c.Description, 'Category_ID'),
+            extraerCampo(c.Description, 'Cover_Image'),
+            extraerCampo(c.Description, 'Views'),
+            extraerCampo(c.Description, 'Likes')
           ]),
           styles: { fontSize: 9 },
           headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
@@ -750,9 +749,9 @@ const Configuracion = () => {
           startY: 24,
           head: [['ID', 'Contenido', 'Fecha', 'Cápsula']],
           body: comentarios.map(c => [
-            c.DataID,
-            extraerCampo(c.Description, 'Comentario'),
-            c.CreatedAt ? ('' + c.CreatedAt).replace('T', ' ').slice(0, 19) : '',
+            extraerCampo(c.Description, 'Comment_ID'),
+            extraerCampo(c.Description, 'Content'),
+            extraerCampo(c.Description, 'Creation_Date'),
             c.AdditionalInfo || ''
           ]),
           styles: { fontSize: 10 },
@@ -770,10 +769,10 @@ const Configuracion = () => {
           startY: 24,
           head: [['ID', 'Tipo', 'Ruta', 'Fecha', 'Cápsula']],
           body: contenidos.map(c => [
-            c.DataID,
-            extraerCampo(c.Description, 'Tipo'),
-            extraerCampo(c.Description, 'Ruta'),
-            c.CreatedAt ? ('' + c.CreatedAt).replace('T', ' ').slice(0, 19) : '',
+            extraerCampo(c.Description, 'Content_ID'),
+            extraerCampo(c.Description, 'Type'),
+            extraerCampo(c.Description, 'File_Path'),
+            extraerCampo(c.Description, 'Creation_Date'),
             c.AdditionalInfo || ''
           ]),
           styles: { fontSize: 10 },
@@ -791,9 +790,9 @@ const Configuracion = () => {
           startY: 24,
           head: [['ID', 'Mensaje', 'Fecha', 'Cápsula']],
           body: notificaciones.map(n => [
-            n.DataID,
-            extraerCampo(n.Description, 'Mensaje'),
-            n.CreatedAt ? ('' + n.CreatedAt).replace('T', ' ').slice(0, 19) : '',
+            extraerCampo(n.Description, 'Notification_ID'),
+            extraerCampo(n.Description, 'Message'),
+            extraerCampo(n.Description, 'Sent_Date'),
             n.AdditionalInfo || ''
           ]),
           styles: { fontSize: 10 },
@@ -811,7 +810,7 @@ const Configuracion = () => {
           startY: 24,
           head: [['Capsule_ID', 'Rol', 'Privacidad']],
           body: recipients.map(r => [
-            r.DataID,
+            extraerCampo(r.Description, 'Capsule_ID'),
             extraerCampo(r.Description, 'Rol'),
             r.AdditionalInfo || ''
           ]),
@@ -831,7 +830,7 @@ const Configuracion = () => {
   // Función auxiliar para extraer campos de la descripción tipo "Campo: valor, Campo2: valor2"
   function extraerCampo(desc, campo) {
     if (!desc) return '';
-    // Busca el campo ignorando mayúsculas/minúsculas y espacios
+    // Soporta tildes, espacios y mayúsculas/minúsculas
     const regex = new RegExp(`${campo}\\s*:\\s*([^,]+)`, 'i');
     const match = desc.match(regex);
     return match ? match[1].trim() : '';
