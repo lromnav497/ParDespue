@@ -642,9 +642,9 @@ const Configuracion = () => {
         if (profilePicUrl) {
           try {
             let imgUrl = profilePicUrl;
-            // Si la URL es relativa, prepéndele el dominio de tu backend
+            // Si la URL es relativa, prepéndele el dominio de tu backend (ajusta si tu ruta es diferente)
             if (!imgUrl.startsWith('http')) {
-              imgUrl = `http://44.209.31.187${imgUrl.startsWith('/api') ? '' : '/api'}${imgUrl}`;
+              imgUrl = `http://44.209.31.187:3000/api${imgUrl}`;
             }
             // Intenta cargar la imagen como blob y convertirla a base64
             const imgResp = await fetch(imgUrl);
@@ -674,9 +674,10 @@ const Configuracion = () => {
             ['Rol', extraerCampo(user.Description, 'Role')],
             [
               'Verificado',
-              ['1', 'true', 'activo', 'yes', 'si', 'sí'].includes(extraerCampo(user.Description, 'Verified').toLowerCase())
-                ? '✅'
-                : '❌'
+              (() => {
+                const v = extraerCampo(user.Description, 'Verified').toLowerCase();
+                return ['sí', 'si', 'activo', 'yes', 'true', '1'].includes(v) ? 'Sí' : 'No';
+              })()
             ]
           ],
           styles: { fontSize: 10 },
