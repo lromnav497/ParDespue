@@ -133,15 +133,19 @@ router.put('/:id/unban', authMiddleware, roleMiddleware('administrator'), async 
   res.json({ message: 'Usuario desbaneado' });
 });
 
-// Exportar datos del usuario en formato CSV
-router.get('/me/export', authMiddleware, async (req, res) => {
+router.post('/me/export', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log(`[EXPORT] Solicitud de exportación para userId: ${userId}`);
+    const { password } = req.body;
+    // Obtén el hash de la contraseña del usuario
+    const [userRows] = await db.query('SELECT Password FROM Users WHERE User_ID = ?', [userId]);
+    if (!userRows.length) return res.status(401).json({ message: 'Usuario no encontrado' });
+
+    const valid = await bcrypt.compare(password, userRows[0].Password);
+    if (!valid) return res.status(401).json({ message: 'Contraseña incorrecta' });
+
     // Ejecuta el procedimiento almacenado
     const [rows] = await db.query('CALL GetAllUserData(?)', [userId]);
-    console.log(`[EXPORT] Datos recibidos de la BD:`, rows && rows[0] ? rows[0].length : 0, 'registros');
-    // El resultado de un CALL es un array de arrays, el primero es el resultado
     const data = rows[0];
     res.json(data);
   } catch (error) {
