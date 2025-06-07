@@ -19,7 +19,7 @@ import PasswordModal from '../components/modals/PasswordModal';
 // Agrega jsPDF y autoTable
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import '../../fonts/passeroone-normal.js'; // Ajusta la ruta según tu estructura
+import '../../components/fonts/passeroone-normal.js';
 
 const Account = () => {
   const [activeSection, setActiveSection] = useState('general');
