@@ -609,10 +609,28 @@ const Configuracion = () => {
       }
 
       const doc = new jsPDF();
+
+      // Portada
+      doc.setFillColor(46, 46, 122); // Fondo azul oscuro
+      doc.rect(0, 0, 210, 297, 'F'); // A4 completo (mm)
+      doc.setTextColor(245, 224, 80); // Amarillo
+      doc.setFontSize(32);
+      doc.setFont('helvetica', 'bold');
+      doc.text('ParDespue', 105, 80, { align: 'center' });
+      doc.setFontSize(18);
+      doc.setTextColor(255,255,255);
+      doc.text('Exportación de datos de usuario', 105, 100, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text(`Fecha de exportación: ${new Date().toLocaleString()}`, 105, 120, { align: 'center' });
+
+      // Nueva página para los datos
+      doc.addPage();
+      doc.setTextColor(0,0,0); // Restablece color para el resto del PDF
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(18);
       doc.text('Exportación de datos de usuario', 14, 18);
 
-      // 1. Usuario
+      // Usuario
       const user = data.find(d => d.DataType === 'User');
       if (user) {
         doc.setFontSize(14);
@@ -624,24 +642,28 @@ const Configuracion = () => {
         if (profilePicUrl) {
           try {
             let imgUrl = profilePicUrl;
+            // Si la URL es relativa, prepéndele el dominio de tu backend
             if (!imgUrl.startsWith('http')) {
-              imgUrl = `http://44.209.31.187/api${imgUrl}`;
+              imgUrl = `http://44.209.31.187${imgUrl.startsWith('/api') ? '' : '/api'}${imgUrl}`;
             }
+            // Intenta cargar la imagen como blob y convertirla a base64
             const imgResp = await fetch(imgUrl);
+            if (!imgResp.ok) throw new Error('No se pudo cargar la imagen');
             const imgBlob = await imgResp.blob();
+            const imgType = imgBlob.type.includes('png') ? 'PNG' : 'JPEG';
             const imgData = await new Promise(resolve => {
               const reader = new FileReader();
               reader.onloadend = () => resolve(reader.result);
               reader.readAsDataURL(imgBlob);
             });
-            doc.addImage(imgData, 'JPEG', 150, y - 6, 30, 30);
+            doc.addImage(imgData, imgType, 150, y - 6, 30, 30);
           } catch (e) {
             doc.setFontSize(10);
             doc.text('No se pudo cargar la imagen de perfil.', 150, y + 10);
           }
         }
 
-        // Tabla de datos de usuario (sin tokens ni verified como texto)
+        // Tabla de datos de usuario
         autoTable(doc, {
           startY: 38,
           head: [['Campo', 'Valor']],
@@ -652,7 +674,7 @@ const Configuracion = () => {
             ['Rol', extraerCampo(user.Description, 'Role')],
             [
               'Verificado',
-              extraerCampo(user.Description, 'Verified') === '1' || extraerCampo(user.Description, 'Verified').toLowerCase() === 'true'
+              ['1', 'true', 'activo', 'yes', 'si', 'sí'].includes(extraerCampo(user.Description, 'Verified').toLowerCase())
                 ? '✅'
                 : '❌'
             ]
@@ -663,7 +685,7 @@ const Configuracion = () => {
         });
       }
 
-      // 2. Transacciones
+      // Transacciones
       const transacciones = data.filter(d => d.DataType === 'Transaction');
       if (transacciones.length) {
         doc.addPage();
@@ -677,7 +699,10 @@ const Configuracion = () => {
             t.CreatedAt ? ('' + t.CreatedAt).replace('T', ' ').slice(0, 19) : '',
             extraerCampo(t.Description, 'Amount'),
             extraerCampo(t.Description, 'Payment_Method'),
-            extraerCampo(t.Description, 'Status'),
+            // Estado con icono
+            ['1', 'true', 'activo', 'completed', 'yes', 'si', 'sí'].includes(extraerCampo(t.Description, 'Status').toLowerCase())
+              ? '✅'
+              : '❌',
             extraerCampo(t.Description, 'Subscription_ID')
           ]),
           styles: { fontSize: 10 },
@@ -685,7 +710,7 @@ const Configuracion = () => {
         });
       }
 
-      // 3. Suscripciones
+      // Suscripciones
       const subs = data.filter(d => d.DataType === 'Subscription');
       if (subs.length) {
         doc.addPage();
@@ -699,67 +724,17 @@ const Configuracion = () => {
             extraerCampo(s.Description, 'Type'),
             extraerCampo(s.Description, 'Start_Date'),
             extraerCampo(s.Description, 'End_Date'),
-            extraerCampo(s.Description, 'Status')
+            // Estado con icono
+            ['1', 'true', 'activo', 'completed', 'yes', 'si', 'sí'].includes(extraerCampo(s.Description, 'Status').toLowerCase())
+              ? '✅'
+              : '❌'
           ]),
           styles: { fontSize: 10 },
           headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
         });
       }
 
-      // 4. Cápsulas
-      const capsulas = data.filter(d => d.DataType === 'Capsule');
-      if (capsulas.length) {
-        doc.addPage();
-        doc.setFontSize(14);
-        doc.text('Cápsulas', 14, 18);
-        autoTable(doc, {
-          startY: 24,
-          head: [
-            [
-              'ID', 'Título', 'Descripción', 'Creación', 'Apertura', 'Privacidad',
-              'Creador', 'Tags', 'Categoría', 'Portada', 'Vistas', 'Likes'
-            ]
-          ],
-          body: capsulas.map(c => [
-            extraerCampo(c.Description, 'Capsule_ID'),
-            extraerCampo(c.Description, 'Title'),
-            extraerCampo(c.Description, 'Description'),
-            extraerCampo(c.Description, 'Creation_Date'),
-            extraerCampo(c.Description, 'Opening_Date'),
-            extraerCampo(c.Description, 'Privacy'),
-            extraerCampo(c.Description, 'Creator_User_ID'),
-            extraerCampo(c.Description, 'Tags'),
-            extraerCampo(c.Description, 'Category_ID'),
-            extraerCampo(c.Description, 'Cover_Image'),
-            extraerCampo(c.Description, 'Views'),
-            extraerCampo(c.Description, 'Likes')
-          ]),
-          styles: { fontSize: 9 },
-          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
-        });
-      }
-
-      // 5. Comentarios
-      const comentarios = data.filter(d => d.DataType === 'Comment');
-      if (comentarios.length) {
-        doc.addPage();
-        doc.setFontSize(14);
-        doc.text('Comentarios', 14, 18);
-        autoTable(doc, {
-          startY: 24,
-          head: [['ID', 'Contenido', 'Fecha', 'Cápsula']],
-          body: comentarios.map(c => [
-            extraerCampo(c.Description, 'Comment_ID'),
-            extraerCampo(c.Description, 'Content'),
-            extraerCampo(c.Description, 'Creation_Date'),
-            c.AdditionalInfo || ''
-          ]),
-          styles: { fontSize: 10 },
-          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
-        });
-      }
-
-      // 6. Contenidos
+      // Contenidos
       const contenidos = data.filter(d => d.DataType === 'Content');
       if (contenidos.length) {
         doc.addPage();
@@ -771,7 +746,11 @@ const Configuracion = () => {
           body: contenidos.map(c => [
             extraerCampo(c.Description, 'Content_ID'),
             extraerCampo(c.Description, 'Type'),
-            extraerCampo(c.Description, 'File_Path'),
+            // Solo nombre del archivo
+            (() => {
+              const ruta = extraerCampo(c.Description, 'File_Path');
+              return ruta ? ruta.split('/').pop() : '';
+            })(),
             extraerCampo(c.Description, 'Creation_Date'),
             c.AdditionalInfo || ''
           ]),
@@ -780,7 +759,7 @@ const Configuracion = () => {
         });
       }
 
-      // 7. Notificaciones
+      // Notificaciones
       const notificaciones = data.filter(d => d.DataType === 'Notification');
       if (notificaciones.length) {
         doc.addPage();
@@ -800,23 +779,12 @@ const Configuracion = () => {
         });
       }
 
-      // 8. Roles como destinatario
-      const recipients = data.filter(d => d.DataType === 'Recipient');
-      if (recipients.length) {
-        doc.addPage();
-        doc.setFontSize(14);
-        doc.text('Roles como destinatario', 14, 18);
-        autoTable(doc, {
-          startY: 24,
-          head: [['Capsule_ID', 'Rol', 'Privacidad']],
-          body: recipients.map(r => [
-            extraerCampo(r.Description, 'Capsule_ID'),
-            extraerCampo(r.Description, 'Rol'),
-            r.AdditionalInfo || ''
-          ]),
-          styles: { fontSize: 10 },
-          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
-        });
+      // Función auxiliar para extraer campos de la descripción tipo "Campo: valor, Campo2: valor2"
+      function extraerCampo(desc, campo) {
+        if (!desc) return '';
+        const regex = new RegExp(`${campo}\\s*:\\s*([^,]+)`, 'i');
+        const match = desc.match(regex);
+        return match ? match[1].trim() : '';
       }
 
       doc.save('mis_datos.pdf');
@@ -826,15 +794,6 @@ const Configuracion = () => {
       alert('Error al exportar los datos');
     }
   };
-
-  // Función auxiliar para extraer campos de la descripción tipo "Campo: valor, Campo2: valor2"
-  function extraerCampo(desc, campo) {
-    if (!desc) return '';
-    // Soporta tildes, espacios y mayúsculas/minúsculas
-    const regex = new RegExp(`${campo}\\s*:\\s*([^,]+)`, 'i');
-    const match = desc.match(regex);
-    return match ? match[1].trim() : '';
-  }
 
   return (
     <div className="text-white">
