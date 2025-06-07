@@ -799,6 +799,44 @@ const Configuracion = () => {
         });
       }
 
+      // Cápsulas que le ha dado like el usuario
+      const capsuleLikes = data.filter(d => d.DataType === 'CapsuleLike');
+      if (capsuleLikes.length) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.text('Cápsulas que te gustaron', 14, 18);
+        autoTable(doc, {
+          startY: 24,
+          head: [['Capsule_ID', 'Fecha de Like']],
+          body: capsuleLikes.map(like => [
+            extraerCampo(like.Description, 'Capsule_ID'),
+            extraerCampo(like.Description, 'Liked_At')
+          ]),
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
+        });
+      }
+
+      // Comentarios hechos por el usuario
+      const comentarios = data.filter(d => d.DataType === 'Comment');
+      if (comentarios.length) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.text('Comentarios realizados', 14, 18);
+        autoTable(doc, {
+          startY: 24,
+          head: [['ID', 'Contenido', 'Fecha', 'Cápsula']],
+          body: comentarios.map(c => [
+            extraerCampo(c.Description, 'Comment_ID'),
+            limpiarTexto(extraerCampo(c.Description, 'Content')),
+            extraerCampo(c.Description, 'Creation_Date'),
+            extraerCampo(c.Description, 'Capsule_ID')
+          ]),
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
+        });
+      }
+
       // Función auxiliar para extraer campos de la descripción tipo "Campo: valor, Campo2: valor2"
       function extraerCampo(desc, campo) {
         if (!desc) return '';
