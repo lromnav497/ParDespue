@@ -19,7 +19,6 @@ import PasswordModal from '../components/modals/PasswordModal';
 // Agrega jsPDF y autoTable
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import '../components/fonts/passeroone-normal.js'; // Asegúrate de que la fuente esté disponible
 
 const Account = () => {
   const [activeSection, setActiveSection] = useState('general');
