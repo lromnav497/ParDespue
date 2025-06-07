@@ -13,6 +13,7 @@ import ConfirmCancelSubscriptionModal from '../components/modals/ConfirmCancelSu
 import MisCapsulas from './MisCapsulas';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
 import Modal from '../components/modals/Modal';
+import PasswordModal from '../components/modals/PasswordModal';
 // Quita file-saver y csv
 
 // Agrega jsPDF y autoTable
@@ -138,6 +139,9 @@ const InformacionGeneral = () => {
   const [profilePicture, setProfilePicture] = useState('');
   const [newProfilePic, setNewProfilePic] = useState(null);
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [password, setPassword] = useState('');
+  const [exportError, setExportError] = useState('');
 
   // Sincroniza con localStorage al montar
   useEffect(() => {
@@ -589,22 +593,34 @@ const MisSuscripciones = () => {
 };
 
 const Configuracion = () => {
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (pwd) => {
+    setShowPasswordModal(false);
+    if (!pwd) return;
+    setPassword('');
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/users/me/export', {
-        headers: { Authorization: `Bearer ${token}` }
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ password: pwd })
       });
       const text = await res.text();
       let data;
       try {
         data = JSON.parse(text);
       } catch (e) {
-        alert('No se pudo leer la respuesta del servidor:\n' + text);
+        setExportError('No se pudo leer la respuesta del servidor:\n' + text);
+        return;
+      }
+      if (res.status === 401 || res.status === 403) {
+        setExportError('Contraseña incorrecta');
         return;
       }
       if (!Array.isArray(data) || data.length === 0) {
-        alert('No hay datos para exportar');
+        setExportError('No hay datos para exportar');
         return;
       }
 
@@ -808,7 +824,14 @@ const Configuracion = () => {
           >
             Descargar toda mi información (.pdf)
           </button>
+          {exportError && <div className="text-red-400 mt-2">{exportError}</div>}
         </div>
+        <PasswordModal
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
+          onSubmit={handleExportPDF}
+          error={exportError}
+        />
       </div>
     </div>
   );
