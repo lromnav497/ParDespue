@@ -140,8 +140,8 @@ const InformacionGeneral = () => {
   const [newProfilePic, setNewProfilePic] = useState(null);
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [password, setPassword] = useState('');
   const [exportError, setExportError] = useState('');
+  const [password, setPassword] = useState('');
 
   // Sincroniza con localStorage al montar
   useEffect(() => {
