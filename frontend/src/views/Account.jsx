@@ -599,6 +599,10 @@ const Configuracion = () => {
       console.log(text);
       try {
         const data = JSON.parse(text);
+        if (!Array.isArray(data) || data.length === 0) {
+          alert('No hay datos para exportar');
+          return;
+        }
         // Generar PDF
         const doc = new jsPDF();
         doc.setFontSize(16);
