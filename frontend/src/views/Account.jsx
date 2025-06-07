@@ -703,10 +703,7 @@ const Configuracion = () => {
             ['Nombre', extraerCampo(user.Description, 'Name')],
             ['Email', extraerCampo(user.Description, 'Email')],
             ['Rol', extraerCampo(user.Description, 'Role')],
-            [
-              'Verificado',
-              esVerdadero(extraerCampo(user.Description, 'Verified')) ? 'Sí' : 'No'
-            ]
+            ['Verificado', extraerCampo(user.Description, 'Verified')] // <-- Solo muestra el valor del backend
           ],
           styles: { fontSize: 10 },
           margin: { left: 14, right: 14 },
@@ -728,7 +725,7 @@ const Configuracion = () => {
             t.CreatedAt ? ('' + t.CreatedAt).replace('T', ' ').slice(0, 19) : '',
             extraerCampo(t.Description, 'Amount'),
             extraerCampo(t.Description, 'Payment_Method'),
-            esVerdadero(extraerCampo(t.Description, 'Status')) ? 'Sí' : 'No',
+            extraerCampo(t.Description, 'Status'), // <-- Solo muestra el valor del backend
             extraerCampo(t.Description, 'Subscription_ID')
           ]),
           styles: { fontSize: 10 },
@@ -750,7 +747,7 @@ const Configuracion = () => {
             extraerCampo(s.Description, 'Type'),
             extraerCampo(s.Description, 'Start_Date'),
             extraerCampo(s.Description, 'End_Date'),
-            esVerdadero(extraerCampo(s.Description, 'Status')) ? 'Sí' : 'No'
+            extraerCampo(s.Description, 'Status') // <-- Solo muestra el valor del backend
           ]),
           styles: { fontSize: 10 },
           headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
