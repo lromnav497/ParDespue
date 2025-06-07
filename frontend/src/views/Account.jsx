@@ -611,37 +611,215 @@ const Configuracion = () => {
         return;
       }
 
-      // Generar PDF
       const doc = new jsPDF();
-      doc.setFontSize(16);
+      doc.setFontSize(18);
       doc.text('Exportación de datos de usuario', 14, 18);
 
-      // Agrupa por tipo de dato
-      const tipos = [
-        'User', 'Capsule', 'Content', 'Notification', 'Subscription', 'Transaction', 'Recipient', 'Comment'
-      ];
-      let y = 28;
-      tipos.forEach(tipo => {
-        const rows = data.filter(row => row.DataType === tipo);
-        if (rows.length === 0) return;
-        doc.setFontSize(13);
-        doc.text(tipo, 14, y);
-        y += 4;
+      // 1. Usuario
+      const user = data.find(d => d.DataType === 'User');
+      if (user) {
+        doc.setFontSize(14);
+        doc.text('Datos de Usuario', 14, 30);
+
+        // Imagen de perfil
+        let y = 38;
+        if (user.Profile_Picture) {
+          try {
+            // Si la imagen es relativa, ajusta la URL
+            let imgUrl = user.Profile_Picture;
+            if (!imgUrl.startsWith('http')) {
+              imgUrl = `http://44.209.31.187/api${imgUrl}`;
+            }
+            // Carga la imagen y conviértela a base64
+            const imgResp = await fetch(imgUrl);
+            const imgBlob = await imgResp.blob();
+            const imgData = await new Promise(resolve => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsDataURL(imgBlob);
+            });
+            doc.addImage(imgData, 'JPEG', 150, y - 6, 30, 30);
+          } catch (e) {
+            doc.setFontSize(10);
+            doc.text('No se pudo cargar la imagen de perfil.', 150, y + 10);
+          }
+        }
+
+        // Tabla de datos de usuario (sin contraseña)
         autoTable(doc, {
-          startY: y,
-          head: [['ID', 'Descripción', 'Fecha', 'Info extra']],
-          body: rows.map(r => [
-            r.DataID,
-            r.Description,
-            r.CreatedAt ? ('' + r.CreatedAt).replace('T', ' ').slice(0, 19) : '',
-            r.AdditionalInfo || ''
+          startY: 38,
+          head: [['Campo', 'Valor']],
+          body: [
+            ['ID', user.DataID],
+            ['Nombre', user.Name || extraerCampo(user.Description, 'Nombre')],
+            ['Email', user.Email || extraerCampo(user.Description, 'Email')],
+            ['Rol', user.Role || extraerCampo(user.Description, 'Rol')],
+            ['Verificado', user.Verified !== undefined ? String(user.Verified) : ''],
+            ['Token de verificación', user.VerificationToken || ''],
+            ['Token de reseteo', user.ResetToken || ''],
+            ['Expira reseteo', user.ResetTokenExpires || ''],
+          ],
+          styles: { fontSize: 10 },
+          margin: { left: 14, right: 14 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
+        });
+      }
+
+      // 2. Transacciones
+      const transacciones = data.filter(d => d.DataType === 'Transaction');
+      if (transacciones.length) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.text('Transacciones', 14, 18);
+        autoTable(doc, {
+          startY: 24,
+          head: [['ID', 'Fecha', 'Monto', 'Método', 'Estado', 'Suscripción']],
+          body: transacciones.map(t => [
+            t.DataID,
+            t.CreatedAt ? ('' + t.CreatedAt).replace('T', ' ').slice(0, 19) : '',
+            t.Description?.match(/Monto: ([^,]+)/)?.[1] || '',
+            t.Description?.match(/Método: ([^,]+)/)?.[1] || '',
+            t.Description?.match(/Estado: ([^,]+)/)?.[1] || '',
+            t.AdditionalInfo || ''
+          ]),
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
+        });
+      }
+
+      // 3. Suscripciones
+      const subs = data.filter(d => d.DataType === 'Subscription');
+      if (subs.length) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.text('Suscripciones', 14, 18);
+        autoTable(doc, {
+          startY: 24,
+          head: [['ID', 'Tipo', 'Inicio', 'Fin', 'Estado']],
+          body: subs.map(s => [
+            s.DataID,
+            s.Description?.match(/Tipo: ([^,]+)/)?.[1] || '',
+            s.CreatedAt ? ('' + s.CreatedAt).replace('T', ' ').slice(0, 19) : '',
+            s.AdditionalInfo?.match(/fin: (.+)/i)?.[1] || '',
+            s.Description?.match(/Estado: ([^,]+)/)?.[1] || ''
+          ]),
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
+        });
+      }
+
+      // 4. Cápsulas
+      const capsulas = data.filter(d => d.DataType === 'Capsule');
+      if (capsulas.length) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.text('Cápsulas', 14, 18);
+        autoTable(doc, {
+          startY: 24,
+          head: [
+            [
+              'ID', 'Título', 'Descripción', 'Creación', 'Apertura', 'Privacidad',
+              'Creador', 'Tags', 'Categoría', 'Portada', 'Vistas', 'Likes'
+            ]
+          ],
+          body: capsulas.map(c => [
+            c.DataID,
+            extraerCampo(c.Description, 'Título'),
+            extraerCampo(c.Description, 'Descripción'),
+            c.Creation_Date || '',
+            c.Opening_Date || '',
+            extraerCampo(c.Description, 'Privacidad'),
+            c.Creator_User_ID || '',
+            extraerCampo(c.Description, 'Tags'),
+            c.AdditionalInfo || '',
+            c.Cover_Image || '',
+            c.Views || '',
+            c.Likes || ''
           ]),
           styles: { fontSize: 9 },
-          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] },
-          margin: { left: 14, right: 14 }
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
         });
-        y = doc.lastAutoTable ? doc.lastAutoTable.finalY + 8 : y + 8;
-      });
+      }
+
+      // 5. Comentarios
+      const comentarios = data.filter(d => d.DataType === 'Comment');
+      if (comentarios.length) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.text('Comentarios', 14, 18);
+        autoTable(doc, {
+          startY: 24,
+          head: [['ID', 'Contenido', 'Fecha', 'Cápsula']],
+          body: comentarios.map(c => [
+            c.DataID,
+            extraerCampo(c.Description, 'Comentario'),
+            c.CreatedAt ? ('' + c.CreatedAt).replace('T', ' ').slice(0, 19) : '',
+            c.AdditionalInfo || ''
+          ]),
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
+        });
+      }
+
+      // 6. Contenidos
+      const contenidos = data.filter(d => d.DataType === 'Content');
+      if (contenidos.length) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.text('Contenidos', 14, 18);
+        autoTable(doc, {
+          startY: 24,
+          head: [['ID', 'Tipo', 'Ruta', 'Fecha', 'Cápsula']],
+          body: contenidos.map(c => [
+            c.DataID,
+            extraerCampo(c.Description, 'Tipo'),
+            extraerCampo(c.Description, 'Ruta'),
+            c.CreatedAt ? ('' + c.CreatedAt).replace('T', ' ').slice(0, 19) : '',
+            c.AdditionalInfo || ''
+          ]),
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
+        });
+      }
+
+      // 7. Notificaciones
+      const notificaciones = data.filter(d => d.DataType === 'Notification');
+      if (notificaciones.length) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.text('Notificaciones', 14, 18);
+        autoTable(doc, {
+          startY: 24,
+          head: [['ID', 'Mensaje', 'Fecha', 'Cápsula']],
+          body: notificaciones.map(n => [
+            n.DataID,
+            extraerCampo(n.Description, 'Mensaje'),
+            n.CreatedAt ? ('' + n.CreatedAt).replace('T', ' ').slice(0, 19) : '',
+            n.AdditionalInfo || ''
+          ]),
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
+        });
+      }
+
+      // 8. Roles como destinatario
+      const recipients = data.filter(d => d.DataType === 'Recipient');
+      if (recipients.length) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.text('Roles como destinatario', 14, 18);
+        autoTable(doc, {
+          startY: 24,
+          head: [['Capsule_ID', 'Rol', 'Privacidad']],
+          body: recipients.map(r => [
+            r.DataID,
+            extraerCampo(r.Description, 'Rol'),
+            r.AdditionalInfo || ''
+          ]),
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
+        });
+      }
 
       doc.save('mis_datos.pdf');
       console.log('[PDF] PDF generado y descargado');
@@ -651,23 +829,17 @@ const Configuracion = () => {
     }
   };
 
+  // Función auxiliar para extraer campos de la descripción tipo "Campo: valor, Campo2: valor2"
+  function extraerCampo(desc, campo) {
+    if (!desc) return '';
+    const match = desc.match(new RegExp(`${campo}: ([^,]+)`));
+    return match ? match[1].trim() : '';
+  }
+
   return (
     <div className="text-white">
       <h3 className="text-2xl passero-font text-[#F5E050] mb-6">Configuración</h3>
       <div className="space-y-4">
-        <div className="bg-[#1a1a4a] p-6 rounded-lg">
-          <h4 className="text-xl mb-4">Preferencias de notificación</h4>
-          <div className="space-y-3">
-            <label className="flex items-center space-x-3">
-              <input type="checkbox" className="form-checkbox text-[#F5E050]" />
-              <span>Notificaciones por email</span>
-            </label>
-            <label className="flex items-center space-x-3">
-              <input type="checkbox" className="form-checkbox text-[#F5E050]" />
-              <span>Notificaciones push</span>
-            </label>
-          </div>
-        </div>
         <div className="bg-[#1a1a4a] p-6 rounded-lg">
           <h4 className="text-xl mb-4">Exportar mis datos</h4>
           <button
