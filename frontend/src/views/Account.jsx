@@ -598,9 +598,13 @@ const Configuracion = () => {
   const [password, setPassword] = useState('');
 
   const handleExportPDF = async (pwd) => {
-    setShowPasswordModal(false);
-    if (!pwd) return;
-    setPassword('');
+    // --- PON AQUÍ LA FUNCIÓN ---
+    function esVerdadero(valor) {
+      if (!valor) return false;
+      const v = String(valor).trim().toLowerCase();
+      return ['1', 'true', 'activo', 'active', 'completed', 'yes', 'si', 'sí'].includes(v);
+    }
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/users/me/export', {
