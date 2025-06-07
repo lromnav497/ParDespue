@@ -596,49 +596,51 @@ const Configuracion = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       const text = await res.text();
-      console.log(text);
+      let data;
       try {
-        const data = JSON.parse(text);
-        if (!Array.isArray(data) || data.length === 0) {
-          alert('No hay datos para exportar');
-          return;
-        }
-        // Generar PDF
-        const doc = new jsPDF();
-        doc.setFontSize(16);
-        doc.text('Exportación de datos de usuario', 14, 18);
-
-        // Agrupa por tipo de dato
-        const tipos = [
-          'User', 'Capsule', 'Content', 'Notification', 'Subscription', 'Transaction', 'Recipient', 'Comment'
-        ];
-        let y = 28;
-        tipos.forEach(tipo => {
-          const rows = data.filter(row => row.DataType === tipo);
-          if (rows.length === 0) return;
-          doc.setFontSize(13);
-          doc.text(tipo, 14, y);
-          y += 4;
-          doc.autoTable({
-            startY: y,
-            head: [['ID', 'Descripción', 'Fecha', 'Info extra']],
-            body: rows.map(r => [
-              r.DataID,
-              r.Description,
-              r.CreatedAt ? ('' + r.CreatedAt).replace('T', ' ').slice(0, 19) : '',
-              r.AdditionalInfo || ''
-            ]),
-            styles: { fontSize: 9 },
-            headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] },
-            margin: { left: 14, right: 14 }
-          });
-          y = doc.lastAutoTable.finalY + 8;
-        });
-
-        doc.save('mis_datos.pdf');
+        data = JSON.parse(text);
       } catch (e) {
-        alert('Error al exportar los datos');
+        alert('No se pudo leer la respuesta del servidor:\n' + text);
+        return;
       }
+      if (!Array.isArray(data) || data.length === 0) {
+        alert('No hay datos para exportar');
+        return;
+      }
+
+      // Generar PDF
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text('Exportación de datos de usuario', 14, 18);
+
+      // Agrupa por tipo de dato
+      const tipos = [
+        'User', 'Capsule', 'Content', 'Notification', 'Subscription', 'Transaction', 'Recipient', 'Comment'
+      ];
+      let y = 28;
+      tipos.forEach(tipo => {
+        const rows = data.filter(row => row.DataType === tipo);
+        if (rows.length === 0) return;
+        doc.setFontSize(13);
+        doc.text(tipo, 14, y);
+        y += 4;
+        doc.autoTable({
+          startY: y,
+          head: [['ID', 'Descripción', 'Fecha', 'Info extra']],
+          body: rows.map(r => [
+            r.DataID,
+            r.Description,
+            r.CreatedAt ? ('' + r.CreatedAt).replace('T', ' ').slice(0, 19) : '',
+            r.AdditionalInfo || ''
+          ]),
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] },
+          margin: { left: 14, right: 14 }
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      });
+
+      doc.save('mis_datos.pdf');
     } catch (err) {
       alert('Error al exportar los datos');
     }
