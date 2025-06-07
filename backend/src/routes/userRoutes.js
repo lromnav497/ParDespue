@@ -147,6 +147,7 @@ router.post('/me/export', authMiddleware, async (req, res) => {
     // Ejecuta el procedimiento almacenado
     const [rows] = await db.query('CALL GetAllUserData(?)', [userId]);
     const data = rows[0];
+    console.log('[EXPORT][DATA]', data);
     res.json(data);
   } catch (error) {
     console.error('[EXPORT][ERROR]', error);
