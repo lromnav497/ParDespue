@@ -796,7 +796,26 @@ const EditarCapsula = () => {
                           type="button"
                           className="ml-2 text-red-500 hover:text-red-700 font-bold"
                           title="Eliminar destinatario"
-                          onClick={() => setRecipients(prev => prev.filter((_, i) => i !== idx))}
+                          onClick={async () => {
+                            // 1. Busca el usuario y el rol
+                            const resUser = await fetch(`/api/users/email/${r.email}`);
+                            const userData = await resUser.json();
+                            // 2. Mapea el rol a su ID
+                            const roleMap = { 'Reader': 2, 'Collaborator': 3 };
+                            const roleId = roleMap[r.role];
+                            if (resUser.ok && userData.User_ID && roleId) {
+                              await fetch(`/api/recipients`, {
+                                method: 'DELETE',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  User_ID: userData.User_ID,
+                                  Capsule_ID: id,
+                                  Role_ID: roleId
+                                }),
+                              });
+                            }
+                            setRecipients(prev => prev.filter((_, i) => i !== idx));
+                          }}
                         >
                           ×
                         </button>
