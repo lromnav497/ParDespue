@@ -9,6 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import starIcon from '/icons/star.svg'; // Usa la ruta pública
+import galaxyIcon from '/icons/galaxy.svg'; // Agrega la galaxia
 
 const categorias = [
   { id: 'todas', nombre: 'Todas' },
@@ -32,7 +33,9 @@ function getImageUrl(capsula) {
   }
 }
 
-const NUM_STARS = 32; // Más estrellas para el fondo
+// Estrellas y galaxias flotantes SOLO en el fondo del grid de cápsulas
+const NUM_STARS = 24;
+const NUM_GALAXIES = 8;
 
 function getRandom(min, max) {
   return Math.random() * (max - min) + min;
@@ -41,6 +44,7 @@ function getRandom(min, max) {
 // Estrellas flotantes SOLO en el fondo del grid de cápsulas
 const FloatingStars = () => (
   <div className="pointer-events-none absolute inset-0 z-0">
+    {/* Estrellas */}
     {Array.from({ length: NUM_STARS }).map((_, i) => {
       const top = getRandom(0, 95);
       const left = getRandom(0, 95);
@@ -51,7 +55,7 @@ const FloatingStars = () => (
       const moveY = getRandom(-40, 40); // px
       return (
         <img
-          key={i}
+          key={`star-${i}`}
           src={starIcon}
           alt=""
           className="absolute opacity-70 animate-star-float"
@@ -67,6 +71,37 @@ const FloatingStars = () => (
             zIndex: 1,
             pointerEvents: 'none',
             filter: 'drop-shadow(0 0 6px #F5E050)'
+          }}
+        />
+      );
+    })}
+    {/* Galaxias */}
+    {Array.from({ length: NUM_GALAXIES }).map((_, i) => {
+      const top = getRandom(0, 95);
+      const left = getRandom(0, 95);
+      const size = getRandom(32, 56); // px
+      const duration = getRandom(12, 28); // segundos
+      const delay = getRandom(0, 16); // segundos
+      const moveX = getRandom(-60, 60); // px
+      const moveY = getRandom(-60, 60); // px
+      return (
+        <img
+          key={`galaxy-${i}`}
+          src={galaxyIcon}
+          alt=""
+          className="absolute opacity-50 animate-star-float"
+          style={{
+            top: `${top}%`,
+            left: `${left}%`,
+            width: `${size}px`,
+            height: `${size}px`,
+            animationDuration: `${duration}s`,
+            animationDelay: `${delay}s`,
+            '--move-x': `${moveX}px`,
+            '--move-y': `${moveY}px`,
+            zIndex: 1,
+            pointerEvents: 'none',
+            filter: 'drop-shadow(0 0 12px #F5E050)'
           }}
         />
       );
