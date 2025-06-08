@@ -427,16 +427,24 @@ const MisCapsulas = () => {
                       </div>
                       {/* Fuego de propulsión */}
                       <div className="w-16 h-10 bg-gradient-to-b from-[#F5E050] via-[#e6d047] to-transparent rounded-b-full blur-sm opacity-80 animate-capsule-fire -mt-3" />
-                      {/* Overlay de bloqueo */}
+
+                      {/* Overlay de bloqueo - SOLO sobre la cápsula, no cuadrado */}
                       {disabled && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl">
+                        <div
+                          className="absolute left-1/2 top-[68px] -translate-x-1/2 w-44 h-[calc(100%-68px)] flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl pointer-events-none"
+                          style={{
+                            // top: altura de la cúpula + portada, height: solo el cuerpo principal
+                            pointerEvents: 'none'
+                          }}
+                        >
                           <FontAwesomeIcon icon={faLock} className="text-3xl text-[#F5E050] mb-2 animate-bounce-slow" />
                           <span className="text-[#F5E050] text-xs font-bold flex items-center gap-2 text-center">
                             No disponible hasta {apertura.toLocaleDateString()}
                           </span>
                         </div>
                       )}
-                      {/* Botones de acción */}
+
+                      {/* Botones de acción - SIEMPRE encima del overlay */}
                       <div className="absolute top-4 right-4 flex gap-2 z-30">
                         {disabled && isPremium && (
                           <>
