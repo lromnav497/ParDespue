@@ -802,7 +802,17 @@ const EditarCapsula = () => {
                   <span className="text-[#F5E050]">Destinatarios:</span>
                   <ul className="ml-4 list-disc">
                     {recipients.map((r, idx) => (
-                      <li key={idx}>{r.email} - {r.role}</li>
+                      <li key={idx} className="flex items-center gap-2">
+                        {r.email} - {r.role}
+                        <button
+                          type="button"
+                          className="ml-2 text-red-500 hover:text-red-700 font-bold"
+                          title="Eliminar destinatario"
+                          onClick={() => setRecipients(prev => prev.filter((_, i) => i !== idx))}
+                        >
+                          ×
+                        </button>
+                      </li>
                     ))}
                   </ul>
                 </div>
