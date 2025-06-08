@@ -53,12 +53,17 @@ const FloatingStars = () => (
       const delay = getRandom(0, 12); // segundos
       const moveX = getRandom(-40, 40); // px
       const moveY = getRandom(-40, 40); // px
+      // Aleatorio: blanco o dorado
+      const isGold = Math.random() < 0.5;
+      const filter = isGold
+        ? 'drop-shadow(0 0 8px #F5E050) brightness(1.2) sepia(1) hue-rotate(10deg) saturate(2)'
+        : 'drop-shadow(0 0 8px #fff) brightness(2)';
       return (
         <img
           key={`star-${i}`}
           src={starIcon}
           alt=""
-          className="absolute opacity-70 animate-star-float"
+          className="absolute opacity-80 animate-star-float"
           style={{
             top: `${top}%`,
             left: `${left}%`,
@@ -70,7 +75,7 @@ const FloatingStars = () => (
             '--move-y': `${moveY}px`,
             zIndex: 1,
             pointerEvents: 'none',
-            filter: 'drop-shadow(0 0 6px #F5E050)'
+            filter
           }}
         />
       );
@@ -84,12 +89,17 @@ const FloatingStars = () => (
       const delay = getRandom(0, 16); // segundos
       const moveX = getRandom(-60, 60); // px
       const moveY = getRandom(-60, 60); // px
+      // Aleatorio: blanco o dorado
+      const isGold = Math.random() < 0.5;
+      const filter = isGold
+        ? 'drop-shadow(0 0 16px #F5E050) brightness(1.2) sepia(1) hue-rotate(10deg) saturate(2)'
+        : 'drop-shadow(0 0 16px #fff) brightness(2)';
       return (
         <img
           key={`galaxy-${i}`}
           src={galaxyIcon}
           alt=""
-          className="absolute opacity-50 animate-star-float"
+          className="absolute opacity-60 animate-star-float"
           style={{
             top: `${top}%`,
             left: `${left}%`,
@@ -101,7 +111,7 @@ const FloatingStars = () => (
             '--move-y': `${moveY}px`,
             zIndex: 1,
             pointerEvents: 'none',
-            filter: 'drop-shadow(0 0 12px #F5E050)'
+            filter
           }}
         />
       );
