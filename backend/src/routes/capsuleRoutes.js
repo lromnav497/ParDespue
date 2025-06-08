@@ -102,16 +102,19 @@ router.get('/:id/edit', authMiddleware, async (req, res) => {
   // Permitir si es el creador o admin
   if (userId === capsule.Creator_User_ID || userRole === 'administrator') return res.json(capsule);
 
-  // Permitir si es Collaborator en Recipients
+  // Permitir si es Collaborator en Recipients Y tiene premium
   const [rows] = await db.execute(
-    `SELECT Role_ID FROM Recipients WHERE Capsule_ID = ? AND User_ID = ?`,
+    `SELECT r.Role_ID, s.Type as Plan
+     FROM Recipients r
+     LEFT JOIN Subscriptions s ON r.User_ID = s.User_ID AND s.Status = 'active'
+     WHERE r.Capsule_ID = ? AND r.User_ID = ?`,
     [capsuleId, userId]
   );
-  if (rows.length > 0 && rows[0].Role_ID == 3) { // 3 = Collaborator
+  if (rows.length > 0 && rows[0].Role_ID == 3 && rows[0].Plan === 'premium') {
     return res.json(capsule);
   }
 
-  return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
+  return res.status(403).json({ message: 'Solo los colaboradores premium pueden editar esta cápsula.' });
 });
 
 router.put('/:id', authMiddleware, async (req, res) => {
@@ -125,16 +128,19 @@ router.put('/:id', authMiddleware, async (req, res) => {
   // Permitir si es el creador o admin
   if (userId === capsule.Creator_User_ID || userRole === 'administrator') return CapsuleController.update(req, res);
 
-  // Permitir si es Collaborator en Recipients
+  // Permitir si es Collaborator en Recipients Y tiene premium
   const [rows] = await db.execute(
-    `SELECT Role_ID FROM Recipients WHERE Capsule_ID = ? AND User_ID = ?`,
+    `SELECT r.Role_ID, s.Type as Plan
+     FROM Recipients r
+     LEFT JOIN Subscriptions s ON r.User_ID = s.User_ID AND s.Status = 'active'
+     WHERE r.Capsule_ID = ? AND r.User_ID = ?`,
     [capsuleId, userId]
   );
-  if (rows.length > 0 && rows[0].Role_ID == 3) { // 3 = Collaborator
+  if (rows.length > 0 && rows[0].Role_ID == 3 && rows[0].Plan === 'premium') {
     return CapsuleController.update(req, res);
   }
 
-  return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
+  return res.status(403).json({ message: 'Solo los colaboradores premium pueden editar esta cápsula.' });
 });
 
 router.delete('/:id', authMiddleware, async (req, res) => {

@@ -15,10 +15,36 @@ const CompartidasConmigo = () => {
   const [capsulas, setCapsulas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
+  const [plan, setPlan] = useState(null);
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('user'));
   const userId = user?.id;
+
+  // Obtener el plan del usuario
+  useEffect(() => {
+    const fetchPlan = async () => {
+      const token = localStorage.getItem('token') || user?.token;
+      if (!token) return setPlan(null);
+      try {
+        const res = await fetch('/api/subscriptions/my-plan', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) return setPlan(null);
+        const data = await res.json();
+        let planName = null;
+        if (data.suscripcion && data.suscripcion.nombre) {
+          planName = String(data.suscripcion.nombre).toLowerCase();
+        } else if (data.plan) {
+          planName = String(data.plan).toLowerCase();
+        }
+        setPlan(planName);
+      } catch {
+        setPlan(null);
+      }
+    };
+    fetchPlan();
+  }, [user]);
 
   useEffect(() => {
     if (!userId) return;
@@ -88,7 +114,7 @@ const CompartidasConmigo = () => {
                 imageUrl = getUniqueRandomImage();
               }
               // Permisos
-              const puedeEditar = capsula.RoleName === 'Collaborator';
+              const puedeEditar = capsula.RoleName === 'Collaborator' && plan === 'premium';
               return (
                 <div
                   key={capsula.Capsule_ID}
@@ -114,6 +140,11 @@ const CompartidasConmigo = () => {
                     )}
                     {/* Botones de acción */}
                     <div className="absolute top-4 right-4 flex gap-2 z-30">
+                      {capsula.RoleName === 'Collaborator' && plan !== 'premium' && (
+                        <span className="bg-yellow-400 text-[#2E2E7A] px-3 py-1 rounded-full font-bold text-xs">
+                          Solo premium puede editar
+                        </span>
+                      )}
                       {puedeEditar && !disabled && (
                         <button
                           className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e] shadow-lg transition-all scale-100 hover:scale-110"
