@@ -63,20 +63,20 @@ const Account = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] flex flex-row animate-fade-in">
+    <div className="min-h-screen bg-gray-900 flex">
       {/* Sidebar */}
-      <aside className="hidden md:block w-64 bg-[#2E2E7A] time-capsule shadow-2xl animate-fade-in-down flex-shrink-0">
+      <div className="w-64 bg-[#2E2E7A] time-capsule">
         <div className="p-6">
-          <h2 className="text-[#F5E050] passero-font text-xl mb-6 drop-shadow text-left">Mi Cuenta</h2>
+          <h2 className="text-[#F5E050] passero-font text-xl mb-6">Mi Cuenta</h2>
           <nav className="space-y-2">
             {menuItems.map(item => (
               <button
                 key={item.id}
                 onClick={() => handleSectionChange(item.id)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all
                   ${activeSection === item.id 
-                    ? 'bg-[#1a1a4a] text-[#F5E050] scale-105 shadow-lg'
-                    : 'text-gray-300 hover:bg-[#1a1a4a]/50 hover:scale-105'}`}
+                    ? 'bg-[#1a1a4a] text-[#F5E050]' 
+                    : 'text-gray-300 hover:bg-[#1a1a4a]/50'}`}
               >
                 <div className="flex items-center">
                   <FontAwesomeIcon icon={item.icon} className="mr-3" />
@@ -84,7 +84,7 @@ const Account = () => {
                 </div>
                 <FontAwesomeIcon 
                   icon={faChevronRight} 
-                  className={`transition-transform duration-200 ${
+                  className={`transition-transform ${
                     activeSection === item.id ? 'transform rotate-90' : ''
                   }`}
                 />
@@ -92,24 +92,14 @@ const Account = () => {
             ))}
           </nav>
         </div>
-      </aside>
+      </div>
 
       {/* Content Area */}
-      <main className="flex-1 p-4 md:p-8 flex flex-col items-center overflow-x-auto">
-        <div className="w-full max-w-[1200px] bg-[#2E2E7A] time-capsule rounded-xl p-4 md:p-6 min-h-[calc(100vh-4rem)] shadow-2xl animate-fade-in-up">
+      <div className="flex-1 p-8">
+        <div className="bg-[#2E2E7A] time-capsule rounded-xl p-6 min-h-[calc(100vh-4rem)]">
           {renderContent()}
         </div>
-      </main>
-      <style>
-        {`
-          .animate-fade-in { animation: fadeIn 1s; }
-          .animate-fade-in-down { animation: fadeInDown 1s; }
-          .animate-fade-in-up { animation: fadeInUp 1s; }
-          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
-          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
-        `}
-      </style>
+      </div>
     </div>
   );
 };
