@@ -148,31 +148,31 @@ const Header = () => {
           <ul className="hidden md:flex space-x-6">
             <li>
               <Link to="/" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <FontAwesomeIcon icon={faHome} className="mr-2" />
+                <img src={iconInicio} alt="Inicio" className="mr-2 w-6 h-6 inline" />
                 Inicio
               </Link>
             </li>
             <li>
               <Link to="/capsulas" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <FontAwesomeIcon icon={faBoxArchive} className="mr-2" />
+                <img src={iconCapsulas} alt="Mis Cápsulas" className="mr-2 w-6 h-6 inline" />
                 Mis Cápsulas
               </Link>
             </li>
             <li>
               <Link to="/compartidas" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                <img src={iconCompartidas} alt="Compartidas conmigo" className="mr-2 w-6 h-6 inline" />
                 Compartidas conmigo
               </Link>
             </li>
             <li>
               <Link to="/explorar" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <FontAwesomeIcon icon={faCompass} className="mr-2" />
+                <img src={iconExplorar} alt="Explorar" className="mr-2 w-6 h-6 inline" />
                 Explorar
               </Link>
             </li>
             <li>
               <Link to="/ayuda" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <FontAwesomeIcon icon={faQuestionCircle} className="mr-2" />
+                <img src={iconAyuda} alt="Ayuda" className="mr-2 w-6 h-6 inline" />
                 Ayuda
               </Link>
             </li>
