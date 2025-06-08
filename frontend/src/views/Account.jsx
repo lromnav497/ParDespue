@@ -16,11 +16,6 @@ import PasswordModal from '../components/modals/PasswordModal';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-import iconUser from '../assets/icons/user.svg';
-import iconsuscription from '../assets/icons/suscription.svg';
-import iconcapsulas from '../assets/icons/capsulas.svg';
-import iconconfiguration from '../assets/icons/configuration.svg';
-
 const Account = () => {
   const [activeSection, setActiveSection] = useState('general');
   const location = useLocation();
@@ -35,10 +30,10 @@ const Account = () => {
   }, [location.search]);
 
   const menuItems = [
-    { id: 'general', title: 'Información General', icon: iconUser },
-    { id: 'suscripciones', title: 'Mis Suscripciones', icon: iconsuscription },
-    { id: 'capsulas', title: 'Mis Cápsulas', icon: iconcapsulas },
-    { id: 'configuracion', title: 'Configuración', icon: iconconfiguration }
+    { id: 'general', title: 'Información General', icon: '/icons/user.svg' },
+    { id: 'suscripciones', title: 'Mis Suscripciones', icon: '/icons/suscription.svg' },
+    { id: 'capsulas', title: 'Mis Cápsulas', icon: '/icons/capsulas.svg' },
+    { id: 'configuracion', title: 'Configuración', icon: '/icons/configuration.svg' }
   ];
 
   const handleSectionChange = (id) => {
