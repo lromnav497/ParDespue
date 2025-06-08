@@ -94,17 +94,9 @@ const Account = () => {
         </div>
       </aside>
 
-      {/* Sidebar para pantallas pequeñas como Drawer */}
-      <aside className="md:hidden fixed top-0 left-0 w-64 h-full bg-[#2E2E7A] shadow-2xl z-40 transition-transform duration-300"
-        style={{ transform: 'translateX(-100%)' }}
-        id="account-mobile-sidebar"
-      >
-        {/* Puedes implementar aquí un Drawer si lo deseas */}
-      </aside>
-
       {/* Content Area */}
       <main className="flex-1 p-4 md:p-8 flex flex-col items-center overflow-x-auto">
-        <div className="w-full max-w-5xl bg-[#2E2E7A] time-capsule rounded-xl p-4 md:p-6 min-h-[calc(100vh-4rem)] shadow-2xl animate-fade-in-up">
+        <div className="w-full max-w-[1200px] bg-[#2E2E7A] time-capsule rounded-xl p-4 md:p-6 min-h-[calc(100vh-4rem)] shadow-2xl animate-fade-in-up">
           {renderContent()}
         </div>
       </main>
