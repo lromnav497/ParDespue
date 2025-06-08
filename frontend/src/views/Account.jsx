@@ -845,6 +845,7 @@ const Configuracion = () => {
       }
 
       doc.save('mis_datos.pdf');
+      setShowPasswordModal(false); // <-- Cierra el modal después de descargar
       console.log('[PDF] PDF generado y descargado');
     } catch (err) {
       console.error('[PDF][ERROR]', err);
