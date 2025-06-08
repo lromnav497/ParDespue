@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faSave, faTimes, faTrash, faImage, faVideo, faFileAlt, faMusic, faArrowLeft
+  faSave, faTimes, faTrash, faImage, faVideo, faFileAlt, faMusic, faArrowLeft, faTag
 } from '@fortawesome/free-solid-svg-icons';
 import PasswordModal from '../components/modals/PasswordModal';
 import Modal from '../components/modals/Modal';
@@ -49,6 +49,7 @@ const EditarCapsula = () => {
   const [coverImage, setCoverImage] = useState(null);
   const [coverPreview, setCoverPreview] = useState('');
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
+  const [tagInput, setTagInput] = useState('');
 
   // Cargar categorías
   useEffect(() => {
@@ -194,6 +195,31 @@ const EditarCapsula = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Añadir tag
+  const handleTagInputChange = (e) => setTagInput(e.target.value);
+
+  const handleAddTag = (e) => {
+    e.preventDefault();
+    const newTag = tagInput.trim();
+    if (newTag && (!form.Tags || !form.Tags.split(',').map(t => t.trim()).includes(newTag))) {
+      setForm(prev => ({
+        ...prev,
+        Tags: prev.Tags
+          ? prev.Tags.split(',').map(t => t.trim()).concat(newTag).join(', ')
+          : newTag
+      }));
+    }
+    setTagInput('');
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    const tagsArr = (form.Tags || '').split(',').map(t => t.trim()).filter(Boolean);
+    setForm(prev => ({
+      ...prev,
+      Tags: tagsArr.filter(tag => tag !== tagToRemove).join(', ')
+    }));
   };
 
   // Guardar cambios
@@ -458,15 +484,43 @@ const EditarCapsula = () => {
               />
             </div>
             <div>
-              <label className="block text-white mb-2">Tags (separados por coma)</label>
-              <input
-                type="text"
-                name="Tags"
-                value={form.Tags}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
-                placeholder="ej: futuro, familia, trabajo"
-              />
+              <label className="block text-white mb-2 flex items-center gap-2">
+                <FontAwesomeIcon icon={faTag} className="text-[#F5E050]" />
+                Añadir tags
+              </label>
+              <form onSubmit={handleAddTag} className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={handleTagInputChange}
+                  className="flex-1 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
+                  placeholder="Escribe un tag y pulsa Enter"
+                />
+                <button
+                  type="submit"
+                  className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full font-bold hover:bg-[#e6d047] transition-colors"
+                >
+                  Añadir
+                </button>
+              </form>
+              <div className="flex flex-wrap gap-2">
+                {(form.Tags ? form.Tags.split(',').map(t => t.trim()).filter(Boolean) : []).map(tag => (
+                  <span
+                    key={tag}
+                    className="bg-[#F5E050] text-[#2E2E7A] px-3 py-1 rounded-full flex items-center gap-2 animate-fade-in"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTag(tag)}
+                      className="ml-1 text-[#2E2E7A] hover:text-red-600 font-bold"
+                      title="Eliminar tag"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
             </div>
             {/* Nueva contraseña */}
             {form.Privacy === 'private' && (
@@ -703,8 +757,8 @@ const EditarCapsula = () => {
           .animate-fade-in-up { animation: fadeInUp 1s; }
           .animate-bounce-slow { animation: bounce 2s infinite; }
           @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
-          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1, transform: translateY(0);} }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1, transform: translateY(0);} }
           @keyframes bounce {
             0%, 100% { transform: translateY(0);}
             50% { transform: translateY(-10px);}
