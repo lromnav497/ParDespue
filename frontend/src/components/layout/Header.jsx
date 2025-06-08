@@ -277,7 +277,7 @@ const Header = () => {
                           <img
                             src={iconCorona}
                             alt="Usuario Premium"
-                            className="absolute -top-2 -right-2 w-10 h-10 drop-shadow-lg animate-bounce-slow filter invert brightness-0"
+                            className="absolute -top-2 -right-2 w-10 h-10 drop-shadow-lg animate-bounce-slow"
                             title="Usuario Premium"
                             style={{ zIndex: 2 }}
                           />
@@ -290,7 +290,7 @@ const Header = () => {
                     <img
                       src={iconCorona}
                       alt="Usuario Premium"
-                      className="ml-2 w-8 h-8 animate-bounce-slow filter invert brightness-0"
+                      className="ml-2 w-8 h-8 animate-bounce-slow"
                       title="Usuario Premium"
                     />
                   )}
