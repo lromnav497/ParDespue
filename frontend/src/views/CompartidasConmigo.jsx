@@ -213,9 +213,10 @@ const CompartidasConmigo = () => {
                       {/* Overlay de bloqueo - SOLO sobre el cuerpo principal */}
                       {disabled && (
                         <div
-                          className="absolute left-1/2 top-[68px] -translate-x-1/2 w-44 h-[calc(100%-68px)] flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl pointer-events-none"
+                          className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl pointer-events-none"
                           style={{
-                            pointerEvents: 'none'
+                            pointerEvents: 'none',
+                            borderRadius: '1.5rem 1.5rem 1.5rem 1.5rem / 2.5rem 2.5rem 1.5rem 1.5rem'
                           }}
                         >
                           <FontAwesomeIcon icon={faLock} className="text-3xl text-[#F5E050] mb-2 animate-bounce-slow" />

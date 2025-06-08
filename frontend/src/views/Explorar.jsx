@@ -265,7 +265,13 @@ const Explorar = () => {
                         </div>
                         {/* Overlay de bloqueo */}
                         {disabled && (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl">
+                          <div
+                            className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl pointer-events-none"
+                            style={{
+                              pointerEvents: 'none',
+                              borderRadius: '1.5rem 1.5rem 1.5rem 1.5rem / 2.5rem 2.5rem 1.5rem 1.5rem'
+                            }}
+                          >
                             <FontAwesomeIcon icon={faLock} className="text-3xl text-[#F5E050] mb-2 animate-bounce-slow" />
                             <span className="text-[#F5E050] text-xs font-bold flex items-center gap-2 text-center">
                               No disponible hasta {apertura.toLocaleDateString()}
