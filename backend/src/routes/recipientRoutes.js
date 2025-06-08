@@ -25,7 +25,6 @@ router.get('/capsule-shared/:userId', async (req, res) => {
           c.Cover_Image,
           c.Category_ID,
           cat.Name as Category_Name,
-          c.Content,
           c.Privacy,
           r.Role_ID,
           ro.Name as RoleName
