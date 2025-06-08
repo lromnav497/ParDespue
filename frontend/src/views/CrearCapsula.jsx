@@ -460,7 +460,6 @@ const CrearCapsula = () => {
                     value={recipientEmail}
                     onChange={e => setRecipientEmail(e.target.value)}
                     className="flex-1 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
-                    required
                   />
                   <select
                     value={recipientRole}
