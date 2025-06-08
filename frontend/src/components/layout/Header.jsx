@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -26,11 +26,13 @@ const getStoredUser = () => {
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(getStoredUser());
   const [plan, setPlan] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const notifRef = useRef(null);
+  const menuRef = useRef(null);
   const navigate = useNavigate();
 
   // Escucha cambios de usuario
@@ -117,6 +119,34 @@ const Header = () => {
     navigate('/login');
   };
 
+  // Cierra los desplegables al hacer click fuera o abrir otro
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notifRef.current &&
+        !notifRef.current.contains(event.target) &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target)
+      ) {
+        setNotifOpen(false);
+        setMenuOpen(false);
+      } else if (
+        notifRef.current &&
+        !notifRef.current.contains(event.target)
+      ) {
+        setNotifOpen(false);
+      } else if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target)
+      ) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Modifica los contenedores de los desplegables para usar ref
   return (
     <nav className="bg-[#2E2E7A] p-4 shadow-lg sticky top-0 z-50 animate-fade-in">
       <div className="container mx-auto flex justify-between items-center">
@@ -173,10 +203,13 @@ const Header = () => {
         {/* Acciones de usuario */}
         <div className="flex gap-4 items-center">
           {user && (
-            <div className="relative">
+            <div className="relative" ref={notifRef}>
               <button
                 className="text-white hover:text-[#F5E050] relative transition-colors"
-                onClick={handleBellClick}
+                onClick={() => {
+                  setNotifOpen(v => !v);
+                  setMenuOpen(false); // Cierra el otro desplegable
+                }}
                 aria-label="Notificaciones"
               >
                 <FontAwesomeIcon icon={faBell} className="text-xl" />
@@ -216,6 +249,114 @@ const Header = () => {
                     onClick={() => { setNotifOpen(false); navigate('/notificaciones'); }}
                   >
                     Ver todas
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Menú usuario */}
+          {user && (
+            <div className="relative" ref={menuRef}>
+              <button
+                className="flex items-center text-white hover:text-[#F5E050] transition-colors font-semibold"
+                onClick={() => {
+                  setMenuOpen(v => !v);
+                  setNotifOpen(false); // Cierra el otro desplegable
+                }}
+              >
+                {/* Solo muestra el icono si NO hay foto */}
+                {!user.profilePicture && (
+                  <FontAwesomeIcon icon={faUser} className="mr-2" />
+                )}
+                <span className="mr-2 flex items-center">
+                  {user.name}
+                  {user.profilePicture && (() => {
+                    const imgUrl = user.profilePicture.startsWith('http')
+                      ? user.profilePicture
+                      : `http://44.209.31.187/api${user.profilePicture}`;
+                    return (
+                      <span className="relative ml-2 inline-block group">
+                        <img
+                          src={imgUrl}
+                          alt="Foto de perfil"
+                          className="w-14 h-14 rounded-full object-cover border-4 border-[#F5E050] shadow-xl transition-transform duration-200 group-hover:scale-105 group-hover:ring-4 group-hover:ring-[#F5E050]/50 bg-white"
+                          style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}
+                          onError={e => { e.target.style.display = 'none'; }}
+                        />
+                        {plan === 'Premium' && (
+                          <FontAwesomeIcon
+                            icon={faCrown}
+                            className="absolute -top-2 -right-2 text-yellow-400 text-2xl drop-shadow-lg animate-bounce-slow"
+                            title="Usuario Premium"
+                            style={{ zIndex: 2, filter: 'drop-shadow(0 2px 4px #0008)' }}
+                          />
+                        )}
+                      </span>
+                    );
+                  })()}
+                  {/* Si NO hay foto, muestra la corona junto al nombre */}
+                  {!user.profilePicture && plan === 'Premium' && (
+                    <FontAwesomeIcon icon={faCrown} className="ml-2 text-yellow-400 animate-bounce-slow" title="Usuario Premium" />
+                  )}
+                </span>
+                <FontAwesomeIcon icon={faChevronDown} className="ml-1" />
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-[#2E2E7A] rounded-lg shadow-2xl z-50 animate-fade-in-up border border-[#F5E050]/30">
+                  <Link
+                    to="/mi-cuenta"
+                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Mi Perfil
+                  </Link>
+                  <Link
+                    to="/mi-cuenta?suscripciones"
+                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Mis Suscripciones
+                  </Link>
+                  <Link
+                    to="/mi-cuenta?capsulas"
+                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Mis Cápsulas
+                  </Link>
+                  <Link
+                    to="/mi-cuenta?configuracion"
+                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Configuración
+                  </Link>
+                  {/* Botones solo para administrador */}
+                  {user?.role === 'administrator' && (
+                    <>
+                      <Link
+                        to="/todas-capsulas"
+                        className="block px-4 py-2 text-[#F5E050] hover:bg-[#1a1a4a] font-bold transition-all"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Todas las Cápsulas
+                      </Link>
+                      <Link
+                        to="/panel-moderacion"
+                        className="block px-4 py-2 text-[#F5E050] hover:bg-[#1a1a4a] font-bold transition-all"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Panel Moderación
+                      </Link>
+                    </>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-white hover:bg-[#1a1a4a] flex items-center transition-all"
+                  >
+                    <FontAwesomeIcon icon={faRightFromBracket} className="mr-2" />
+                    Cerrar sesión
                   </button>
                 </div>
               )}

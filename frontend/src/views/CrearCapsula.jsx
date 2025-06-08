@@ -435,34 +435,48 @@ const CrearCapsula = () => {
                 <form
                   onSubmit={e => {
                     e.preventDefault();
+                    // Limpia el valor invisible
+                    const email = recipientEmail.replace(/\u200B/g, '').trim();
+                    // Validación básica de email
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (
-                      recipientEmail &&
+                      email &&
+                      emailRegex.test(email) &&
                       recipientRole &&
-                      !(formData.recipients || []).some(r => r.email === recipientEmail)
+                      !(formData.recipients || []).some(r => r.email === email)
                     ) {
                       setFormData(prev => ({
                         ...prev,
                         recipients: [
                           ...(prev.recipients || []),
-                          { email: recipientEmail, role: recipientRole }
+                          { email, role: recipientRole }
                         ]
                       }));
                       setRecipientEmail('');
                       setRecipientRole('Reader');
                       setFieldErrors(prev => ({ ...prev, recipients: undefined }));
+                    } else if (!email) {
+                      setFieldErrors(prev => ({ ...prev, recipients: 'Introduce un correo válido.' }));
+                    } else if (!emailRegex.test(email)) {
+                      setFieldErrors(prev => ({ ...prev, recipients: 'El correo no es válido.' }));
+                    } else if ((formData.recipients || []).some(r => r.email === email)) {
+                      setFieldErrors(prev => ({ ...prev, recipients: 'Este destinatario ya está añadido.' }));
                     }
                   }}
                   className="flex gap-2 mb-2"
+                  autoComplete="off"
+                  noValidate
                 >
                   <label htmlFor="recipientEmail" className="sr-only">Correo del destinatario</label>
                   <input
                     id="recipientEmail"
                     type="email"
                     placeholder="Correo del destinatario"
-                    value={recipientEmail === '' ? '\u200B' : recipientEmail} // Siempre tiene algo invisible
+                    value={recipientEmail === '' ? '\u200B' : recipientEmail}
                     onChange={e => setRecipientEmail(e.target.value.replace(/\u200B/g, ''))}
                     className="flex-1 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
                     autoComplete="off"
+                    spellCheck={false}
                   />
                   <select
                     value={recipientRole}
@@ -479,7 +493,9 @@ const CrearCapsula = () => {
                     Añadir
                   </button>
                 </form>
-                {fieldErrors.recipients && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.recipients}</div>}
+                {fieldErrors.recipients && (
+                  <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.recipients}</div>
+                )}
                 <ul>
                   {(formData.recipients || []).map((r, idx) => (
                     <li key={idx} className="text-white flex gap-2 items-center animate-fade-in">
