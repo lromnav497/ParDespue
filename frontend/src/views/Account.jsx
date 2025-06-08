@@ -639,12 +639,7 @@ const Configuracion = () => {
       doc.rect(0, 0, 210, 297, 'F'); // A4 completo (mm)
       doc.setTextColor(245, 224, 80); // Amarillo
       doc.setFontSize(32);
-      doc.setFont('helvetica', 'bold');
-      doc.text('ParDespue', 105, 80, { align: 'center' });
-      doc.addFileToVFS('PasseroOne-Regular.ttf', passeroOneTTF); // passeroOneTTF viene del archivo JS generado
-      doc.addFont('PasseroOne-Regular.ttf', 'PasseroOne', 'normal');
-      doc.setFont('PasseroOne', 'normal');
-      doc.setFontSize(32);
+      doc.setFont('helvetica', 'bold'); // <-- Usa solo helvetica
       doc.text('ParDespue', 105, 80, { align: 'center' });
       doc.setFontSize(18);
       doc.setTextColor(255,255,255);
