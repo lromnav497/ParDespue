@@ -270,7 +270,7 @@ const Header = () => {
                           src={imgUrl}
                           alt="Foto de perfil"
                           className="w-14 h-14 rounded-full object-cover border-4 border-[#F5E050] shadow-xl transition-transform duration-200 group-hover:scale-105 group-hover:ring-4 group-hover:ring-[#F5E050]/50 bg-white"
-                          style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}
+                          style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.18)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}
                           onError={e => { e.target.style.display = 'none'; }}
                         />
                         {plan === 'Premium' && (
