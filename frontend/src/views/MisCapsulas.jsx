@@ -120,6 +120,15 @@ const MisCapsulas = () => {
               className="bg-red-500 text-white px-4 py-2 rounded"
               onClick={async () => {
                 const token = localStorage.getItem('token');
+                // Primero elimina los contenidos relacionados
+                await fetch(`/api/contents/by-capsule/${capsuleId}`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  }
+                });
+                // Luego sí elimina la cápsula
                 const res = await fetch(`/api/capsules/${capsuleId}`, {
                   method: 'DELETE',
                   headers: {
@@ -467,7 +476,7 @@ const MisCapsulas = () => {
         .animate-fade-in-up { animation: fadeInUp 1s; }
         .animate-bounce-slow { animation: bounce 2s infinite; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1, transform: translateY(0);} }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
         @keyframes bounce {
           0%, 100% { transform: translateY(0);}
