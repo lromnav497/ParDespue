@@ -73,6 +73,9 @@ router.get('/:id', authMiddleware, async (req, res) => {
   const capsule = await capsuleModel.findById(capsuleId);
   if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
 
+  // Permitir si es pública
+  if (capsule.Privacy === 'public') return res.json(capsule);
+
   // Permitir si es el creador o admin
   if (userId === capsule.Creator_User_ID || userRole === 'administrator') return res.json(capsule);
 
@@ -82,11 +85,9 @@ router.get('/:id', authMiddleware, async (req, res) => {
     [capsuleId, userId]
   );
   if (rows.length > 0 && (rows[0].Role_ID == 2 || rows[0].Role_ID == 3)) {
-    // 2 = Reader, 3 = Collaborator
     return res.json(capsule);
   }
 
-  // Si no cumple ninguna condición, denegar
   return res.status(403).json({ message: 'No tienes acceso a esta cápsula.' });
 });
 

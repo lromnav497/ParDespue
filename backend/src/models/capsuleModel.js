@@ -29,22 +29,15 @@ const CapsuleModel = {
 
   // Obtener todas las cápsulas de un usuario
   findByUser: async (userId) => {
-    const [rows] = await db.execute(
-      `SELECT c.*, cat.Name as Category_Name, cat.Description as Category_Description, cat.Category_ID as Category_ID
+    const [rows] = await db.query(
+      `SELECT c.*, u.Name as CreatorName, u.Email as CreatorEmail
        FROM Capsules c
-       LEFT JOIN Categories cat ON c.Category_ID = cat.Category_ID
-       WHERE c.Creator_User_ID = ? ORDER BY c.Creation_Date DESC`,
+       JOIN Users u ON c.Creator_User_ID = u.User_ID
+       WHERE c.Creator_User_ID = ?
+       ORDER BY c.Creation_Date DESC`,
       [userId]
     );
-    // Construye el objeto Category igual que en findById
-    return rows.map(capsule => ({
-      ...capsule,
-      Category: {
-        Category_ID: capsule.Category_ID,
-        Name: capsule.Category_Name,
-        Description: capsule.Category_Description
-      }
-    }));
+    return rows;
   },
 
   findById: async (id) => {
@@ -151,10 +144,14 @@ const CapsuleModel = {
   },
 
   delete: async (id) => {
+    // Elimina notificaciones asociadas
+    await db.query('DELETE FROM Notifications WHERE Capsule_ID = ?', [id]);
     // Elimina likes asociados
     await db.query('DELETE FROM CapsuleLikes WHERE Capsule_ID = ?', [id]);
-    // Elimina comentarios asociados (si tienes)
+    // Elimina comentarios asociados
     await db.query('DELETE FROM Comments WHERE Capsule_ID = ?', [id]);
+    // Elimina colaboradores asociados
+    await db.query('DELETE FROM Recipients WHERE Capsule_ID = ?', [id]);
     // Elimina otros hijos si existen...
 
     // Ahora sí elimina la cápsula
