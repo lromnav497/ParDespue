@@ -435,7 +435,11 @@ const CrearCapsula = () => {
                 <form
                   onSubmit={e => {
                     e.preventDefault();
-                    if (recipientEmail && recipientRole) {
+                    if (
+                      recipientEmail &&
+                      recipientRole &&
+                      !(formData.recipients || []).some(r => r.email === recipientEmail)
+                    ) {
                       setFormData(prev => ({
                         ...prev,
                         recipients: [
@@ -525,9 +529,23 @@ const CrearCapsula = () => {
               <p><span className="text-[#F5E050]">Categoría:</span> {
                 categorias.find(cat => cat.Category_ID === Number(formData.categoriaId))?.Name || 'Sin categoría'
               }</p>
-              <p>
-                <span className="text-[#F5E050]">Tags:</span> {formData.tags && formData.tags.length > 0 ? formData.tags.join(', ') : 'Ninguno'}
-              </p>
+              <div>
+                <span className="text-[#F5E050]">Tags:</span>
+                {formData.tags && formData.tags.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {formData.tags.map(tag => (
+                      <span
+                        key={tag}
+                        className="bg-[#F5E050] text-[#2E2E7A] px-3 py-1 rounded-full text-xs font-bold"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="ml-2 text-gray-400">Ninguno</span>
+                )}
+              </div>
             </div>
             {/* Contenido */}
             <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg">
