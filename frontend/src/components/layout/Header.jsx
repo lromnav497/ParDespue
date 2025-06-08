@@ -148,46 +148,31 @@ const Header = () => {
           <ul className="hidden md:flex space-x-6">
             <li>
               <Link to="/" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <svg className="mr-2 w-6 h-6 inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  {/* Casa/Home */}
-                  <path d="M3 12l9-9 9 9h-3v9h-12v-9h-3z"/>
-                </svg>
+                <img src={iconInicio} alt="Inicio" className="mr-2 w-6 h-6 inline filter invert brightness-0" />
                 Inicio
               </Link>
             </li>
             <li>
               <Link to="/capsulas" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <svg className="mr-2 w-6 h-6 inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  {/* Caja/Archivo */}
-                  <path d="M21 16V8a2 2 0 0 0-2-2h-2V4a2 2 0 0 0-2-2H9A2 2 0 0 0 7 4v2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2v2a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2h2a2 2 0 0 0 2-2zm-4 4H7v-4h10v4zm2-6H5V8h14v6z"/>
-                </svg>
+                <img src={iconCapsulas} alt="Mis Cápsulas" className="mr-2 w-6 h-6 inline filter invert brightness-0" />
                 Mis Cápsulas
               </Link>
             </li>
             <li>
               <Link to="/compartidas" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <svg className="mr-2 w-6 h-6 inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  {/* Usuarios */}
-                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05C15.64 14.1 17 15.03 17 16.5V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                </svg>
+                <img src={iconCompartidas} alt="Compartidas conmigo" className="mr-2 w-6 h-6 inline filter invert brightness-0" />
                 Compartidas conmigo
               </Link>
             </li>
             <li>
               <Link to="/explorar" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <svg className="mr-2 w-6 h-6 inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  {/* Brújula/Explorar */}
-                  <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 17.93V20h-2v-.07A8.001 8.001 0 0 1 4.07 13H4v-2h.07A8.001 8.001 0 0 1 11 4.07V4h2v.07A8.001 8.001 0 0 1 19.93 11H20v2h-.07A8.001 8.001 0 0 1 13 19.93zM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/>
-                </svg>
+                <img src={iconExplorar} alt="Explorar" className="mr-2 w-6 h-6 inline filter invert brightness-0" />
                 Explorar
               </Link>
             </li>
             <li>
               <Link to="/ayuda" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <svg className="mr-2 w-6 h-6 inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  {/* Signo de interrogación/Ayuda */}
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm1.07-7.75c-.9.92-1.07 1.24-1.07 2.25h-2v-.5c0-1.1.45-2.1 1.17-2.83.59-.59 1.43-1.17 1.43-2.17 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.21 1.79-4 4-4s4 1.79 4 4c0 1.3-.84 2.4-1.93 3.25z"/>
-                </svg>
+                <img src={iconAyuda} alt="Ayuda" className="mr-2 w-6 h-6 inline filter invert brightness-0" />
                 Ayuda
               </Link>
             </li>
