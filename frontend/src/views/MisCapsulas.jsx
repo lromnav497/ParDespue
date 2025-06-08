@@ -86,7 +86,10 @@ const MisCapsulas = () => {
         const res = await fetchWithAuth(`/api/capsules/user/${userId}`);
         if (!res) return; // Ya redirigió si expiró
         const data = await res.json();
-        setCapsulas(data);
+        // Si tu backend responde { capsulas: [...] }
+        setCapsulas(Array.isArray(data.capsulas) ? data.capsulas : []);
+        // Si responde un array directamente
+        setCapsulas(Array.isArray(data) ? data : []);
         console.log('Cápsulas recibidas:', data); // <-- Agrega esto
       } catch (err) {
         setCapsulas([]);
@@ -360,7 +363,7 @@ const MisCapsulas = () => {
             {filteredCapsulas.length === 0 ? (
               <div className="col-span-3 text-center text-gray-400 animate-fade-in-up">No tienes cápsulas.</div>
             ) : (
-              filteredCapsulas.map((capsula, idx) => {
+              Array.isArray(filteredCapsulas) && filteredCapsulas.map((capsula, idx) => {
                 const ahora = new Date();
                 const apertura = new Date(capsula.Opening_Date);
                 const disabled = apertura > ahora;
