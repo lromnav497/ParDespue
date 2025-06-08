@@ -279,7 +279,7 @@ const Header = () => {
                             alt="Usuario Premium"
                             className="absolute -top-2 -right-2 w-10 h-10 drop-shadow-lg animate-bounce-slow filter invert brightness-0"
                             title="Usuario Premium"
-                            style={{ zIndex: 2, filter: 'drop-shadow(0 2px 4px #0008) invert(1) brightness(0)' }}
+                            style={{ zIndex: 2 }}
                           />
                         )}
                       </span>

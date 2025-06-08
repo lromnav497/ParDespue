@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faUser, 
-  faCreditCard, 
-  faBoxArchive,
-  faGear,
   faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
 import RenewSubscriptionModal from '../components/modals/RenewSubscriptionModal';
@@ -19,6 +15,11 @@ import PasswordModal from '../components/modals/PasswordModal';
 // Agrega jsPDF y autoTable
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
+import iconUser from '../assets/icons/user.svg';
+import iconsuscription from '../assets/icons/suscription.svg';
+import iconcapsulas from '../assets/icons/capsulas.svg';
+import iconconfiguration from '../assets/icons/configuration.svg';
 
 const Account = () => {
   const [activeSection, setActiveSection] = useState('general');
@@ -34,10 +35,10 @@ const Account = () => {
   }, [location.search]);
 
   const menuItems = [
-    { id: 'general', title: 'Información General', icon: faUser },
-    { id: 'suscripciones', title: 'Mis Suscripciones', icon: faCreditCard },
-    { id: 'capsulas', title: 'Mis Cápsulas', icon: faBoxArchive },
-    { id: 'configuracion', title: 'Configuración', icon: faGear }
+    { id: 'general', title: 'Información General', icon: iconUser },
+    { id: 'suscripciones', title: 'Mis Suscripciones', icon: iconsuscription },
+    { id: 'capsulas', title: 'Mis Cápsulas', icon: iconcapsulas },
+    { id: 'configuracion', title: 'Configuración', icon: iconconfiguration }
   ];
 
   const handleSectionChange = (id) => {
@@ -79,7 +80,11 @@ const Account = () => {
                     : 'text-gray-300 hover:bg-[#1a1a4a]/50 hover:scale-105'}`}
               >
                 <div className="flex items-center">
-                  <FontAwesomeIcon icon={item.icon} className="mr-3" />
+                  <img
+                    src={item.icon}
+                    alt={item.title}
+                    className="mr-3 w-7 h-7 filter invert brightness-0"
+                  />
                   <span>{item.title}</span>
                 </div>
                 <FontAwesomeIcon 
