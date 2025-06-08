@@ -217,11 +217,13 @@ const Explorar = () => {
                           <div className="w-36 h-12 bg-gradient-to-b from-[#F5E050] to-[#3d3d9e] rounded-t-full shadow-lg z-10" />
                           {/* Imagen de portada como ventana grande */}
                           <div className="relative w-36 h-36 flex items-center justify-center -mt-8 z-20">
-                            <div className="absolute w-full h-full rounded-full border-4 border-[#F5E050] bg-[#23235b] shadow-inner" />
+                            {/* Fondo circular detrás de la imagen */}
+                            <div className="absolute w-full h-full rounded-full border-4 border-[#F5E050] bg-[#23235b] shadow-inner z-0" />
                             <img
                               src={getImageUrl(capsula)}
                               alt={capsula.titulo}
-                              className="w-32 h-32 object-cover rounded-full border-2 border-[#3d3d9e] shadow-lg"
+                              className="w-32 h-32 object-cover rounded-full border-2 border-[#3d3d9e] shadow-lg z-10 bg-[#23235b]"
+                              style={{ backgroundColor: "#23235b" }}
                             />
                           </div>
                           {/* Cuerpo principal */}
