@@ -50,6 +50,9 @@ const EditarCapsula = () => {
   const [coverPreview, setCoverPreview] = useState('');
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
   const [tagInput, setTagInput] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [recipientRole, setRecipientRole] = useState('Reader');
+  const [recipients, setRecipients] = useState([]); // [{email, role}]
 
   // Cargar categorías
   useEffect(() => {
@@ -352,6 +355,29 @@ const EditarCapsula = () => {
         });
       }
 
+      // ...después de actualizar la cápsula y archivos...
+      if (form.Privacy === 'group') {
+        // 1. Elimina todos los destinatarios actuales
+        await fetch(`/api/recipients/all/${id}`, { method: 'DELETE' });
+        // 2. Añade los nuevos destinatarios
+        const roleMap = { 'Reader': 2, 'Collaborator': 3 };
+        for (const recipient of recipients) {
+          const resUser = await fetch(`/api/users/email/${recipient.email}`);
+          const userData = await resUser.json();
+          if (resUser.ok && userData.User_ID) {
+            await fetch('/api/recipients', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                User_ID: userData.User_ID,
+                Capsule_ID: id,
+                Role_ID: roleMap[recipient.role]
+              }),
+            });
+          }
+        }
+      }
+
       setModal({
         open: true,
         title: 'Éxito',
@@ -372,6 +398,21 @@ const EditarCapsula = () => {
   const handleCancelar = () => {
     navigate(-1);
   };
+
+  useEffect(() => {
+    // ...después de cargar la cápsula...
+    if (capsula && capsula.Privacy === 'group') {
+      fetch(`/api/recipients/capsule/${id}`)
+        .then(res => res.json())
+        .then(data => {
+          setRecipients(
+            Array.isArray(data)
+              ? data.map(r => ({ email: r.Email, role: r.RoleName === 'Collaborator' ? 'Collaborator' : 'Reader' }))
+              : []
+          );
+        });
+    }
+  }, [capsula, id]);
 
   if (loading) return <div className="text-center text-[#F5E050] py-10 animate-pulse">Cargando cápsula...</div>;
   if (error) {
@@ -719,6 +760,54 @@ const EditarCapsula = () => {
                 ))}
               </div>
             </div>
+            {/* Destinatarios */}
+            {form.Privacy === 'group' && (
+              <div className="mt-4">
+                <label className="block text-white mb-2">Añadir destinatarios</label>
+                <form
+                  onSubmit={e => {
+                    e.preventDefault();
+                    if (recipientEmail && recipientRole && !recipients.some(r => r.email === recipientEmail)) {
+                      setRecipients(prev => [...prev, { email: recipientEmail, role: recipientRole }]);
+                      setRecipientEmail('');
+                      setRecipientRole('Reader');
+                    }
+                  }}
+                  className="flex gap-2 mb-2"
+                >
+                  <input
+                    type="email"
+                    placeholder="Correo del destinatario"
+                    value={recipientEmail}
+                    onChange={e => setRecipientEmail(e.target.value)}
+                    className="flex-1 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                    required
+                  />
+                  <select
+                    value={recipientRole}
+                    onChange={e => setRecipientRole(e.target.value)}
+                    className="bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                  >
+                    <option value="Reader">Solo lectura</option>
+                    <option value="Collaborator">Colaborador</option>
+                  </select>
+                  <button
+                    type="submit"
+                    className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full font-bold hover:bg-[#e6d047] transition-colors"
+                  >
+                    Añadir
+                  </button>
+                </form>
+                <div>
+                  <span className="text-[#F5E050]">Destinatarios:</span>
+                  <ul className="ml-4 list-disc">
+                    {recipients.map((r, idx) => (
+                      <li key={idx}>{r.email} - {r.role}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
           </form>
         </div>
       </div>

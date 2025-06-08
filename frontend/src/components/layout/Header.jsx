@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUser, faHome, faBoxArchive, faCompass, faQuestionCircle,
-  faChevronDown, faRightFromBracket, faCrown, faBell
+  faChevronDown, faRightFromBracket, faCrown, faBell, faUsers
 } from '@fortawesome/free-solid-svg-icons';
 import { fetchWithAuth } from '../../helpers/fetchWithAuth';
 
@@ -147,6 +147,12 @@ const Header = () => {
               <Link to="/capsulas" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
                 <FontAwesomeIcon icon={faBoxArchive} className="mr-2" />
                 Mis Cápsulas
+              </Link>
+            </li>
+            <li>
+              <Link to="/compartidas" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
+                <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                Compartidas conmigo
               </Link>
             </li>
             <li>
@@ -363,6 +369,12 @@ const Header = () => {
                 <Link to="/capsulas" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
                   <FontAwesomeIcon icon={faBoxArchive} className="mr-2" />
                   Mis Cápsulas
+                </Link>
+              </li>
+              <li>
+                <Link to="/compartidas" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
+                  <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                  Compartidas conmigo
                 </Link>
               </li>
               <li>

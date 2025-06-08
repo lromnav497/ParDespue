@@ -26,6 +26,7 @@ import ResetPassword from './views/ResetPassword';
 import Notificaciones from './views/Notificaciones';
 import TodasLasCapsulas from './views/TodasLasCapsulas';
 import PanelModeracion from './views/PanelModeracion';
+import CompartidasConmigo from './views/CompartidasConmigo';
 import './index.css';
 
 function App() {
@@ -74,6 +75,14 @@ function App() {
           <Route path="/notificaciones" element={<Notificaciones />} />
           <Route path="/todas-capsulas" element={<TodasLasCapsulas />} />
           <Route path="/panel-moderacion" element={<PanelModeracion />} />
+          <Route
+            path="/compartidas"
+            element={
+              <PrivateRoute>
+                <CompartidasConmigo />
+              </PrivateRoute>
+            }
+          />
         </Routes>
         <CookiesModal
           isOpen={showCookiesModal}
