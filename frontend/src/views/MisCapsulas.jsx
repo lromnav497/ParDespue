@@ -406,15 +406,15 @@ const MisCapsulas = () => {
                         </h3>
                         <div className="space-y-2 text-sm text-gray-300 text-center">
                           <p className="flex items-center gap-2 justify-center">
-                            <FontAwesomeIcon icon={faClock} className="text-[#F5E050]" />
+                            <FontAwesomeIcon icon={faClock} />
                             Creada: {new Date(capsula.Creation_Date).toLocaleDateString()}
                           </p>
                           <p className="flex items-center gap-2 justify-center">
-                            <FontAwesomeIcon icon={getEstado(capsula) === 'abierta' ? faUnlock : faClock} className="text-[#F5E050]" />
+                            <FontAwesomeIcon icon={getEstado(capsula) === 'abierta' ? faUnlock : faClock} />
                             Se abre: {new Date(capsula.Opening_Date).toLocaleDateString()}
                           </p>
                           <p className="flex items-center gap-2 justify-center">
-                            <FontAwesomeIcon icon={faBoxArchive} className="text-[#F5E050]" />
+                            <FontAwesomeIcon icon={faBoxArchive} />
                             Categoría: {
                               (capsula.Category && typeof capsula.Category === 'object' && capsula.Category.Name) ||
                               (typeof capsula.Category === 'string' && capsula.Category) ||
@@ -423,15 +423,6 @@ const MisCapsulas = () => {
                             }
                           </p>
                           <p className="text-gray-400">{capsula.Content}</p>
-                          {/* Solo candado y mensaje si está deshabilitada */}
-                          {disabled && (
-                            <span className="flex flex-col items-center justify-center mt-2">
-                              <FontAwesomeIcon icon={faLock} className="text-2xl text-[#F5E050] animate-bounce-slow mb-1" />
-                              <span className="text-[#F5E050] text-xs font-bold text-center">
-                                No disponible hasta {apertura.toLocaleDateString()}
-                              </span>
-                            </span>
-                          )}
                         </div>
                       </div>
                       {/* Fuego de propulsión */}
