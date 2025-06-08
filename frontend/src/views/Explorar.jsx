@@ -8,6 +8,7 @@ import {
   faLock
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
+import starIcon from '/icons/star.svg'; // Usa la ruta pública
 
 const categorias = [
   { id: 'todas', nombre: 'Todas' },
@@ -31,6 +32,43 @@ function getImageUrl(capsula) {
   }
 }
 
+const NUM_STARS = 18; // Puedes ajustar la cantidad de estrellas
+
+function getRandom(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+const FloatingStars = () => (
+  <div className="pointer-events-none fixed inset-0 z-0">
+    {Array.from({ length: NUM_STARS }).map((_, i) => {
+      const top = getRandom(0, 95);
+      const left = getRandom(0, 95);
+      const size = getRandom(16, 36); // px
+      const duration = getRandom(5, 14); // segundos
+      const delay = getRandom(0, 10); // segundos
+      return (
+        <img
+          key={i}
+          src={starIcon}
+          alt=""
+          className="absolute opacity-70 animate-star-float"
+          style={{
+            top: `${top}%`,
+            left: `${left}%`,
+            width: `${size}px`,
+            height: `${size}px`,
+            animationDuration: `${duration}s`,
+            animationDelay: `${delay}s`,
+            zIndex: 1,
+            pointerEvents: 'none',
+            filter: 'drop-shadow(0 0 6px #F5E050)'
+          }}
+        />
+      );
+    })}
+  </div>
+);
+
 const Explorar = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('todas');
@@ -39,7 +77,7 @@ const Explorar = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Fetch cápsulas públicas con filtros y paginación
+  // Fetch cápsulas públicas with filters and pagination
   const fetchCapsulas = async () => {
     setLoading(true);
     const params = new URLSearchParams({
@@ -151,45 +189,48 @@ const Explorar = () => {
               return (
                 <div
                   key={capsula.id}
-                  className={`relative bg-[#2E2E7A] rounded-xl overflow-hidden shadow-xl transition-all duration-300 block group
+                  className={`relative flex flex-col items-center justify-between space-capsule-ship overflow-visible transition-all duration-300 group
                     ${disabled ? 'opacity-60 pointer-events-none select-none' : 'hover:scale-105'}
                   `}
                   style={{ textDecoration: 'none' }}
                 >
+                  {/* Estrella decorativa en la cápsula */}
+                  <img
+                    src={starIcon}
+                    alt=""
+                    className="absolute top-2 right-4 w-8 h-8 opacity-80 animate-spin-slow z-10"
+                    style={{ filter: 'drop-shadow(0 0 8px #F5E050)' }}
+                  />
                   <Link
                     to={`/vercapsula/${capsula.id}`}
                     tabIndex={disabled ? -1 : 0}
                     aria-disabled={disabled}
-                    style={{ pointerEvents: disabled ? 'none' : 'auto' }}
+                    style={{ pointerEvents: disabled ? 'none' : 'auto', width: '100%' }}
                   >
-                    <div className="relative">
-                      <img 
-                        src={getImageUrl(capsula)} 
-                        alt={capsula.titulo}
-                        className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      {disabled && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10 animate-fade-in">
-                          <FontAwesomeIcon icon={faLock} className="text-4xl text-[#F5E050] mb-2 animate-bounce-slow" />
-                          <span className="text-[#F5E050] text-sm font-bold flex items-center gap-2">
-                            No disponible hasta {apertura.toLocaleDateString()}
-                          </span>
+                    {/* Cuerpo de la cápsula espacial */}
+                    <div className="relative flex flex-col items-center w-full">
+                      {/* Nariz de la cápsula */}
+                      <div className="w-24 h-10 bg-gradient-to-b from-[#F5E050] to-[#3d3d9e] rounded-t-full shadow-lg z-10" />
+                      {/* Ventana de la cápsula */}
+                      <div className="absolute top-4 left-1/2 -translate-x-1/2 w-10 h-10 bg-[#23235b] border-4 border-[#F5E050] rounded-full shadow-inner z-20" />
+                      {/* Cuerpo principal */}
+                      <div className="w-28 h-40 bg-gradient-to-br from-[#23235b] via-[#2E2E7A] to-[#1a1a4a] border-2 border-[#F5E050] rounded-b-3xl rounded-t-xl shadow-2xl flex flex-col justify-end items-center pt-10 pb-4 px-2 relative z-10">
+                        <img 
+                          src={getImageUrl(capsula)} 
+                          alt={capsula.titulo}
+                          className="w-24 h-20 object-cover rounded-xl border-2 border-[#3d3d9e] shadow-lg mb-2"
+                        />
+                        <h3 className="text-[#F5E050] passero-font text-base mb-1 text-center group-hover:underline transition-all">
+                          {capsula.titulo}
+                        </h3>
+                        <p className="text-gray-300 text-xs mb-1 line-clamp-2 text-center">{capsula.descripcion}</p>
+                        <div className="flex flex-wrap gap-1 mb-1 justify-center">
+                          {capsula.tags?.map(tag => (
+                            <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-0.5 rounded text-[10px] animate-fade-in">{tag}</span>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-[#F5E050] passero-font text-xl mb-2 group-hover:underline transition-all">
-                        {capsula.titulo}
-                      </h3>
-                      <p className="text-gray-300 text-sm mb-2 line-clamp-2">{capsula.descripcion}</p>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {capsula.tags?.map(tag => (
-                          <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs animate-fade-in">{tag}</span>
-                        ))}
-                      </div>
-                      <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
-                        <span className="bg-[#3d3d9e] text-white px-2 py-1 rounded">{capsula.categoria}</span>
-                        <div className="flex items-center gap-4">
+                        <div className="flex justify-between items-center text-xs text-gray-400 w-full mb-1">
+                          <span className="bg-[#3d3d9e] text-white px-2 py-0.5 rounded">{capsula.categoria}</span>
                           <span className="flex items-center">
                             <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500 animate-fade-in" />
                             {capsula.likes ?? capsula.Likes ?? 0}
@@ -199,19 +240,30 @@ const Explorar = () => {
                             {capsula.views ?? capsula.Views ?? 0}
                           </span>
                         </div>
+                        <div className="flex justify-between items-center text-[10px] text-gray-400 w-full">
+                          <span>
+                            {new Date(capsula.fechaCreacion).toLocaleDateString()}
+                          </span>
+                          <span>
+                            {apertura.toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="mt-1 text-[10px] text-[#F5E050] font-semibold text-center">
+                          {capsula.autor || 'Desconocido'}
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center text-xs text-gray-400">
-                        <span>
-                          Creada: {new Date(capsula.fechaCreacion).toLocaleDateString()}
-                        </span>
-                        <span>
-                          Se abre: {apertura.toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="mt-2 text-xs text-[#F5E050] font-semibold">
-                        Creador: {capsula.autor || 'Desconocido'}
-                      </div>
+                      {/* Fuego de propulsión */}
+                      <div className="w-10 h-8 bg-gradient-to-b from-[#F5E050] via-[#e6d047] to-transparent rounded-b-full blur-sm opacity-80 animate-capsule-fire" />
                     </div>
+                    {/* Overlay de bloqueo */}
+                    {disabled && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl">
+                        <FontAwesomeIcon icon={faLock} className="text-3xl text-[#F5E050] mb-2 animate-bounce-slow" />
+                        <span className="text-[#F5E050] text-xs font-bold flex items-center gap-2 text-center">
+                          No disponible hasta {apertura.toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
                   </Link>
                 </div>
               );
@@ -248,6 +300,54 @@ const Explorar = () => {
           @keyframes bounce {
             0%, 100% { transform: translateY(0);}
             50% { transform: translateY(-10px);}
+          }
+          .animate-star-float {
+            animation-name: starFloat;
+            animation-iteration-count: infinite;
+            animation-timing-function: ease-in-out;
+            animation-direction: alternate;
+          }
+          @keyframes starFloat {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.7; }
+            40% { opacity: 1; }
+            50% { transform: translateY(-30px) scale(1.1) rotate(10deg); opacity: 0.9; }
+            60% { opacity: 1; }
+            100% { transform: translateY(30px) scale(0.95) rotate(-10deg); opacity: 0.7; }
+          }
+          .animate-spin-slow {
+            animation: spin 8s linear infinite;
+          }
+          @keyframes spin {
+            100% { transform: rotate(360deg);}
+          }
+          .space-capsule {
+            background: radial-gradient(ellipse at 60% 20%, #3d3d9e 0%, #23235b 80%, #1a1a4a 100%);
+            border: 1.5px solid #3d3d9e;
+            box-shadow: 0 0 32px 4px #0a0a2a, 0 0 0 2px #F5E05022;
+            transition: box-shadow 0.3s;
+          }
+          .space-capsule:hover {
+            box-shadow: 0 0 48px 8px #F5E05055, 0 0 0 2px #F5E05099;
+            border-color: #F5E050;
+          }
+          .space-capsule-ship {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            min-height: 320px;
+          }
+          @media (min-width: 768px) {
+            .space-capsule-ship {
+              min-height: 340px;
+            }
+          }
+          .animate-capsule-fire {
+            animation: capsuleFire 1.2s infinite alternate;
+          }
+          @keyframes capsuleFire {
+            0% { opacity: 0.7; transform: scaleY(1) translateY(0);}
+            50% { opacity: 1; transform: scaleY(1.2) translateY(6px);}
+            100% { opacity: 0.5; transform: scaleY(0.8) translateY(-2px);}
           }
         `}
       </style>
