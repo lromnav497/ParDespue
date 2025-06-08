@@ -91,6 +91,8 @@ const CrearCapsula = () => {
       if (!formData.descripcion.trim()) errors.descripcion = 'La descripción es obligatoria';
       if (!formData.fechaApertura) errors.fechaApertura = 'La fecha de apertura es obligatoria';
       if (!formData.categoriaId) errors.categoriaId = 'Selecciona una categoría';
+      // Portada obligatoria
+      if (!coverImage) errors.coverImage = 'La portada es obligatoria';
     }
     if (currentStep === 1) {
       if (formData.archivos.length === 0) errors.archivos = 'Debes añadir al menos un archivo';
@@ -201,6 +203,7 @@ const CrearCapsula = () => {
       case 0:
         return (
           <div className="space-y-6 animate-fade-in-up">
+            {/* Nombre de la cápsula */}
             <div>
               <label className="block text-white mb-2">Nombre de la cápsula</label>
               <input
@@ -212,6 +215,7 @@ const CrearCapsula = () => {
               />
               {fieldErrors.nombre && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.nombre}</div>}
             </div>
+            {/* Descripción */}
             <div>
               <label className="block text-white mb-2">Descripción</label>
               <textarea
@@ -222,6 +226,7 @@ const CrearCapsula = () => {
               />
               {fieldErrors.descripcion && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.descripcion}</div>}
             </div>
+            {/* Fecha de apertura */}
             <div>
               <label className="block text-white mb-2">Fecha de apertura</label>
               <input
@@ -233,6 +238,7 @@ const CrearCapsula = () => {
               />
               {fieldErrors.fechaApertura && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.fechaApertura}</div>}
             </div>
+            {/* Categoría */}
             <div>
               <label className="block text-white mb-2">Categoría</label>
               <select
@@ -290,6 +296,7 @@ const CrearCapsula = () => {
                 ))}
               </div>
             </div>
+            {/* Portada obligatoria */}
             <div className="mb-4 flex flex-col items-center">
               <label className="relative group cursor-pointer">
                 {coverImage ? (
@@ -299,8 +306,8 @@ const CrearCapsula = () => {
                     className="w-40 h-32 rounded-lg object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 group-hover:scale-105 bg-white animate-fade-in"
                   />
                 ) : (
-                  <div className="w-40 h-32 rounded-lg bg-[#F5E050] flex items-center justify-center">
-                    <FontAwesomeIcon icon={faImage} className="text-[#2E2E7A] text-4xl" />
+                  <div className="w-40 h-32 rounded-lg bg-[#1a1a4a] flex items-center justify-center border-2 border-dashed border-[#3d3d9e]">
+                    <span className="text-[#F5E050]">Selecciona una portada</span>
                   </div>
                 )}
                 <input
@@ -314,6 +321,7 @@ const CrearCapsula = () => {
                   {coverImage ? 'Cambiar portada' : 'Subir portada'}
                 </span>
               </label>
+              {fieldErrors.coverImage && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.coverImage}</div>}
             </div>
           </div>
         );

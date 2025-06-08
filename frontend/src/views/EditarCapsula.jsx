@@ -401,6 +401,12 @@ const EditarCapsula = () => {
     }
   }, [capsula, id]);
 
+  // Detectar si el usuario es colaborador
+  const user = JSON.parse(localStorage.getItem('user'));
+  const isCollaborator = recipients.some(
+    r => r.email === user?.email && r.role === 'Collaborator'
+  );
+
   if (loading) return <div className="text-center text-[#F5E050] py-10 animate-pulse">Cargando cápsula...</div>;
   if (error) {
     return (
@@ -493,11 +499,17 @@ const EditarCapsula = () => {
                   value={form.Privacy}
                   onChange={handleChange}
                   className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
+                  disabled={isCollaborator}
                 >
                   <option value="private">Privada</option>
                   <option value="public">Pública</option>
                   <option value="group">Grupos</option>
                 </select>
+                {isCollaborator && (
+                  <span className="text-xs text-[#F5E050] block mt-1">
+                    No puedes cambiar la privacidad siendo colaborador.
+                  </span>
+                )}
               </div>
             </div>
             <div>
@@ -556,18 +568,24 @@ const EditarCapsula = () => {
                 ))}
               </div>
             </div>
-            {/* Nueva contraseña */}
+            {/* Nueva contraseña (obligatoria si es privada, pero si se deja en blanco se mantiene la anterior) */}
             {form.Privacy === 'private' && (
               <div>
-                <label className="block text-white mb-2">Nueva contraseña (opcional)</label>
+                <label className="block text-white mb-2">Contraseña</label>
                 <input
                   type="password"
                   name="Password"
                   value={form.Password || ''}
                   onChange={handleChange}
                   className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
-                  placeholder="Dejar vacío para no cambiar"
+                  placeholder="Dejar vacío para mantener la contraseña actual"
+                  required={!capsula.Password} // Solo obligatoria si antes no tenía
                 />
+                <span className="text-xs text-gray-400">
+                  {capsula.Password
+                    ? 'Si dejas el campo vacío, se mantendrá la contraseña actual.'
+                    : 'Debes establecer una contraseña.'}
+                </span>
               </div>
             )}
             {/* Imagen de portada */}
@@ -605,28 +623,6 @@ const EditarCapsula = () => {
                     )}
                   </label>
                 </div>
-                {coverPreview && (
-                  <button
-                    type="button"
-                    className="ml-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-400 transition-all"
-                    onClick={async () => {
-                      setCoverImage(null);
-                      setCoverPreview('');
-                      // Llama al backend para eliminar la portada
-                      const token = localStorage.getItem('token');
-                      await fetch(`/api/capsules/${id}/cover`, {
-                        method: 'PUT',
-                        headers: { 
-                          'Authorization': `Bearer ${token}`,
-                          'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ remove: true })
-                      });
-                    }}
-                  >
-                    Quitar
-                  </button>
-                )}
               </div>
             </div>
             {/* Archivos actuales */}
@@ -747,8 +743,8 @@ const EditarCapsula = () => {
                 ))}
               </div>
             </div>
-            {/* Destinatarios */}
-            {form.Privacy === 'group' && (
+            {/* Destinatarios solo si no es colaborador */}
+            {form.Privacy === 'group' && !isCollaborator && (
               <div className="mt-4">
                 <label className="block text-white mb-2">Añadir destinatarios</label>
                 <div className="flex gap-2 mb-2">
@@ -842,6 +838,21 @@ const EditarCapsula = () => {
                     ))}
                   </ul>
                 </div>
+              </div>
+            )}
+            {form.Privacy === 'group' && isCollaborator && (
+              <div className="mt-4">
+                <span className="text-[#F5E050]">Destinatarios:</span>
+                <ul className="ml-4 list-disc">
+                  {recipients.map((r, idx) => (
+                    <li key={idx} className="flex items-center gap-2">
+                      {r.email} - {r.role}
+                    </li>
+                  ))}
+                </ul>
+                <span className="text-xs text-[#F5E050] block mt-1">
+                  No puedes modificar los destinatarios siendo colaborador.
+                </span>
               </div>
             )}
           </form>
