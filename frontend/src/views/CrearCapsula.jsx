@@ -433,7 +433,6 @@ const CrearCapsula = () => {
               <div className="mt-4">
                 <label className="block text-white mb-2">Añadir destinatarios</label>
                 <form
-                  noValidate
                   onSubmit={e => {
                     e.preventDefault();
                     if (
@@ -456,13 +455,12 @@ const CrearCapsula = () => {
                   className="flex gap-2 mb-2"
                 >
                   <input
-                    type="text"
+                    type="email"
                     placeholder="Correo del destinatario"
                     value={recipientEmail}
                     onChange={e => setRecipientEmail(e.target.value)}
                     className="flex-1 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
-                    autoComplete="off"
-                    // NO pongas required ni pattern aquí
+                    required
                   />
                   <select
                     value={recipientRole}
@@ -473,25 +471,7 @@ const CrearCapsula = () => {
                     <option value="Collaborator">Colaborador</option>
                   </select>
                   <button
-                    type="button"
-                    onClick={() => {
-                      if (
-                        recipientEmail &&
-                        recipientRole &&
-                        !(formData.recipients || []).some(r => r.email === recipientEmail)
-                      ) {
-                        setFormData(prev => ({
-                          ...prev,
-                          recipients: [
-                            ...(prev.recipients || []),
-                            { email: recipientEmail, role: recipientRole }
-                          ]
-                        }));
-                        setRecipientEmail('');
-                        setRecipientRole('Reader');
-                        setFieldErrors(prev => ({ ...prev, recipients: undefined }));
-                      }
-                    }}
+                    type="submit"
                     className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full font-bold hover:bg-[#e6d047] transition-colors"
                   >
                     Añadir
