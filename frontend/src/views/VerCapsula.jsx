@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faEdit,
@@ -31,6 +31,7 @@ function getImageUrl(capsula) {
 
 const VerCapsula = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [capsula, setCapsula] = useState(null);
   const [archivos, setArchivos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +48,7 @@ const VerCapsula = () => {
   const [comentarioEditado, setComentarioEditado] = useState('');
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [miRol, setMiRol] = useState(null);
 
   useEffect(() => {
     const fetchCapsula = async () => {
@@ -121,6 +123,17 @@ const VerCapsula = () => {
       }
     };
     fetchComentarios();
+  }, [id]);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return;
+    fetch(`/api/recipients/capsule/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        const found = data.find(r => r.Email === user.email);
+        setMiRol(found ? found.RoleName : null); // 'Reader' o 'Collaborator'
+      });
   }, [id]);
 
   const handleLike = async () => {

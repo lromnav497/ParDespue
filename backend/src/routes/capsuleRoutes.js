@@ -64,26 +64,30 @@ router.get('/all', authMiddleware, roleMiddleware('administrator'), async (req, 
 });
 
 // Obtener cápsula por ID con todos los campos y contenidos
-router.get('/:id', async (req, res) => {
-  console.log('[LOG] GET /api/capsules/:id called with id:', req.params.id);
+router.get('/:id', authMiddleware, async (req, res) => {
   const capsuleId = req.params.id;
-  const userId = req.headers['x-user-id'];
-  try {
-    const capsule = await capsuleModel.findById(capsuleId);
-    if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
+  const user = req.user || {};
+  const userId = user.id;
+  const userRole = user.role;
 
-    const ahora = new Date();
-    const apertura = new Date(capsule.Opening_Date);
-    // Solo permite ver si ya se abrió
-    if (apertura > ahora) {
-      return res.status(403).json({ message: 'Esta cápsula aún no está disponible.' });
-    }
+  const capsule = await capsuleModel.findById(capsuleId);
+  if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
 
-    // Puedes devolver la info que quieras mostrar al público aquí
-    res.status(200).json(capsule);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  // Permitir si es el creador o admin
+  if (userId === capsule.Creator_User_ID || userRole === 'administrator') return res.json(capsule);
+
+  // Permitir si es Reader o Collaborator en Recipients
+  const [rows] = await db.execute(
+    `SELECT Role_ID FROM Recipients WHERE Capsule_ID = ? AND User_ID = ?`,
+    [capsuleId, userId]
+  );
+  if (rows.length > 0 && (rows[0].Role_ID == 2 || rows[0].Role_ID == 3)) {
+    // 2 = Reader, 3 = Collaborator
+    return res.json(capsule);
   }
+
+  // Si no cumple ninguna condición, denegar
+  return res.status(403).json({ message: 'No tienes acceso a esta cápsula.' });
 });
 
 // Para editar la cápsula (permite premium, dueño o administrador)
@@ -91,47 +95,46 @@ router.get('/:id/edit', authMiddleware, async (req, res) => {
   const capsuleId = req.params.id;
   const userId = req.user.id;
   const userRole = req.user.role;
-  try {
-    const capsule = await capsuleModel.findById(capsuleId);
-    if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
 
-    const plan = req.user.plan || req.user.Plan || req.user.tipoPlan;
-    const isPremium = plan && plan.toLowerCase() === 'premium';
-    const isAdmin = userRole === 'administrator';
-
-    // Permitir si es el dueño, premium o administrador
-    if (Number(userId) !== capsule.Creator_User_ID && !isPremium && !isAdmin) {
-      return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
-    }
-
-    // NO permitir editar si la cápsula ya está abierta (excepto admin)
-    const ahora = new Date();
-    const apertura = new Date(capsule.Opening_Date);
-    if (apertura <= ahora && !isAdmin) {
-      return res.status(403).json({ message: 'No se puede editar una cápsula que ya está abierta.' });
-    }
-
-    res.status(200).json(capsule);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-router.put('/:id', authMiddleware, async (req, res) => {
-  const capsuleId = req.params.id;
-  const userId = req.user.id;
-  const isAdmin = req.user.role === 'administrator';
-
-  // Busca la cápsula
   const capsule = await capsuleModel.findById(capsuleId);
   if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
 
-  // Solo dueño, premium o admin pueden editar
-  if (capsule.Creator_User_ID !== userId && !isAdmin) {
-    return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
+  // Permitir si es el creador o admin
+  if (userId === capsule.Creator_User_ID || userRole === 'administrator') return res.json(capsule);
+
+  // Permitir si es Collaborator en Recipients
+  const [rows] = await db.execute(
+    `SELECT Role_ID FROM Recipients WHERE Capsule_ID = ? AND User_ID = ?`,
+    [capsuleId, userId]
+  );
+  if (rows.length > 0 && rows[0].Role_ID == 3) { // 3 = Collaborator
+    return res.json(capsule);
   }
 
-  // ...actualiza la cápsula...
-  CapsuleController.update(req, res);
+  return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
+});
+
+router.put('/:id', authMiddleware, async (req, res) => {
+  const capsuleId = req.params.id;
+  const userId = req.user.id;
+  const userRole = req.user.role;
+
+  const capsule = await capsuleModel.findById(capsuleId);
+  if (!capsule) return res.status(404).json({ message: 'Cápsula no encontrada' });
+
+  // Permitir si es el creador o admin
+  if (userId === capsule.Creator_User_ID || userRole === 'administrator') return CapsuleController.update(req, res);
+
+  // Permitir si es Collaborator en Recipients
+  const [rows] = await db.execute(
+    `SELECT Role_ID FROM Recipients WHERE Capsule_ID = ? AND User_ID = ?`,
+    [capsuleId, userId]
+  );
+  if (rows.length > 0 && rows[0].Role_ID == 3) { // 3 = Collaborator
+    return CapsuleController.update(req, res);
+  }
+
+  return res.status(403).json({ message: 'No tienes permiso para editar esta cápsula.' });
 });
 
 router.delete('/:id', authMiddleware, async (req, res) => {
