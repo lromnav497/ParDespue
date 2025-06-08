@@ -200,8 +200,7 @@ const EditarCapsula = () => {
   // Añadir tag
   const handleTagInputChange = (e) => setTagInput(e.target.value);
 
-  const handleAddTag = (e) => {
-    e.preventDefault();
+  const handleAddTag = () => {
     const newTag = tagInput.trim();
     if (newTag && (!form.Tags || !form.Tags.split(',').map(t => t.trim()).includes(newTag))) {
       setForm(prev => ({
@@ -488,21 +487,28 @@ const EditarCapsula = () => {
                 <FontAwesomeIcon icon={faTag} className="text-[#F5E050]" />
                 Añadir tags
               </label>
-              <form onSubmit={handleAddTag} className="flex gap-2 mb-2">
+              <div className="flex gap-2 mb-2">
                 <input
                   type="text"
                   value={tagInput}
                   onChange={handleTagInputChange}
                   className="flex-1 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
                   placeholder="Escribe un tag y pulsa Enter"
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
                 />
                 <button
-                  type="submit"
+                  type="button"
                   className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full font-bold hover:bg-[#e6d047] transition-colors"
+                  onClick={handleAddTag}
                 >
                   Añadir
                 </button>
-              </form>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {(form.Tags ? form.Tags.split(',').map(t => t.trim()).filter(Boolean) : []).map(tag => (
                   <span
