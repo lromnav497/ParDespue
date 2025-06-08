@@ -42,7 +42,6 @@ const Register = () => {
         setPassword('');
         setConfirmPassword('');
         setProfilePicture(null);
-        // Redirige después de 2 segundos a login y pasa un estado
         setTimeout(() => {
           navigate('/login', { state: { showVerifyModal: true } });
         }, 2000);
@@ -53,21 +52,21 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
-      <div className="bg-[#2E2E7A] time-capsule rounded-xl p-8 max-w-md w-full shadow-lg transform transition-all">
+    <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] flex items-center justify-center px-4">
+      <div className="bg-[#2E2E7A]/90 time-capsule rounded-xl p-8 max-w-md w-full shadow-2xl transform transition-all animate-fade-in">
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
-            <div className="bg-[#1a1a4a] p-4 rounded-full border-4 border-[#F5E050]">
+            <div className="bg-[#1a1a4a] p-4 rounded-full border-4 border-[#F5E050] shadow-lg animate-bounce-slow">
               <FontAwesomeIcon icon={faUserPlus} className="text-4xl text-[#F5E050] icon-highlight" />
             </div>
           </div>
-          <h2 className="passero-font text-3xl md:text-4xl text-[#F5E050] flex items-center justify-center">
+          <h2 className="passero-font text-3xl md:text-4xl text-[#F5E050] flex items-center justify-center animate-fade-in-down">
             <FontAwesomeIcon icon={faUserPlus} className="mr-3" />
             Crear Cuenta
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} encType="multipart/form-data">
+        <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-4 animate-fade-in-up">
           <div className="mb-4">
             <label className="block text-gray-300 mb-2 flex items-center">
               <FontAwesomeIcon icon={faUser} className="mr-2" />
@@ -79,7 +78,7 @@ const Register = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:border-[#F5E050] text-white"
+                className="w-full bg-[#1a1a4a]/80 border border-[#3d3d9e] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:border-[#F5E050] text-white transition-all duration-200 shadow-inner focus:shadow-[#F5E050]/20"
                 placeholder="Tu nombre"
                 required
               />
@@ -97,7 +96,7 @@ const Register = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:border-[#F5E050] text-white"
+                className="w-full bg-[#1a1a4a]/80 border border-[#3d3d9e] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:border-[#F5E050] text-white transition-all duration-200 shadow-inner focus:shadow-[#F5E050]/20"
                 placeholder="tu@correo.com"
                 required
               />
@@ -115,7 +114,7 @@ const Register = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:border-[#F5E050] text-white"
+                className="w-full bg-[#1a1a4a]/80 border border-[#3d3d9e] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:border-[#F5E050] text-white transition-all duration-200 shadow-inner focus:shadow-[#F5E050]/20"
                 placeholder="********"
                 required
               />
@@ -133,7 +132,7 @@ const Register = () => {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:border-[#F5E050] text-white"
+                className="w-full bg-[#1a1a4a]/80 border border-[#3d3d9e] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:border-[#F5E050] text-white transition-all duration-200 shadow-inner focus:shadow-[#F5E050]/20"
                 placeholder="********"
                 required
               />
@@ -147,10 +146,10 @@ const Register = () => {
                 <img
                   src={URL.createObjectURL(profilePicture)}
                   alt="Foto de perfil"
-                  className="w-28 h-28 rounded-full object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 group-hover:scale-105 bg-white"
+                  className="w-28 h-28 rounded-full object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 group-hover:scale-105 bg-white animate-fade-in"
                 />
               ) : (
-                <div className="w-28 h-28 rounded-full bg-[#F5E050] flex items-center justify-center">
+                <div className="w-28 h-28 rounded-full bg-[#F5E050] flex items-center justify-center animate-fade-in">
                   <FontAwesomeIcon icon={faUser} className="text-[#2E2E7A] text-4xl" />
                 </div>
               )}
@@ -167,13 +166,13 @@ const Register = () => {
             </label>
           </div>
 
-          {error && <div className="text-red-400 text-center mb-4">{error}</div>}
-          {success && <div className="text-green-400 text-center mb-4">{success}</div>}
+          {error && <div className="text-red-400 text-center mb-4 animate-pulse">{error}</div>}
+          {success && <div className="text-green-400 text-center mb-4 animate-fade-in-up">{success}</div>}
 
           <div className="flex justify-center">
             <button
               type="submit"
-              className="bg-[#F5E050] hover:bg-[#e6d047] text-[#2E2E7A] font-bold py-3 px-8 rounded-full transition transform hover:scale-105 flex items-center"
+              className="bg-[#F5E050] hover:bg-[#e6d047] text-[#2E2E7A] font-bold py-3 px-8 rounded-full transition transform hover:scale-105 flex items-center shadow-lg focus:ring-2 focus:ring-[#F5E050]/60 focus:outline-none animate-fade-in-up"
             >
               <FontAwesomeIcon icon={faUserPlus} className="mr-2" />
               Registrarse
@@ -181,13 +180,28 @@ const Register = () => {
           </div>
         </form>
 
-        <p className="text-center text-gray-300 mt-6">
+        <p className="text-center text-gray-300 mt-6 animate-fade-in-up">
           ¿Ya tienes una cuenta?{' '}
-          <Link to="/login" className="text-[#F5E050] hover:underline">
+          <Link to="/login" className="text-[#F5E050] hover:underline transition-all">
             Inicia Sesión
           </Link>
         </p>
       </div>
+      <style>
+        {`
+          .animate-fade-in { animation: fadeIn 1s; }
+          .animate-fade-in-down { animation: fadeInDown 1s; }
+          .animate-fade-in-up { animation: fadeInUp 1s; }
+          .animate-bounce-slow { animation: bounce 2s infinite; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0);}
+            50% { transform: translateY(-10px);}
+          }
+        `}
+      </style>
     </div>
   );
 };

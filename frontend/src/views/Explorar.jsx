@@ -96,10 +96,10 @@ const Explorar = () => {
   const isAdmin = user?.role === 'administrator';
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] animate-fade-in">
       {/* Barra de búsqueda y filtros */}
       <div className="mb-8">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center animate-fade-in-down">
           <div className="relative w-full md:w-96">
             <FontAwesomeIcon 
               icon={faSearch} 
@@ -111,7 +111,7 @@ const Explorar = () => {
               value={searchTerm}
               onChange={handleSearch}
               className="w-full pl-10 pr-4 py-2 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg 
-                text-white focus:outline-none focus:border-[#F5E050]"
+                text-white focus:outline-none focus:border-[#F5E050] shadow-inner focus:shadow-[#F5E050]/20 transition-all duration-200"
             />
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto">
@@ -119,10 +119,10 @@ const Explorar = () => {
               <button
                 key={cat.id}
                 onClick={() => handleCategory(cat.id)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap
+                className={`px-4 py-2 rounded-full whitespace-nowrap font-semibold transition-all duration-200
                   ${selectedCategory === cat.id 
-                    ? 'bg-[#F5E050] text-[#2E2E7A]' 
-                    : 'bg-[#1a1a4a] text-white hover:bg-[#3d3d9e]'
+                    ? 'bg-[#F5E050] text-[#2E2E7A] scale-105 shadow-lg'
+                    : 'bg-[#1a1a4a] text-white hover:bg-[#3d3d9e] hover:scale-105'
                   }`}
               >
                 {cat.nombre}
@@ -134,11 +134,11 @@ const Explorar = () => {
 
       {/* Grid de cápsulas */}
       {loading ? (
-        <div className="text-center text-white py-10">Cargando...</div>
+        <div className="text-center text-white py-10 animate-pulse">Cargando...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
           {capsulas.length === 0 ? (
-            <div className="col-span-3 text-center text-gray-400">No se encontraron cápsulas.</div>
+            <div className="col-span-3 text-center text-gray-400 animate-fade-in-up">No se encontraron cápsulas.</div>
           ) : (
             capsulas.map(capsula => {
               const ahora = new Date();
@@ -151,7 +151,7 @@ const Explorar = () => {
               return (
                 <div
                   key={capsula.id}
-                  className={`relative bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg transition-all block
+                  className={`relative bg-[#2E2E7A] rounded-xl overflow-hidden shadow-xl transition-all duration-300 block group
                     ${disabled ? 'opacity-60 pointer-events-none select-none' : 'hover:scale-105'}
                   `}
                   style={{ textDecoration: 'none' }}
@@ -162,40 +162,40 @@ const Explorar = () => {
                     aria-disabled={disabled}
                     style={{ pointerEvents: disabled ? 'none' : 'auto' }}
                   >
-                    <img 
-                      src={getImageUrl(capsula)} 
-                      alt={capsula.titulo}
-                      className="w-full h-48 object-cover"
-                    />
-                    {disabled && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10">
-                        <FontAwesomeIcon icon={faLock} className="text-4xl text-[#F5E050] mb-2" />
-                        <span className="text-[#F5E050] text-sm font-bold flex items-center gap-2">
-                          No disponible hasta {apertura.toLocaleDateString()}
-                        </span>
-                      </div>
-                    )}
+                    <div className="relative">
+                      <img 
+                        src={getImageUrl(capsula)} 
+                        alt={capsula.titulo}
+                        className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      {disabled && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10 animate-fade-in">
+                          <FontAwesomeIcon icon={faLock} className="text-4xl text-[#F5E050] mb-2 animate-bounce-slow" />
+                          <span className="text-[#F5E050] text-sm font-bold flex items-center gap-2">
+                            No disponible hasta {apertura.toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     <div className="p-4">
-                      <h3 className="text-[#F5E050] passero-font text-xl mb-2">
+                      <h3 className="text-[#F5E050] passero-font text-xl mb-2 group-hover:underline transition-all">
                         {capsula.titulo}
                       </h3>
-                      <p className="text-gray-300 text-sm mb-2">
-                        {capsula.descripcion}
-                      </p>
+                      <p className="text-gray-300 text-sm mb-2 line-clamp-2">{capsula.descripcion}</p>
                       <div className="flex flex-wrap gap-2 mb-2">
                         {capsula.tags?.map(tag => (
-                          <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs">{tag}</span>
+                          <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs animate-fade-in">{tag}</span>
                         ))}
                       </div>
                       <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
                         <span className="bg-[#3d3d9e] text-white px-2 py-1 rounded">{capsula.categoria}</span>
                         <div className="flex items-center gap-4">
                           <span className="flex items-center">
-                            <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500" />
+                            <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500 animate-fade-in" />
                             {capsula.likes ?? capsula.Likes ?? 0}
                           </span>
                           <span className="flex items-center">
-                            <FontAwesomeIcon icon={faEye} className="mr-1" />
+                            <FontAwesomeIcon icon={faEye} className="mr-1 animate-fade-in" />
                             {capsula.views ?? capsula.Views ?? 0}
                           </span>
                         </div>
@@ -221,21 +221,36 @@ const Explorar = () => {
       )}
 
       {/* Paginación */}
-      <div className="mt-8 flex justify-center gap-2">
+      <div className="mt-8 flex justify-center gap-2 animate-fade-in-up">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
           <button
             key={pageNum}
             onClick={() => setPage(pageNum)}
-            className={`w-10 h-10 rounded-full flex items-center justify-center
+            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-200
               ${pageNum === page
-                ? 'bg-[#F5E050] text-[#2E2E7A]'
-                : 'bg-[#1a1a4a] text-white hover:bg-[#F5E050] hover:text-[#2E2E7A]'
+                ? 'bg-[#F5E050] text-[#2E2E7A] scale-110 shadow-lg'
+                : 'bg-[#1a1a4a] text-white hover:bg-[#F5E050] hover:text-[#2E2E7A] hover:scale-105'
               }`}
           >
             {pageNum}
           </button>
         ))}
       </div>
+      <style>
+        {`
+          .animate-fade-in { animation: fadeIn 1s; }
+          .animate-fade-in-down { animation: fadeInDown 1s; }
+          .animate-fade-in-up { animation: fadeInUp 1s; }
+          .animate-bounce-slow { animation: bounce 2s infinite; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0);}
+            50% { transform: translateY(-10px);}
+          }
+        `}
+      </style>
     </div>
   );
 };

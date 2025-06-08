@@ -213,12 +213,11 @@ const VerCapsula = () => {
   const isOwner = user && capsula && user.id === capsula.Creator_User_ID;
 
   return (
-    <div className="min-h-screen bg-gray-900 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] py-8 animate-fade-in">
       <div className="container mx-auto px-4">
-        {/* Resto de la información */}
         <div className="space-y-8 text-white">
           {/* Información */}
-          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg">
+          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-xl animate-fade-in-down transition-transform duration-300 hover:scale-[1.01]">
             <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
               <FontAwesomeIcon icon={faBoxArchive} /> Información
             </h3>
@@ -239,7 +238,7 @@ const VerCapsula = () => {
                     ).map(tag => (
                       <span
                         key={tag}
-                        className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs"
+                        className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs animate-fade-in-up"
                       >
                         {tag}
                       </span>
@@ -254,14 +253,14 @@ const VerCapsula = () => {
                 </p>
               </div>
               <div className="flex flex-col items-center mt-4 md:mt-0">
-                <FontAwesomeIcon icon={faUser} className="text-4xl text-[#F5E050]" />
+                <FontAwesomeIcon icon={faUser} className="text-4xl text-[#F5E050] animate-bounce-slow" />
                 <span className="text-sm mt-2 text-gray-300">Creador: Usuario #{capsula.Creator_User_ID}</span>
               </div>
             </div>
           </div>
 
           {/* Contenido */}
-          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg">
+          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-xl animate-fade-in-up transition-transform duration-300 hover:scale-[1.01]">
             <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
               <FontAwesomeIcon icon={faFileAlt} /> Contenido
             </h3>
@@ -272,7 +271,7 @@ const VerCapsula = () => {
                 {Array.isArray(archivos) && archivos.map(archivo => (
                   <div
                     key={archivo.Content_ID}
-                    className="w-40 h-40 bg-[#F5E050] rounded-lg flex flex-col items-center justify-center overflow-hidden relative group shadow"
+                    className="w-40 h-40 bg-[#F5E050] rounded-lg flex flex-col items-center justify-center overflow-hidden relative group shadow-lg transition-transform duration-200 hover:scale-105"
                   >
                     {archivo.Type === 'image' && archivo.Path ? (
                       <img
@@ -289,7 +288,7 @@ const VerCapsula = () => {
                       />
                     ) : archivo.Type === 'audio' && archivo.Path ? (
                       <div className="flex flex-col items-center justify-center w-full h-full">
-                        <FontAwesomeIcon icon={faMusic} className="text-4xl text-[#2E2E7A] mb-2" />
+                        <FontAwesomeIcon icon={faMusic} className="text-4xl text-[#2E2E7A] mb-2 animate-fade-in" />
                         <audio controls className="w-full">
                           <source src={`/api${archivo.Path.startsWith('/') ? archivo.Path : '/' + archivo.Path}`} />
                           Tu navegador no soporta audio.
@@ -324,7 +323,7 @@ const VerCapsula = () => {
           </div>
 
           {/* Configuración */}
-          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg">
+          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-xl animate-fade-in-up transition-transform duration-300 hover:scale-[1.01]">
             <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
               <FontAwesomeIcon icon={faLock} /> Configuración
             </h3>
@@ -358,17 +357,18 @@ const VerCapsula = () => {
                 }
               </p>
             )}
-            {/* Puedes agregar destinatarios, notificaciones, etc. aquí */}
           </div>
 
           {/* Interacciones */}
-          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg">
+          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-xl animate-fade-in-up transition-transform duration-300 hover:scale-[1.01]">
             <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
               <FontAwesomeIcon icon={faHeart} /> Interacciones
             </h3>
             <div className="flex items-center gap-4 mt-2">
               <button
-                className={`flex items-center gap-1 px-3 py-1 rounded-full ${liked ? 'bg-pink-500 text-white' : 'bg-gray-700 text-pink-500'}`}
+                className={`flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-200 shadow-lg ${
+                  liked ? 'bg-pink-500 text-white scale-105' : 'bg-gray-700 text-pink-500 hover:bg-pink-600 hover:text-white'
+                }`}
                 onClick={handleLike}
                 disabled={likeLoading}
               >
@@ -383,7 +383,7 @@ const VerCapsula = () => {
           </div>
 
           {/* Comentarios */}
-          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg mt-8">
+          <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-xl mt-8 animate-fade-in-up transition-transform duration-300 hover:scale-[1.01]">
             <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
               Comentarios
             </h3>
@@ -392,13 +392,13 @@ const VerCapsula = () => {
                 type="text"
                 value={nuevoComentario}
                 onChange={e => setNuevoComentario(e.target.value)}
-                className="flex-1 px-3 py-2 rounded bg-gray-800 text-white border border-[#3d3d9e] focus:outline-none"
+                className="flex-1 px-3 py-2 rounded bg-gray-800 text-white border border-[#3d3d9e] focus:outline-none focus:border-[#F5E050] shadow-inner focus:shadow-[#F5E050]/20 transition-all duration-200"
                 placeholder="Escribe un comentario..."
                 disabled={comentLoading}
               />
               <button
                 type="submit"
-                className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded font-bold"
+                className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded font-bold hover:bg-[#e6d047] transition-all duration-200"
                 disabled={comentLoading}
               >
                 Comentar
@@ -409,7 +409,7 @@ const VerCapsula = () => {
                 <div className="text-gray-400">Sé el primero en comentar.</div>
               )}
               {comentarios.map(com => (
-                <div key={com.Comment_ID} className="bg-[#23236a] rounded p-2 text-sm">
+                <div key={com.Comment_ID} className="bg-[#23236a] rounded p-2 text-sm animate-fade-in">
                   <span className="font-bold text-[#F5E050]">{com.Name || `Usuario #${com.User_ID}`}</span>
                   <span className="ml-2 text-gray-400">{new Date(com.Creation_Date).toLocaleString()}</span>
                   <div className="mt-1 text-white">
@@ -439,8 +439,8 @@ const VerCapsula = () => {
                           autoFocus
                         />
                         <div className="flex gap-2 mt-1">
-                          <button type="submit" className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs font-bold">Guardar</button>
-                          <button type="button" className="bg-gray-700 text-white px-2 py-1 rounded text-xs" onClick={() => setEditandoId(null)}>Cancelar</button>
+                          <button type="submit" className="bg-[#F5E050] text-[#2E2E7A] px-2 py-1 rounded text-xs font-bold hover:bg-[#e6d047] transition-all">Guardar</button>
+                          <button type="button" className="bg-gray-700 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 transition-all" onClick={() => setEditandoId(null)}>Cancelar</button>
                         </div>
                       </form>
                     ) : (
@@ -450,7 +450,7 @@ const VerCapsula = () => {
                   {user && user.id === com.User_ID && editandoId !== com.Comment_ID && (
                     <div className="flex gap-2 mt-1">
                       <button
-                        className="text-xs text-[#F5E050] underline"
+                        className="text-xs text-[#F5E050] underline hover:text-[#e6d047] transition-all"
                         onClick={() => {
                           setEditandoId(com.Comment_ID);
                           setComentarioEditado(com.Content);
@@ -459,7 +459,7 @@ const VerCapsula = () => {
                         Editar
                       </button>
                       <button
-                        className="text-xs text-red-400 underline"
+                        className="text-xs text-red-400 underline hover:text-red-600 transition-all"
                         onClick={() => setDeleteTarget(com.Comment_ID)}
                       >
                         Eliminar
@@ -490,13 +490,13 @@ const VerCapsula = () => {
         <div>¿Eliminar este comentario?</div>
         <div className="mt-4 flex justify-end gap-2">
           <button
-            className="bg-gray-700 text-white px-4 py-2 rounded"
+            className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition-all"
             onClick={() => setDeleteTarget(null)}
           >
             Cancelar
           </button>
           <button
-            className="bg-red-500 text-white px-4 py-2 rounded"
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-all"
             onClick={async () => {
               await fetch(`/api/comments/${deleteTarget}`, { method: 'DELETE' });
               setComentarios(prev => prev.filter(c => c.Comment_ID !== deleteTarget));
@@ -507,6 +507,21 @@ const VerCapsula = () => {
           </button>
         </div>
       </Modal>
+      <style>
+        {`
+          .animate-fade-in { animation: fadeIn 1s; }
+          .animate-fade-in-down { animation: fadeInDown 1s; }
+          .animate-fade-in-up { animation: fadeInUp 1s; }
+          .animate-bounce-slow { animation: bounce 2s infinite; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0);}
+            50% { transform: translateY(-10px);}
+          }
+        `}
+      </style>
     </div>
   );
 };

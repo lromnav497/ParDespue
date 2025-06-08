@@ -20,7 +20,6 @@ const Suscripciones = () => {
     fetch('/api/subscriptions/stripe-prices')
       .then(res => res.json())
       .then(data => {
-        console.log('Stripe prices:', data); // <-- Mira la consola
         setStripePrices(data);
       });
   }, []);
@@ -35,7 +34,6 @@ const Suscripciones = () => {
     })
       .then(res => res.json())
       .then(data => {
-        console.log('Current plan:', data);
         if (data.suscripcion && data.suscripcion.nombre) {
           setCurrentPlan(data.suscripcion.nombre); // "Premium" o "Básico"
         }
@@ -54,7 +52,7 @@ const Suscripciones = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ billing }) // Puedes enviar 'monthly' o 'annual'
+        body: JSON.stringify({ billing })
       })
         .then(res => res.json())
         .then(() => window.dispatchEvent(new Event('user-updated')));
@@ -136,7 +134,7 @@ const Suscripciones = () => {
           body: JSON.stringify({
             plan: plan.name,
             billing,
-            priceId: plan.stripePriceId // Envía el priceId de Stripe
+            priceId: plan.stripePriceId
           })
         });
         const data = await res.json();
@@ -172,15 +170,15 @@ const Suscripciones = () => {
   };
 
   if (plans[1].name === "Premium" && !plans[1].price) {
-    return <div className="text-center text-white">Cargando precios de Stripe...</div>;
+    return <div className="text-center text-white animate-fade-in">Cargando precios de Stripe...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 py-16">
+    <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] py-16">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl text-[#F5E050] passero-font mb-6">
+        <div className="text-center mb-16 animate-fade-in-down">
+          <h1 className="text-4xl md:text-5xl text-[#F5E050] passero-font mb-6 drop-shadow-lg">
             Planes y Precios
           </h1>
           <p className="text-gray-300 text-xl max-w-2xl mx-auto mb-8">
@@ -188,44 +186,44 @@ const Suscripciones = () => {
           </p>
 
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4">
-            <span className={`text-lg ${billing === 'monthly' ? 'text-[#F5E050]' : 'text-gray-400'}`}>
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <span className={`text-lg ${billing === 'monthly' ? 'text-[#F5E050]' : 'text-gray-400'} transition-colors`}>
               Mensual
             </span>
-            <button 
+            <button
               onClick={() => setBilling(billing === 'monthly' ? 'annual' : 'monthly')}
-              className="relative w-16 h-8 bg-[#2E2E7A] rounded-full p-1 transition-colors"
+              className="relative w-16 h-8 bg-[#2E2E7A] rounded-full p-1 transition-colors shadow-inner focus:outline-none focus:ring-2 focus:ring-[#F5E050]/60"
             >
-              <div className={`w-6 h-6 bg-[#F5E050] rounded-full transition-transform ${
+              <div className={`w-6 h-6 bg-[#F5E050] rounded-full shadow transition-transform duration-300 ${
                 billing === 'annual' ? 'translate-x-8' : ''
               }`} />
             </button>
-            <span className={`text-lg ${billing === 'annual' ? 'text-[#F5E050]' : 'text-gray-400'}`}>
+            <span className={`text-lg ${billing === 'annual' ? 'text-[#F5E050]' : 'text-gray-400'} transition-colors`}>
               Anual
-              <span className="ml-2 text-sm text-green-400">-15%</span>
+              <span className="ml-2 text-sm text-green-400 animate-pulse">-15%</span>
             </span>
           </div>
         </div>
 
         {/* Mensaje de compra */}
         {mensaje && (
-          <div className="max-w-xl mx-auto mb-8 text-center">
-            <div className="bg-[#1a1a4a] text-[#F5E050] p-4 rounded-lg shadow">{mensaje}</div>
+          <div className="max-w-xl mx-auto mb-8 text-center animate-fade-in-up">
+            <div className="bg-[#1a1a4a] text-[#F5E050] p-4 rounded-lg shadow-lg">{mensaje}</div>
           </div>
         )}
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto animate-fade-in-up">
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`bg-[#2E2E7A] rounded-xl p-8 relative ${
-                plan.popular ? 'transform md:-translate-y-4' : ''
+              className={`bg-[#2E2E7A] rounded-xl p-8 relative shadow-xl group transition-transform duration-300 hover:scale-105 ${
+                plan.popular ? 'transform md:-translate-y-4 ring-4 ring-[#F5E050]/40' : ''
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-[#F5E050] text-[#2E2E7A] px-4 py-1 rounded-full text-sm font-semibold">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <span className="bg-[#F5E050] text-[#2E2E7A] px-4 py-1 rounded-full text-sm font-semibold shadow">
                     Más Popular
                   </span>
                 </div>
@@ -234,9 +232,9 @@ const Suscripciones = () => {
               <div className="text-center mb-8">
                 <FontAwesomeIcon
                   icon={plan.icon}
-                  className="text-[#F5E050] text-4xl mb-4"
+                  className="text-[#F5E050] text-4xl mb-4 drop-shadow-lg animate-bounce-slow"
                 />
-                <h3 className="text-2xl text-[#F5E050] passero-font mb-4">
+                <h3 className="text-2xl text-[#F5E050] passero-font mb-4 drop-shadow">
                   {plan.name}
                 </h3>
                 <div className="text-white mb-4">
@@ -262,18 +260,18 @@ const Suscripciones = () => {
                   <li key={i} className="flex items-center text-gray-300">
                     <FontAwesomeIcon
                       icon={faCheck}
-                      className="text-[#F5E050] mr-2"
+                      className="text-[#F5E050] mr-2 animate-fade-in"
                     />
-                    {feature}
+                    <span className="transition-colors group-hover:text-[#F5E050]">{feature}</span>
                   </li>
                 ))}
               </ul>
 
               {/* Botón: deshabilita si ya tiene el plan */}
               <button
-                className={`w-full py-3 rounded-full transition-colors ${
+                className={`w-full py-3 rounded-full transition-all duration-200 font-bold shadow-lg ${
                   plan.popular
-                    ? 'bg-[#F5E050] text-[#2E2E7A] hover:bg-[#e6d047]'
+                    ? 'bg-[#F5E050] text-[#2E2E7A] hover:bg-[#e6d047] scale-105'
                     : 'bg-[#1a1a4a] text-white hover:bg-[#3d3d9e]'
                 } ${loading && selectedPlan === plan.name ? 'opacity-60 cursor-not-allowed' : ''}`}
                 disabled={
@@ -296,12 +294,12 @@ const Suscripciones = () => {
         </div>
 
         {/* FAQ Section */}
-        <div className="max-w-3xl mx-auto mt-24">
-          <h2 className="text-3xl text-[#F5E050] passero-font text-center mb-8">
+        <div className="max-w-3xl mx-auto mt-24 animate-fade-in-up">
+          <h2 className="text-3xl text-[#F5E050] passero-font text-center mb-8 drop-shadow-lg">
             Preguntas Frecuentes
           </h2>
           <div className="space-y-6">
-            <div className="bg-[#2E2E7A] rounded-xl p-6">
+            <div className="bg-[#2E2E7A] rounded-xl p-6 shadow-lg transition-transform hover:scale-[1.02]">
               <h3 className="text-[#F5E050] text-xl mb-2">
                 ¿Puedo cambiar de plan en cualquier momento?
               </h3>
@@ -310,7 +308,7 @@ const Suscripciones = () => {
                 Los cambios se aplicarán inmediatamente.
               </p>
             </div>
-            <div className="bg-[#2E2E7A] rounded-xl p-6">
+            <div className="bg-[#2E2E7A] rounded-xl p-6 shadow-lg transition-transform hover:scale-[1.02]">
               <h3 className="text-[#F5E050] text-xl mb-2">
                 ¿Qué métodos de pago aceptan?
               </h3>
@@ -319,7 +317,7 @@ const Suscripciones = () => {
                 transferencias bancarias para planes empresariales.
               </p>
             </div>
-            <div className="bg-[#2E2E7A] rounded-xl p-6">
+            <div className="bg-[#2E2E7A] rounded-xl p-6 shadow-lg transition-transform hover:scale-[1.02]">
               <h3 className="text-[#F5E050] text-xl mb-2">
                 ¿Ofrecen reembolsos?
               </h3>
@@ -340,6 +338,21 @@ const Suscripciones = () => {
           <div>{modal.message}</div>
         </Modal>
       </div>
+      <style>
+        {`
+          .animate-fade-in { animation: fadeIn 1s; }
+          .animate-fade-in-down { animation: fadeInDown 1s; }
+          .animate-fade-in-up { animation: fadeInUp 1s; }
+          .animate-bounce-slow { animation: bounce 2s infinite; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0);}
+            50% { transform: translateY(-10px);}
+          }
+        `}
+      </style>
     </div>
   );
 };

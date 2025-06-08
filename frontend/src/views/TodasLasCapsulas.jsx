@@ -54,70 +54,73 @@ const TodasLasCapsulas = () => {
   );
 
   return (
-    <div className="container mx-auto p-8">
-      <h1 className="text-2xl mb-4">Todas las cápsulas</h1>
-      <div className="mb-4 flex flex-col md:flex-row gap-2 md:gap-4 items-center">
+    <div className="container mx-auto p-8 min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b]">
+      <h1 className="text-3xl md:text-4xl text-[#F5E050] passero-font mb-8 text-center animate-fade-in-down drop-shadow-lg">
+        Todas las cápsulas
+      </h1>
+      <div className="mb-6 flex flex-col md:flex-row gap-2 md:gap-4 items-center justify-center animate-fade-in-up">
         <input
           type="text"
           placeholder="Buscar por título o descripción..."
           value={busqueda}
           onChange={e => setBusqueda(e.target.value)}
-          className="px-3 py-2 rounded border border-gray-300 text-black w-full md:w-1/3"
+          className="px-4 py-2 rounded-lg border border-[#3d3d9e] bg-[#1a1a4a]/80 text-white w-full md:w-1/3 focus:outline-none focus:border-[#F5E050] shadow-inner focus:shadow-[#F5E050]/20 transition-all duration-200"
         />
-        {loading && <span className="text-[#F5E050]">Cargando...</span>}
+        {loading && <span className="text-[#F5E050] animate-pulse">Cargando...</span>}
       </div>
       {error && (
-        <div className="mb-4 text-red-400 font-bold">{error}</div>
+        <div className="mb-4 text-red-400 font-bold text-center animate-pulse">{error}</div>
       )}
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-[#2E2E7A] text-white text-xs">
+      <div className="overflow-x-auto animate-fade-in">
+        <table className="min-w-full bg-[#2E2E7A]/90 text-white text-xs rounded-xl shadow-xl overflow-hidden">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Título</th>
-              <th>Descripción</th>
-              <th>Creación</th>
-              <th>Apertura</th>
-              <th>Privacidad</th>
-              <th>Password</th>
-              <th>Creador ID</th>
-              <th>Tags</th>
-              <th>Categoría ID</th>
-              <th>Portada (URL)</th>
-              <th>Vistas</th>
-              <th>Likes</th>
-              <th>Acciones</th>
+              <th className="px-3 py-2">ID</th>
+              <th className="px-3 py-2">Título</th>
+              <th className="px-3 py-2">Descripción</th>
+              <th className="px-3 py-2">Creación</th>
+              <th className="px-3 py-2">Apertura</th>
+              <th className="px-3 py-2">Privacidad</th>
+              <th className="px-3 py-2">Password</th>
+              <th className="px-3 py-2">Creador ID</th>
+              <th className="px-3 py-2">Tags</th>
+              <th className="px-3 py-2">Categoría ID</th>
+              <th className="px-3 py-2">Portada (URL)</th>
+              <th className="px-3 py-2">Vistas</th>
+              <th className="px-3 py-2">Likes</th>
+              <th className="px-3 py-2">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {capsulasFiltradas.length > 0 ? (
               capsulasFiltradas.map(c => (
-                <tr key={c.Capsule_ID}>
-                  <td>{c.Capsule_ID}</td>
-                  <td>{c.Title}</td>
-                  <td>{c.Description}</td>
-                  <td>{c.Creation_Date ? new Date(c.Creation_Date).toLocaleString() : ''}</td>
-                  <td>{c.Opening_Date ? new Date(c.Opening_Date).toLocaleString() : ''}</td>
-                  <td>{c.Privacy}</td>
-                  <td>{c.Password}</td>
-                  <td>{c.Creator_User_ID}</td>
-                  <td>{c.Tags}</td>
-                  <td>{c.Category_ID}</td>
-                  <td style={{ maxWidth: 120, wordBreak: 'break-all' }}>
-                    {c.Cover_Image || 'Sin imagen'}
-                  </td>
-                  <td>{c.Views}</td>
-                  <td>{c.Likes}</td>
-                  <td>
+                <tr
+                  key={c.Capsule_ID}
+                  className="transition-colors duration-200 hover:bg-[#23235b]/80 group"
+                >
+                  <td className="px-3 py-2">{c.Capsule_ID}</td>
+                  <td className="px-3 py-2 font-semibold group-hover:text-[#F5E050] transition">{c.Title}</td>
+                  <td className="px-3 py-2">{c.Description}</td>
+                  <td className="px-3 py-2">{c.Creation_Date ? new Date(c.Creation_Date).toLocaleString() : ''}</td>
+                  <td className="px-3 py-2">{c.Opening_Date ? new Date(c.Opening_Date).toLocaleString() : ''}</td>
+                  <td className="px-3 py-2">{c.Privacy}</td>
+                  <td className="px-3 py-2">{c.Password}</td>
+                  <td className="px-3 py-2">{c.Creator_User_ID}</td>
+                  <td className="px-3 py-2">{c.Tags}</td>
+                  <td className="px-3 py-2">{c.Category_ID}</td>
+                  <td className="px-3 py-2 max-w-[120px] break-words">{c.Cover_Image || 'Sin imagen'}</td>
+                  <td className="px-3 py-2">{c.Views}</td>
+                  <td className="px-3 py-2">{c.Likes}</td>
+                  <td className="px-3 py-2 flex gap-2">
                     <button
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded mr-2"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-all duration-200 shadow focus:ring-2 focus:ring-blue-400 focus:outline-none scale-100 hover:scale-105"
                       onClick={() => window.location.href = `/editarcapsula/${c.Capsule_ID}`}
                       title="Editar"
                     >
                       Editar
                     </button>
                     <button
-                      className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
+                      className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded transition-all duration-200 shadow focus:ring-2 focus:ring-red-400 focus:outline-none scale-100 hover:scale-105"
                       onClick={() => eliminarCapsula(c.Capsule_ID)}
                       title="Eliminar"
                     >
@@ -128,7 +131,7 @@ const TodasLasCapsulas = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={14} className="text-center">
+                <td colSpan={14} className="text-center py-8">
                   {error ? 'No tienes permisos o ha ocurrido un error.' : 'No hay cápsulas.'}
                 </td>
               </tr>
@@ -136,6 +139,16 @@ const TodasLasCapsulas = () => {
           </tbody>
         </table>
       </div>
+      <style>
+        {`
+          .animate-fade-in { animation: fadeIn 1s; }
+          .animate-fade-in-down { animation: fadeInDown 1s; }
+          .animate-fade-in-up { animation: fadeInUp 1s; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+        `}
+      </style>
     </div>
   );
 };

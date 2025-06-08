@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
+import {
   faBoxArchive,
   faImage,
   faVideo,
@@ -18,9 +18,8 @@ import Modal from '../components/modals/Modal';
 import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const CrearCapsula = () => {
-  const user = JSON.parse(localStorage.getItem('user')); // Asegúrate que la clave sea 'user'
-  const userId = user?.id; // Esto será 8 si el usuario está logueado
-  console.log('userId:', userId); // Debe mostrar un número o string válido
+  const user = JSON.parse(localStorage.getItem('user'));
+  const userId = user?.id;
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     nombre: '',
@@ -32,7 +31,8 @@ const CrearCapsula = () => {
     notificaciones: false,
     tema: 'default',
     tags: [],
-    password: '' // <-- agrega esto
+    password: '',
+    recipients: []
   });
   const [tagInput, setTagInput] = useState('');
   const [recipientEmail, setRecipientEmail] = useState('');
@@ -47,6 +47,7 @@ const CrearCapsula = () => {
   const [coverImage, setCoverImage] = useState(null);
   const [createdCapsuleId, setCreatedCapsuleId] = useState(null);
   const [errorModal, setErrorModal] = useState({ open: false, message: '' });
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     fetch('/api/categories')
@@ -60,13 +61,11 @@ const CrearCapsula = () => {
       const user = JSON.parse(localStorage.getItem('user'));
       const token = user?.token;
       if (!token) return;
-      // Consulta el plan
       const resPlan = await fetch('/api/subscriptions/my-plan', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const dataPlan = await resPlan.json();
       setPlan(dataPlan.plan || 'Básico');
-      // Consulta si puede crear
       const res = await fetch('/api/subscriptions/can-create-capsule', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -84,12 +83,33 @@ const CrearCapsula = () => {
     { id: 3, title: 'Revisión', icon: faCheck }
   ];
 
+  // Validaciones por paso
+  const validateStep = () => {
+    let errors = {};
+    if (currentStep === 0) {
+      if (!formData.nombre.trim()) errors.nombre = 'El nombre es obligatorio';
+      if (!formData.descripcion.trim()) errors.descripcion = 'La descripción es obligatoria';
+      if (!formData.fechaApertura) errors.fechaApertura = 'La fecha de apertura es obligatoria';
+      if (!formData.categoriaId) errors.categoriaId = 'Selecciona una categoría';
+    }
+    if (currentStep === 1) {
+      if (formData.archivos.length === 0) errors.archivos = 'Debes añadir al menos un archivo';
+    }
+    if (currentStep === 2) {
+      if (formData.privacidad === 'privada' && !formData.password) errors.password = 'La contraseña es obligatoria para cápsulas privadas';
+      if (formData.privacidad === 'grupos' && (!formData.recipients || formData.recipients.length === 0)) errors.recipients = 'Agrega al menos un destinatario';
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    setFieldErrors(prev => ({ ...prev, [name]: undefined }));
   };
 
   // TAGS LOGIC
@@ -167,21 +187,20 @@ const CrearCapsula = () => {
         }
       ]
     }));
+    setFieldErrors(prev => ({ ...prev, archivos: undefined }));
   };
 
   const nextStep = () => {
-    setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+    if (validateStep()) setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
   };
 
-  const prevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 0));
-  };
+  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
   const renderStepContent = () => {
-    switch(currentStep) {
+    switch (currentStep) {
       case 0:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in-up">
             <div>
               <label className="block text-white mb-2">Nombre de la cápsula</label>
               <input
@@ -189,9 +208,9 @@ const CrearCapsula = () => {
                 name="nombre"
                 value={formData.nombre}
                 onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 
-                  text-white focus:outline-none focus:border-[#F5E050]"
+                className={`w-full bg-[#1a1a4a] border ${fieldErrors.nombre ? 'border-red-500' : 'border-[#3d3d9e]'} rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all`}
               />
+              {fieldErrors.nombre && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.nombre}</div>}
             </div>
             <div>
               <label className="block text-white mb-2">Descripción</label>
@@ -199,9 +218,9 @@ const CrearCapsula = () => {
                 name="descripcion"
                 value={formData.descripcion}
                 onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 
-                  text-white focus:outline-none focus:border-[#F5E050] h-32"
+                className={`w-full bg-[#1a1a4a] border ${fieldErrors.descripcion ? 'border-red-500' : 'border-[#3d3d9e]'} rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] h-32 transition-all`}
               />
+              {fieldErrors.descripcion && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.descripcion}</div>}
             </div>
             <div>
               <label className="block text-white mb-2">Fecha de apertura</label>
@@ -210,9 +229,9 @@ const CrearCapsula = () => {
                 name="fechaApertura"
                 value={formData.fechaApertura}
                 onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 
-                  text-white focus:outline-none focus:border-[#F5E050]"
+                className={`w-full bg-[#1a1a4a] border ${fieldErrors.fechaApertura ? 'border-red-500' : 'border-[#3d3d9e]'} rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all`}
               />
+              {fieldErrors.fechaApertura && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.fechaApertura}</div>}
             </div>
             <div>
               <label className="block text-white mb-2">Categoría</label>
@@ -220,7 +239,7 @@ const CrearCapsula = () => {
                 name="categoriaId"
                 value={formData.categoriaId}
                 onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                className={`w-full bg-[#1a1a4a] border ${fieldErrors.categoriaId ? 'border-red-500' : 'border-[#3d3d9e]'} rounded-lg py-2 px-4 text-white transition-all`}
               >
                 <option value="">Selecciona una categoría</option>
                 {categorias.map(cat => (
@@ -229,6 +248,7 @@ const CrearCapsula = () => {
                   </option>
                 ))}
               </select>
+              {fieldErrors.categoriaId && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.categoriaId}</div>}
             </div>
             {/* Apartado de tags */}
             <div>
@@ -241,7 +261,7 @@ const CrearCapsula = () => {
                   type="text"
                   value={tagInput}
                   onChange={handleTagInputChange}
-                  className="flex-1 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050]"
+                  className="flex-1 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
                   placeholder="Escribe un tag y pulsa Enter"
                 />
                 <button
@@ -255,7 +275,7 @@ const CrearCapsula = () => {
                 {formData.tags && formData.tags.map(tag => (
                   <span
                     key={tag}
-                    className="bg-[#F5E050] text-[#2E2E7A] px-3 py-1 rounded-full flex items-center gap-2"
+                    className="bg-[#F5E050] text-[#2E2E7A] px-3 py-1 rounded-full flex items-center gap-2 animate-fade-in"
                   >
                     {tag}
                     <button
@@ -276,7 +296,7 @@ const CrearCapsula = () => {
                   <img
                     src={URL.createObjectURL(coverImage)}
                     alt="Portada"
-                    className="w-40 h-32 rounded-lg object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 group-hover:scale-105 bg-white"
+                    className="w-40 h-32 rounded-lg object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 group-hover:scale-105 bg-white animate-fade-in"
                   />
                 ) : (
                   <div className="w-40 h-32 rounded-lg bg-[#F5E050] flex items-center justify-center">
@@ -297,10 +317,9 @@ const CrearCapsula = () => {
             </div>
           </div>
         );
-
       case 1:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in-up">
             <div className="grid grid-cols-4 gap-4 text-center">
               {[
                 { icon: faImage, text: 'Fotos' },
@@ -308,7 +327,7 @@ const CrearCapsula = () => {
                 { icon: faFileAlt, text: 'Mensajes' },
                 { icon: faMusic, text: 'Audio' }
               ].map((item, index) => (
-                <div 
+                <div
                   key={index}
                   className="bg-[#1a1a4a] p-4 rounded-lg cursor-pointer hover:bg-[#3d3d9e] transition-colors"
                 >
@@ -318,25 +337,25 @@ const CrearCapsula = () => {
               ))}
             </div>
             <div
-              className="border-2 border-dashed border-[#3d3d9e] rounded-lg p-8 text-center cursor-pointer"
+              className="border-2 border-dashed border-[#3d3d9e] rounded-lg p-8 text-center cursor-pointer hover:border-[#F5E050] transition-all"
               onClick={() => fileInputRef.current.click()}
             >
-              <FontAwesomeIcon icon={faFileAlt} className="text-[#F5E050] text-4xl mb-4" />
+              <FontAwesomeIcon icon={faFileAlt} className="text-[#F5E050] text-4xl mb-4 animate-bounce-slow" />
               <p className="text-white">Arrastra archivos aquí o haz clic para seleccionar</p>
               <input
                 type="file"
-                name="file"           // <-- AGREGA ESTO
+                name="file"
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
               />
             </div>
-            {/* Mostrar archivos subidos */}
+            {fieldErrors.archivos && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.archivos}</div>}
             <div className="mt-4">
               {formData.archivos.length > 0 && (
-                <ul className="text-white">
+                <ul className="text-white space-y-1">
                   {formData.archivos.map((archivo, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
+                    <li key={idx} className="flex items-center gap-2 animate-fade-in">
                       {archivo.name} <span className="text-gray-400">({archivo.type})</span>
                       <button
                         type="button"
@@ -353,33 +372,30 @@ const CrearCapsula = () => {
             </div>
           </div>
         );
-
       case 2:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in-up">
             <div className="space-y-4">
               <label className="block text-white mb-2">Privacidad</label>
-             {[
-  { icon: faLock, value: 'privada', label: 'Privada' },
-  { icon: faUsers, value: 'grupos', label: 'Grupos/Personas' },
-  { icon: faGlobe, value: 'publica', label: 'Pública' }
-].map((option) => (
-  <div key={option.value} className="flex items-center space-x-2">
-    <input
-      type="radio"
-      name="privacidad"
-      value={option.value}
-      checked={formData.privacidad === option.value}
-      onChange={handleChange}
-      className="text-[#F5E050] focus:ring-[#F5E050]"
-    />
-    <FontAwesomeIcon icon={option.icon} className="text-[#F5E050]" />
-    <span className="text-white">{option.label}</span>
-  </div>
-))}
-
+              {[
+                { icon: faLock, value: 'privada', label: 'Privada' },
+                { icon: faUsers, value: 'grupos', label: 'Grupos/Personas' },
+                { icon: faGlobe, value: 'publica', label: 'Pública' }
+              ].map((option) => (
+                <div key={option.value} className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="privacidad"
+                    value={option.value}
+                    checked={formData.privacidad === option.value}
+                    onChange={handleChange}
+                    className="text-[#F5E050] focus:ring-[#F5E050]"
+                  />
+                  <FontAwesomeIcon icon={option.icon} className="text-[#F5E050]" />
+                  <span className="text-white">{option.label}</span>
+                </div>
+              ))}
             </div>
-
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -392,228 +408,221 @@ const CrearCapsula = () => {
               <span className="text-white">Notificar antes de la apertura</span>
             </div>
             {formData.privacidad === 'privada' && (
-  <div>
-    <label className="block text-white mb-2">Contraseña para abrir la cápsula</label>
-    <input
-      type="password"
-      name="password"
-      value={formData.password || ''}
-      onChange={handleChange}
-      className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050]"
-      required
-    />
-  </div>
-)}
-{formData.privacidad === 'grupos' && (
-  <div className="mt-4">
-    <label className="block text-white mb-2">Añadir destinatarios</label>
-    <form
-      onSubmit={e => {
-        e.preventDefault();
-        if (recipientEmail && recipientRole) {
-          setFormData(prev => ({
-            ...prev,
-            recipients: [
-              ...(prev.recipients || []),
-              { email: recipientEmail, role: recipientRole }
-            ]
-          }));
-          setRecipientEmail('');
-          setRecipientRole('Reader');
-        }
-      }}
-      className="flex gap-2 mb-2"
-    >
-      <input
-        type="email"
-        placeholder="Correo del destinatario"
-        value={recipientEmail}
-        onChange={e => setRecipientEmail(e.target.value)}
-        className="flex-1 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
-        required
-      />
-      <select
-        value={recipientRole}
-        onChange={e => setRecipientRole(e.target.value)}
-        className="bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
-      >
-        <option value="Reader">Solo lectura</option>
-        <option value="Collaborator">Colaborador</option>
-      </select>
-      <button
-        type="submit"
-        className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full font-bold"
-      >
-        Añadir
-      </button>
-    </form>
-    <ul>
-      {(formData.recipients || []).map((r, idx) => (
-        <li key={idx} className="text-white flex gap-2 items-center">
-          {r.email} - {r.role}
-          <button
-            type="button"
-            onClick={() =>
-              setFormData(prev => ({
-                ...prev,
-                recipients: prev.recipients.filter((_, i) => i !== idx)
-              }))
-            }
-            className="ml-2 text-red-500 hover:text-red-700 font-bold"
-            title="Eliminar destinatario"
-          >
-            ×
-          </button>
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
+              <div>
+                <label className="block text-white mb-2">Contraseña para abrir la cápsula</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password || ''}
+                  onChange={handleChange}
+                  className={`w-full bg-[#1a1a4a] border ${fieldErrors.password ? 'border-red-500' : 'border-[#3d3d9e]'} rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all`}
+                  required
+                />
+                {fieldErrors.password && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.password}</div>}
+              </div>
+            )}
+            {formData.privacidad === 'grupos' && (
+              <div className="mt-4">
+                <label className="block text-white mb-2">Añadir destinatarios</label>
+                <form
+                  onSubmit={e => {
+                    e.preventDefault();
+                    if (recipientEmail && recipientRole) {
+                      setFormData(prev => ({
+                        ...prev,
+                        recipients: [
+                          ...(prev.recipients || []),
+                          { email: recipientEmail, role: recipientRole }
+                        ]
+                      }));
+                      setRecipientEmail('');
+                      setRecipientRole('Reader');
+                      setFieldErrors(prev => ({ ...prev, recipients: undefined }));
+                    }
+                  }}
+                  className="flex gap-2 mb-2"
+                >
+                  <input
+                    type="email"
+                    placeholder="Correo del destinatario"
+                    value={recipientEmail}
+                    onChange={e => setRecipientEmail(e.target.value)}
+                    className="flex-1 bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                    required
+                  />
+                  <select
+                    value={recipientRole}
+                    onChange={e => setRecipientRole(e.target.value)}
+                    className="bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                  >
+                    <option value="Reader">Solo lectura</option>
+                    <option value="Collaborator">Colaborador</option>
+                  </select>
+                  <button
+                    type="submit"
+                    className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full font-bold hover:bg-[#e6d047] transition-colors"
+                  >
+                    Añadir
+                  </button>
+                </form>
+                {fieldErrors.recipients && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.recipients}</div>}
+                <ul>
+                  {(formData.recipients || []).map((r, idx) => (
+                    <li key={idx} className="text-white flex gap-2 items-center animate-fade-in">
+                      {r.email} - {r.role}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData(prev => ({
+                            ...prev,
+                            recipients: prev.recipients.filter((_, i) => i !== idx)
+                          }))
+                        }
+                        className="ml-2 text-red-500 hover:text-red-700 font-bold"
+                        title="Eliminar destinatario"
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         );
-
       case 3:
         return (
-          <div className="space-y-8 text-white">
-      {/* Información */}
-      <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2">
-        {/* Portada */}
-        <div className="flex justify-center mb-4">
-          {coverImage ? (
-            <img
-              src={URL.createObjectURL(coverImage)}
-              alt="Portada"
-              className="w-40 h-32 rounded-lg object-cover border-4 border-[#F5E050] shadow-lg"
-            />
-          ) : (
-            <div className="w-40 h-32 rounded-lg bg-[#F5E050] flex items-center justify-center">
-              <FontAwesomeIcon icon={faImage} className="text-[#2E2E7A] text-4xl" />
+          <div className="space-y-8 text-white animate-fade-in-up">
+            {/* Información */}
+            <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg">
+              <div className="flex justify-center mb-4">
+                {coverImage ? (
+                  <img
+                    src={URL.createObjectURL(coverImage)}
+                    alt="Portada"
+                    className="w-40 h-32 rounded-lg object-cover border-4 border-[#F5E050] shadow-lg"
+                  />
+                ) : (
+                  <div className="w-40 h-32 rounded-lg bg-[#F5E050] flex items-center justify-center">
+                    <FontAwesomeIcon icon={faImage} className="text-[#2E2E7A] text-4xl" />
+                  </div>
+                )}
+              </div>
+              <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
+                <FontAwesomeIcon icon={faBoxArchive} /> Información
+              </h3>
+              <p><span className="text-[#F5E050]">Nombre:</span> {formData.nombre}</p>
+              <p><span className="text-[#F5E050]">Descripción:</span> {formData.descripcion}</p>
+              <p><span className="text-[#F5E050]">Fecha de apertura:</span> {formData.fechaApertura}</p>
+              <p><span className="text-[#F5E050]">Categoría:</span> {
+                categorias.find(cat => cat.Category_ID === Number(formData.categoriaId))?.Name || 'Sin categoría'
+              }</p>
+              <p>
+                <span className="text-[#F5E050]">Tags:</span> {formData.tags && formData.tags.length > 0 ? formData.tags.join(', ') : 'Ninguno'}
+              </p>
             </div>
-          )}
-        </div>
-        <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
-          <FontAwesomeIcon icon={faBoxArchive} /> Información
-        </h3>
-        <p><span className="text-[#F5E050]">Nombre:</span> {formData.nombre}</p>
-        <p><span className="text-[#F5E050]">Descripción:</span> {formData.descripcion}</p>
-        <p><span className="text-[#F5E050]">Fecha de apertura:</span> {formData.fechaApertura}</p>
-        <p><span className="text-[#F5E050]">Categoría:</span> {
-    categorias.find(cat => cat.Category_ID === Number(formData.categoriaId))?.Name || 'Sin categoría'
-  }</p>
-        <p>
-          <span className="text-[#F5E050]">Tags:</span> {formData.tags && formData.tags.length > 0 ? formData.tags.join(', ') : 'Ninguno'}
-        </p>
-      </div>
-
-      {/* Contenido */}
-      <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2">
-        <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
-          <FontAwesomeIcon icon={faFileAlt} /> Contenido
-        </h3>
-        {formData.archivos.length > 0 ? (
-          <div className="flex flex-wrap gap-4">
-            {formData.archivos.map((archivo, idx) => {
-              // Usa path definitivo si existe, si no usa tmpPath, si no usa URL local
-              const filePath = archivo.path || archivo.tmpPath;
-              return (
-                <div key={idx} className="w-24 h-24 bg-[#F5E050] rounded-lg flex items-center justify-center overflow-hidden relative group">
-                  {archivo.type.startsWith('image') ? (
-                    <img
-                      src={
-                        filePath
-                          ? `/api/${filePath.replace(/^\/?/, '')}`
-                          : URL.createObjectURL(archivo.file)
-                      }
-                      alt={archivo.name}
-                      className="object-cover w-full h-full"
-                    />
-                  ) : archivo.type.startsWith('video') ? (
-                    <video
-                      src={
-                        filePath
-                          ? `/api/${filePath.replace(/^\/?/, '')}`
-                          : URL.createObjectURL(archivo.file)
-                      }
-                      className="object-cover w-full h-full"
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                    />
-                  ) : archivo.type.startsWith('audio') ? (
-                    <div className="flex flex-col items-center justify-center w-full h-full">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#2E2E7A] mb-1">
-                        <FontAwesomeIcon icon={faMusic} className="text-[#F5E050] text-xl" />
+            {/* Contenido */}
+            <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg">
+              <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
+                <FontAwesomeIcon icon={faFileAlt} /> Contenido
+              </h3>
+              {formData.archivos.length > 0 ? (
+                <div className="flex flex-wrap gap-4">
+                  {formData.archivos.map((archivo, idx) => {
+                    const filePath = archivo.path || archivo.tmpPath;
+                    return (
+                      <div key={idx} className="w-24 h-24 bg-[#F5E050] rounded-lg flex items-center justify-center overflow-hidden relative group animate-fade-in">
+                        {archivo.type.startsWith('image') ? (
+                          <img
+                            src={
+                              filePath
+                                ? `/api/${filePath.replace(/^\/?/, '')}`
+                                : URL.createObjectURL(archivo.file)
+                            }
+                            alt={archivo.name}
+                            className="object-cover w-full h-full"
+                          />
+                        ) : archivo.type.startsWith('video') ? (
+                          <video
+                            src={
+                              filePath
+                                ? `/api/${filePath.replace(/^\/?/, '')}`
+                                : URL.createObjectURL(archivo.file)
+                            }
+                            className="object-cover w-full h-full"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                          />
+                        ) : archivo.type.startsWith('audio') ? (
+                          <div className="flex flex-col items-center justify-center w-full h-full">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#2E2E7A] mb-1">
+                              <FontAwesomeIcon icon={faMusic} className="text-[#F5E050] text-xl" />
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-[#2E2E7A] font-bold">{archivo.name.split('.').pop().toUpperCase()}</span>
+                        )}
+                        <span
+                          className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-[#2E2E7A] text-[#F5E050] text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10"
+                          style={{ whiteSpace: 'nowrap' }}
+                        >
+                          {archivo.name}
+                        </span>
                       </div>
-                    </div>
-                  ) : (
-                    <span className="text-[#2E2E7A] font-bold">{archivo.name.split('.').pop().toUpperCase()}</span>
-                  )}
-                  <span
-                    className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-[#2E2E7A] text-[#F5E050] text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10"
-                    style={{ whiteSpace: 'nowrap' }}
-                  >
-                    {archivo.name}
-                  </span>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              ) : (
+                <p className="text-gray-400">No hay archivos añadidos.</p>
+              )}
+            </div>
+            {/* Configuración */}
+            <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-lg">
+              <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
+                <FontAwesomeIcon icon={faLock} /> Configuración
+              </h3>
+              <p><span className="text-[#F5E050]">Privacidad:</span> {formData.privacidad}</p>
+              {formData.privacidad === 'privada' && (
+                <p><span className="text-[#F5E050]">Contraseña:</span> {formData.password ? '******' : 'No establecida'}</p>
+              )}
+              {formData.privacidad === 'grupos' && (
+                <div>
+                  <span className="text-[#F5E050]">Destinatarios:</span>
+                  <ul className="ml-4 list-disc">
+                    {(formData.recipients || []).map((r, idx) => (
+                      <li key={idx}>{r.email} - {r.role}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <p>
+                <span className="text-[#F5E050]">Notificaciones:</span> {formData.notificaciones ? 'Sí' : 'No'}
+              </p>
+            </div>
           </div>
-        ) : (
-          <p className="text-gray-400">No hay archivos añadidos.</p>
-        )}
-      </div>
-
-      {/* Configuración */}
-      <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2">
-        <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
-          <FontAwesomeIcon icon={faLock} /> Configuración
-        </h3>
-        <p><span className="text-[#F5E050]">Privacidad:</span> {formData.privacidad}</p>
-        {formData.privacidad === 'privada' && (
-          <p><span className="text-[#F5E050]">Contraseña:</span> {formData.password ? '******' : 'No establecida'}</p>
-        )}
-        {formData.privacidad === 'grupos' && (
-          <div>
-            <span className="text-[#F5E050]">Destinatarios:</span>
-            <ul className="ml-4 list-disc">
-              {(formData.recipients || []).map((r, idx) => (
-                <li key={idx}>{r.email} - {r.role}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <p>
-          <span className="text-[#F5E050]">Notificaciones:</span> {formData.notificaciones ? 'Sí' : 'No'}
-        </p>
-      </div>
-    </div>
         );
-
       default:
         return null;
     }
   };
 
   const handleCreateCapsule = async () => {
+    if (!validateStep()) return;
     try {
-      // Mapeo de privacidad del frontend al backend
       const privacyMap = {
         'privada': 'private',
         'grupos': 'group',
         'publica': 'public'
       };
       const privacyValue = privacyMap[formData.privacidad] || 'private';
-
-      // VALIDACIÓN DE FECHAS
       const fechaCreacion = new Date();
       const fechaApertura = new Date(formData.fechaApertura);
       if (fechaApertura <= fechaCreacion) {
         setErrorModal({ open: true, message: 'La fecha de apertura debe ser posterior a la fecha de creación.' });
         return;
       }
-
-      // 1. Crear la cápsula (con portada)
       const formDataCapsule = new FormData();
       formDataCapsule.append('Title', formData.nombre);
       formDataCapsule.append('Description', formData.descripcion);
@@ -628,7 +637,6 @@ const CrearCapsula = () => {
       if (coverImage) {
         formDataCapsule.append('cover_image', coverImage);
       }
-
       const token = localStorage.getItem('token');
       const resCapsule = await fetch('/api/capsules', {
         method: 'POST',
@@ -636,21 +644,11 @@ const CrearCapsula = () => {
         body: formDataCapsule,
       });
       const capsuleData = await resCapsule.json();
-      console.log('Respuesta creación cápsula:', capsuleData);
       const capsuleId = capsuleData.Capsule_ID || capsuleData.id;
       if (!resCapsule.ok || !capsuleId) {
         throw new Error(capsuleData.message || 'Error al crear cápsula (ID no recibido)');
       }
-
-      // Ya NO subas la portada aquí, porque ya se subió en el POST
-
-      // 2. Sube los archivos con userId y capsuleId
       for (const archivo of formData.archivos) {
-        console.log('Moviendo archivo:', {
-          userId,
-          capsuleId,
-          tmpPath: archivo.tmpPath
-        });
         const resMove = await fetch('/api/upload/move', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -662,30 +660,23 @@ const CrearCapsula = () => {
         });
         const data = await resMove.json();
         if (resMove.ok) {
-          // Actualiza el archivo en el array
           archivo.path = data.filePath;
           delete archivo.tmpPath;
-
-          // Guarda en Contents
           await fetch('/api/contents', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               Type: getTypeFromMime(archivo.type),
-              File_Path: data.filePath, // nueva ruta definitiva
+              File_Path: data.filePath,
               Creation_Date: new Date().toISOString().slice(0, 19).replace('T', ' '),
               Capsule_ID: capsuleId,
             }),
           });
         }
       }
-
-      // 3. Manejo de destinatarios para grupos
       if (privacyValue === 'group' && formData.recipients && formData.recipients.length > 0) {
-        // Obtén los roles desde el backend o usa IDs fijos si sabes cuáles son
-        const roleMap = { 'Reader': 2, 'Collaborator': 3 }; // Según tu tabla Roles
+        const roleMap = { 'Reader': 2, 'Collaborator': 3 };
         for (const recipient of formData.recipients) {
-          // Busca el usuario por email (puedes hacer un fetch al backend para obtener el User_ID)
           const resUser = await fetch(`/api/users/email/${recipient.email}`);
           const userData = await resUser.json();
           if (resUser.ok && userData.User_ID) {
@@ -699,26 +690,16 @@ const CrearCapsula = () => {
               }),
             });
           }
-          // Si el usuario no existe, puedes mostrar un error o ignorar
         }
       }
-
       setCreatedCapsuleId(capsuleId);
       setCarruselArchivos(formData.archivos);
       setShowModal(true);
-
-      // alert('¡Cápsula creada con éxito!');
-      // Redirige o limpia el formulario si quieres
-
-      // NUEVO: Guarda el ID y redirige
-      // localStorage.setItem('highlight_capsule', capsuleId);
-      // window.location.href = '/capsulas';
     } catch (err) {
       setErrorModal({ open: true, message: 'Error al crear la cápsula: ' + err.message });
     }
   };
 
-  // Función para mapear MIME a ENUM
   function getTypeFromMime(mime) {
     if (mime.startsWith('image/')) return 'image';
     if (mime.startsWith('video/')) return 'video';
@@ -727,39 +708,39 @@ const CrearCapsula = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] animate-fade-in">
       {/* Barra de progreso */}
       <div className="flex justify-between mb-8">
-        {steps.map((step) => (
-          <div 
+        {steps.map((step, idx) => (
+          <div
             key={step.id}
-            className={`flex flex-col items-center w-1/4 ${
-              currentStep >= step.id ? 'text-[#F5E050]' : 'text-gray-500'
-            }`}
+            className={`flex flex-col items-center w-1/4 ${currentStep >= step.id ? 'text-[#F5E050]' : 'text-gray-500'} animate-fade-in-up`}
           >
             <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2
-              ${currentStep >= step.id ? 'bg-[#F5E050] text-[#2E2E7A]' : 'bg-[#1a1a4a]'}`}
+              ${currentStep >= step.id ? 'bg-[#F5E050] text-[#2E2E7A] scale-110 shadow-lg' : 'bg-[#1a1a4a]'} transition-all duration-300`}
             >
               <FontAwesomeIcon icon={step.icon} />
             </div>
             <span className="text-sm">{step.title}</span>
+            {idx < steps.length - 1 && (
+              <div className={`h-1 w-full mt-2 ${currentStep > step.id ? 'bg-[#F5E050]' : 'bg-[#3d3d9e]'}`}></div>
+            )}
           </div>
         ))}
       </div>
 
       {/* Contenedor del paso actual */}
-      <div className="bg-[#2E2E7A] rounded-xl p-6 shadow-lg">
+      <div className="bg-[#2E2E7A] rounded-xl p-6 shadow-2xl animate-fade-in-up">
         <div className="mb-6">
-          <h2 className="text-2xl text-[#F5E050] passero-font">
+          <h2 className="text-2xl text-[#F5E050] passero-font animate-fade-in-down">
             {steps[currentStep].title}
           </h2>
         </div>
 
         {renderStepContent()}
 
-        {/* Mensaje de límite de creación de cápsulas */}
         {!puedeCrear && (
-          <div className="text-center text-red-500 mb-4">
+          <div className="text-center text-red-500 mb-4 animate-pulse">
             {planMsg || 'Has alcanzado el límite de cápsulas para tu plan.'}
           </div>
         )}
@@ -769,14 +750,14 @@ const CrearCapsula = () => {
           {currentStep > 0 && (
             <button
               onClick={prevStep}
-              className="px-6 py-2 bg-[#1a1a4a] text-white rounded-full hover:bg-[#3d3d9e]"
+              className="px-6 py-2 bg-[#1a1a4a] text-white rounded-full hover:bg-[#3d3d9e] transition-all shadow"
             >
               Anterior
             </button>
           )}
           <button
             onClick={currentStep === steps.length - 1 ? handleCreateCapsule : nextStep}
-            className="ml-auto px-6 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full hover:bg-[#e6d047]"
+            className="ml-auto px-6 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full hover:bg-[#e6d047] transition-all shadow font-bold"
             disabled={!puedeCrear && currentStep === steps.length - 1}
           >
             {currentStep === steps.length - 1 ? 'Crear Cápsula' : 'Siguiente'}
@@ -799,6 +780,21 @@ const CrearCapsula = () => {
       >
         <div className="text-red-600">{errorModal.message}</div>
       </Modal>
+      <style>
+        {`
+          .animate-fade-in { animation: fadeIn 1s; }
+          .animate-fade-in-down { animation: fadeInDown 1s; }
+          .animate-fade-in-up { animation: fadeInUp 1s; }
+          .animate-bounce-slow { animation: bounce 2s infinite; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1, transform: translateY(0);} }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1, transform: translateY(0);} }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0);}
+            50% { transform: translateY(-10px);}
+          }
+        `}
+      </style>
     </div>
   );
 };
