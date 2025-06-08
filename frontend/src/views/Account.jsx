@@ -63,20 +63,20 @@ const Account = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex">
+    <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] flex animate-fade-in">
       {/* Sidebar */}
-      <div className="w-64 bg-[#2E2E7A] time-capsule">
+      <div className="w-64 bg-[#2E2E7A] time-capsule shadow-2xl animate-fade-in-down">
         <div className="p-6">
-          <h2 className="text-[#F5E050] passero-font text-xl mb-6">Mi Cuenta</h2>
+          <h2 className="text-[#F5E050] passero-font text-xl mb-6 drop-shadow">Mi Cuenta</h2>
           <nav className="space-y-2">
             {menuItems.map(item => (
               <button
                 key={item.id}
                 onClick={() => handleSectionChange(item.id)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200
                   ${activeSection === item.id 
-                    ? 'bg-[#1a1a4a] text-[#F5E050]' 
-                    : 'text-gray-300 hover:bg-[#1a1a4a]/50'}`}
+                    ? 'bg-[#1a1a4a] text-[#F5E050] scale-105 shadow-lg'
+                    : 'text-gray-300 hover:bg-[#1a1a4a]/50 hover:scale-105'}`}
               >
                 <div className="flex items-center">
                   <FontAwesomeIcon icon={item.icon} className="mr-3" />
@@ -84,7 +84,7 @@ const Account = () => {
                 </div>
                 <FontAwesomeIcon 
                   icon={faChevronRight} 
-                  className={`transition-transform ${
+                  className={`transition-transform duration-200 ${
                     activeSection === item.id ? 'transform rotate-90' : ''
                   }`}
                 />
@@ -96,10 +96,20 @@ const Account = () => {
 
       {/* Content Area */}
       <div className="flex-1 p-8">
-        <div className="bg-[#2E2E7A] time-capsule rounded-xl p-6 min-h-[calc(100vh-4rem)]">
+        <div className="bg-[#2E2E7A] time-capsule rounded-xl p-6 min-h-[calc(100vh-4rem)] shadow-2xl animate-fade-in-up">
           {renderContent()}
         </div>
       </div>
+      <style>
+        {`
+          .animate-fade-in { animation: fadeIn 1s; }
+          .animate-fade-in-down { animation: fadeInDown 1s; }
+          .animate-fade-in-up { animation: fadeInUp 1s; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+        `}
+      </style>
     </div>
   );
 };
