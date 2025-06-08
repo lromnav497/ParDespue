@@ -300,9 +300,11 @@ const InformacionGeneral = () => {
                   src={
                     newProfilePic
                       ? URL.createObjectURL(newProfilePic)
-                      : profilePicture.startsWith('http')
-                        ? profilePicture
-                        : `http://44.209.31.187/api${profilePicture}`
+                      : profilePicture
+                        ? (profilePicture.startsWith('http')
+                            ? profilePicture
+                            : `http://44.209.31.187:3000/api${profilePicture.startsWith('/') ? '' : '/'}${profilePicture}`)
+                        : ''
                   }
                   alt="Foto de perfil"
                   className="w-32 h-32 rounded-full object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 group-hover:scale-105 bg-white"
