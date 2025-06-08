@@ -771,15 +771,34 @@ const EditarCapsula = () => {
                   <button
                     type="button"
                     className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full font-bold hover:bg-[#e6d047] transition-colors"
-                    onClick={() => {
+                    onClick={async () => {
                       if (
                         recipientEmail &&
                         recipientRole &&
                         !recipients.some(r => r.email === recipientEmail)
                       ) {
-                        setRecipients(prev => [...prev, { email: recipientEmail, role: recipientRole }]);
-                        setRecipientEmail('');
-                        setRecipientRole('Reader');
+                        // 1. Busca el usuario por email
+                        const resUser = await fetch(`/api/users/email/${recipientEmail}`);
+                        const userData = await resUser.json();
+                        // 2. Mapea el rol a su ID
+                        const roleMap = { 'Reader': 2, 'Collaborator': 3 };
+                        const roleId = roleMap[recipientRole];
+                        if (resUser.ok && userData.User_ID && roleId) {
+                          // 3. Añade en la base de datos
+                          await fetch(`/api/recipients`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              User_ID: userData.User_ID,
+                              Capsule_ID: id,
+                              Role_ID: roleId
+                            }),
+                          });
+                          // 4. Añade al estado local
+                          setRecipients(prev => [...prev, { email: recipientEmail, role: recipientRole }]);
+                          setRecipientEmail('');
+                          setRecipientRole('Reader');
+                        }
                       }
                     }}
                   >
