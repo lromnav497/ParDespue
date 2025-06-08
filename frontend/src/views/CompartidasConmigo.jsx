@@ -161,7 +161,7 @@ const CompartidasConmigo = () => {
                   <div
                     key={capsula.Capsule_ID}
                     className={`relative flex flex-col items-center justify-between overflow-visible transition-all duration-300 group space-capsule-card
-                      ${disabled ? 'opacity-60 pointer-events-none select-none' : 'hover:scale-105'}
+                      ${disabled ? 'grayscale-[0.2]' : 'hover:scale-105'}
                     `}
                     tabIndex={-1}
                   >
@@ -210,16 +210,21 @@ const CompartidasConmigo = () => {
                       </div>
                       {/* Fuego de propulsión */}
                       <div className="w-16 h-10 bg-gradient-to-b from-[#F5E050] via-[#e6d047] to-transparent rounded-b-full blur-sm opacity-80 animate-capsule-fire -mt-3" />
-                      {/* Overlay de bloqueo */}
+                      {/* Overlay de bloqueo - SOLO sobre el cuerpo principal */}
                       {disabled && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl">
+                        <div
+                          className="absolute left-1/2 top-[68px] -translate-x-1/2 w-44 h-[calc(100%-68px)] flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl pointer-events-none"
+                          style={{
+                            pointerEvents: 'none'
+                          }}
+                        >
                           <FontAwesomeIcon icon={faLock} className="text-3xl text-[#F5E050] mb-2 animate-bounce-slow" />
                           <span className="text-[#F5E050] text-xs font-bold flex items-center gap-2 text-center">
                             No disponible hasta {apertura.toLocaleDateString()}
                           </span>
                         </div>
                       )}
-                      {/* Botones de acción */}
+                      {/* Botones de acción SIEMPRE encima */}
                       <div className="absolute top-4 right-4 flex gap-2 z-30">
                         {capsula.RoleName === 'Collaborator' && plan !== 'premium' && (
                           <span className="bg-yellow-400 text-[#2E2E7A] px-3 py-1 rounded-full font-bold text-xs">
