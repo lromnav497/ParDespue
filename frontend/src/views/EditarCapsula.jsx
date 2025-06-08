@@ -436,22 +436,6 @@ const EditarCapsula = () => {
         <div className="bg-[#2E2E7A] rounded-xl p-6 md:p-8 shadow-2xl max-w-3xl mx-auto animate-fade-in-up">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <h1 className="text-3xl text-[#F5E050] passero-font drop-shadow-lg">Editar Cápsula</h1>
-            <div className="flex gap-2">
-              <button
-                onClick={handleCancelar}
-                className="px-4 py-2 bg-[#1a1a4a] text-white rounded-full hover:bg-[#3d3d9e] flex items-center gap-2 transition-all shadow"
-              >
-                <FontAwesomeIcon icon={faArrowLeft} />
-                Cancelar
-              </button>
-              <button
-                onClick={handleGuardar}
-                className="px-4 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full hover:bg-[#e6d047] flex items-center gap-2 transition-all shadow font-bold"
-              >
-                <FontAwesomeIcon icon={faSave} />
-                Guardar
-              </button>
-            </div>
           </div>
           <form onSubmit={handleGuardar} className="space-y-6">
             {/* Campos principales */}
@@ -864,6 +848,30 @@ const EditarCapsula = () => {
                 </span>
               </div>
             )}
+            {/* Botones de acción */}
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={handleCancelar}
+                className="px-4 py-2 bg-[#1a1a4a] text-white rounded-full hover:bg-[#3d3d9e] flex items-center gap-2 transition-all shadow"
+              >
+                <FontAwesomeIcon icon={faArrowLeft} />
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full hover:bg-[#e6d047] flex items-center gap-2 transition-all shadow font-bold disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={
+                  // Si la cápsula antes NO era privada y ahora SÍ, y el campo está vacío, deshabilita guardar
+                  form.Privacy === 'private' &&
+                  capsula.Privacy !== 'private' &&
+                  !form.Password
+                }
+              >
+                <FontAwesomeIcon icon={faSave} />
+                Guardar
+              </button>
+            </div>
           </form>
         </div>
       </div>
