@@ -424,7 +424,7 @@ const CrearCapsula = () => {
                   value={formData.password || ''}
                   onChange={handleChange}
                   className={`w-full bg-[#1a1a4a] border ${fieldErrors.password ? 'border-red-500' : 'border-[#3d3d9e]'} rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all`}
-                  required
+                  
                 />
                 {fieldErrors.password && <div className="text-red-400 text-xs mt-1 animate-pulse">{fieldErrors.password}</div>}
               </div>
