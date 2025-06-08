@@ -764,17 +764,7 @@ const EditarCapsula = () => {
             {form.Privacy === 'group' && (
               <div className="mt-4">
                 <label className="block text-white mb-2">Añadir destinatarios</label>
-                <form
-                  onSubmit={e => {
-                    e.preventDefault();
-                    if (recipientEmail && recipientRole && !recipients.some(r => r.email === recipientEmail)) {
-                      setRecipients(prev => [...prev, { email: recipientEmail, role: recipientRole }]);
-                      setRecipientEmail('');
-                      setRecipientRole('Reader');
-                    }
-                  }}
-                  className="flex gap-2 mb-2"
-                >
+                <div className="flex gap-2 mb-2">
                   <input
                     type="email"
                     placeholder="Correo del destinatario"
@@ -792,12 +782,23 @@ const EditarCapsula = () => {
                     <option value="Collaborator">Colaborador</option>
                   </select>
                   <button
-                    type="submit"
+                    type="button"
                     className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full font-bold hover:bg-[#e6d047] transition-colors"
+                    onClick={() => {
+                      if (
+                        recipientEmail &&
+                        recipientRole &&
+                        !recipients.some(r => r.email === recipientEmail)
+                      ) {
+                        setRecipients(prev => [...prev, { email: recipientEmail, role: recipientRole }]);
+                        setRecipientEmail('');
+                        setRecipientRole('Reader');
+                      }
+                    }}
                   >
                     Añadir
                   </button>
-                </form>
+                </div>
                 <div>
                   <span className="text-[#F5E050]">Destinatarios:</span>
                   <ul className="ml-4 list-disc">
