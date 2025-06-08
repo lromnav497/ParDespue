@@ -568,23 +568,32 @@ const EditarCapsula = () => {
                 ))}
               </div>
             </div>
-            {/* Nueva contraseña (obligatoria si es privada, pero si se deja en blanco se mantiene la anterior) */}
+            {/* Contraseña (obligatoria si antes no era privada y ahora sí, opcional si ya era privada) */}
             {form.Privacy === 'private' && (
               <div>
-                <label className="block text-white mb-2">Contraseña</label>
+                <label className="block text-white mb-2">
+                  Contraseña
+                  <span className="text-[#F5E050] font-bold">
+                    {capsula.Privacy !== 'private' ? ' *' : ''}
+                  </span>
+                </label>
                 <input
                   type="password"
                   name="Password"
                   value={form.Password || ''}
                   onChange={handleChange}
                   className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
-                  placeholder="Dejar vacío para mantener la contraseña actual"
-                  required={!capsula.Password} // Solo obligatoria si antes no tenía
+                  placeholder={
+                    capsula.Privacy === 'private'
+                      ? 'Dejar vacío para mantener la contraseña actual'
+                      : 'Debes establecer una contraseña'
+                  }
+                  required={capsula.Privacy !== 'private'}
                 />
                 <span className="text-xs text-gray-400">
-                  {capsula.Password
+                  {capsula.Privacy === 'private'
                     ? 'Si dejas el campo vacío, se mantendrá la contraseña actual.'
-                    : 'Debes establecer una contraseña.'}
+                    : 'Debes establecer una contraseña para hacer la cápsula privada.'}
                 </span>
               </div>
             )}
