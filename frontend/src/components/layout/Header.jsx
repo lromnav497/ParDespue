@@ -30,6 +30,7 @@ const Header = () => {
   const [plan, setPlan] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   // Escucha cambios de usuario
@@ -120,10 +121,21 @@ const Header = () => {
     <nav className="bg-[#2E2E7A] p-4 shadow-lg sticky top-0 z-50 animate-fade-in">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo y navegación principal */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 md:gap-8">
           <Link to="/" className="text-[#F5E050] passero-font text-2xl drop-shadow-lg transition-transform hover:scale-105">
             ParDespue
           </Link>
+          {/* Menú hamburguesa móvil */}
+          <button
+            className="md:hidden text-[#F5E050] text-2xl ml-2 focus:outline-none"
+            onClick={() => setMobileMenuOpen(v => !v)}
+            aria-label="Abrir menú"
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
+            </svg>
+          </button>
+          {/* Menú principal escritorio */}
           <ul className="hidden md:flex space-x-6">
             <li>
               <Link to="/" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
@@ -326,6 +338,52 @@ const Header = () => {
           )}
         </div>
       </div>
+
+      {/* Menú móvil */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex md:hidden animate-fade-in">
+          <div className="bg-[#2E2E7A] w-64 h-full shadow-2xl p-6 flex flex-col gap-6 animate-fade-in-up">
+            <button
+              className="self-end text-[#F5E050] text-2xl mb-4 focus:outline-none"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Cerrar menú"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <ul className="flex flex-col gap-4">
+              <li>
+                <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
+                  <FontAwesomeIcon icon={faHome} className="mr-2" />
+                  Inicio
+                </Link>
+              </li>
+              <li>
+                <Link to="/capsulas" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
+                  <FontAwesomeIcon icon={faBoxArchive} className="mr-2" />
+                  Mis Cápsulas
+                </Link>
+              </li>
+              <li>
+                <Link to="/explorar" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
+                  <FontAwesomeIcon icon={faCompass} className="mr-2" />
+                  Explorar
+                </Link>
+              </li>
+              <li>
+                <Link to="/ayuda" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
+                  <FontAwesomeIcon icon={faQuestionCircle} className="mr-2" />
+                  Ayuda
+                </Link>
+              </li>
+            </ul>
+          </div>
+          {/* Clic fuera cierra el menú */}
+          <div className="flex-1" onClick={() => setMobileMenuOpen(false)} />
+        </div>
+      )}
+
       <style>
         {`
           .animate-fade-in { animation: fadeIn 1s; }
