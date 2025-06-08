@@ -25,7 +25,14 @@ const ContentModel = {
       [contentId]
     );
     return result;
-  }
+  },
+
+  deleteByCapsule: async (capsuleId) => {
+    await db.execute(
+      `DELETE FROM Contents WHERE Capsule_ID = ?`,
+      [capsuleId]
+    );
+  },
 };
 
 module.exports = ContentModel;
