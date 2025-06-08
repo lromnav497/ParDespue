@@ -47,7 +47,21 @@ router.get('/privacy/:privacy', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-router.get('/user/:userId', (req, res) => CapsuleController.findByUser(req, res));
+router.get('/user/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const [rows] = await db.execute(
+      `SELECT c.*, cat.Name AS Category_Name
+       FROM Capsules c
+       LEFT JOIN Categories cat ON c.Category_ID = cat.Category_ID
+       WHERE c.Creator_User_ID = ?`,
+      [userId]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ message: 'Error al obtener cápsulas', error: err.message });
+  }
+});
 router.get('/public', (req, res) => CapsuleController.getPublicCapsules(req, res));
 
 // ¡ESTA RUTA DEBE IR ANTES!

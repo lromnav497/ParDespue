@@ -145,7 +145,7 @@ const CompartidasConmigo = () => {
                           Solo premium puede editar
                         </span>
                       )}
-                      {puedeEditar && !disabled && (
+                      {puedeEditar && disabled && (
                         <button
                           className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e] shadow-lg transition-all scale-100 hover:scale-110"
                           style={{ opacity: 1, pointerEvents: 'auto' }}
