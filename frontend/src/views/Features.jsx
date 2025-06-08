@@ -9,6 +9,7 @@ import {
   faEnvelope,
   faShieldAlt
 } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 const Features = () => {
   const features = [
@@ -45,33 +46,33 @@ const Features = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 py-16">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] py-16 animate-fade-in">
+      <div className="container mx-auto px-2 md:px-4">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl text-[#F5E050] passero-font mb-6">
+        <div className="text-center mb-16 animate-fade-in-down">
+          <h1 className="text-4xl md:text-5xl text-[#F5E050] passero-font mb-6 drop-shadow-lg">
             Características
           </h1>
-          <p className="text-gray-300 text-xl max-w-3xl mx-auto">
+          <p className="text-gray-300 text-xl max-w-3xl mx-auto animate-fade-in-up">
             Descubre todas las herramientas que tenemos para ayudarte a preservar 
             tus recuerdos más preciados de una manera única y segura.
           </p>
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {features.map((feature, index) => (
             <div 
               key={index}
-              className="bg-[#2E2E7A] rounded-xl p-6 transform hover:scale-105 transition-all"
+              className={`bg-[#2E2E7A] rounded-xl p-6 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200 group animate-fade-in-up delay-${index * 100}`}
             >
-              <div className="bg-[#1a1a4a] w-16 h-16 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-[#1a1a4a] w-16 h-16 rounded-full flex items-center justify-center mb-4 animate-bounce-slow">
                 <FontAwesomeIcon 
                   icon={feature.icon} 
                   className="text-[#F5E050] text-2xl"
                 />
               </div>
-              <h3 className="text-[#F5E050] text-xl mb-3 passero-font">
+              <h3 className="text-[#F5E050] text-xl mb-3 passero-font group-hover:underline transition-all">
                 {feature.title}
               </h3>
               <p className="text-gray-300">
@@ -82,20 +83,44 @@ const Features = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="bg-[#2E2E7A] rounded-xl p-8 text-center">
-          <h3 className="text-3xl text-[#F5E050] passero-font mb-4">
+        <div className="bg-[#2E2E7A] rounded-xl p-8 text-center shadow-2xl animate-fade-in-up">
+          <h3 className="text-3xl text-[#F5E050] passero-font mb-4 animate-fade-in-down">
             ¿Listo para empezar?
           </h3>
-          <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
+          <p className="text-gray-300 mb-6 max-w-2xl mx-auto animate-fade-in-up">
             Crea tu primera cápsula del tiempo digital y comienza a preservar 
             tus recuerdos más especiales.
           </p>
-          <button className="bg-[#F5E050] text-[#2E2E7A] px-8 py-3 rounded-full 
-            hover:bg-[#e6d047] transition-transform hover:scale-105">
+          <Link
+            to="/register"
+            className="inline-flex items-center bg-[#F5E050] text-[#2E2E7A] px-8 py-3 rounded-full 
+              hover:bg-[#e6d047] transition-all duration-200 shadow-lg font-bold text-lg scale-100 hover:scale-105 animate-bounce-slow"
+          >
             Crear Cuenta Gratis
-          </button>
+          </Link>
         </div>
       </div>
+      <style>
+        {`
+          .animate-fade-in { animation: fadeIn 1s; }
+          .animate-fade-in-down { animation: fadeInDown 1s; }
+          .animate-fade-in-up { animation: fadeInUp 1s; }
+          .animate-bounce-slow { animation: bounce 2.5s infinite; }
+          .delay-0 { animation-delay: 0s; }
+          .delay-100 { animation-delay: 0.1s; }
+          .delay-200 { animation-delay: 0.2s; }
+          .delay-300 { animation-delay: 0.3s; }
+          .delay-400 { animation-delay: 0.4s; }
+          .delay-500 { animation-delay: 0.5s; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0);}
+            50% { transform: translateY(-12px);}
+          }
+        `}
+      </style>
     </div>
   );
 };
