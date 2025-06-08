@@ -38,6 +38,7 @@ router.get('/capsule-shared/:userId', async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
+    console.error('Error en /capsule-shared/:userId:', err);
     res.status(500).json({ message: 'Error al obtener cápsulas compartidas', error: err.message });
   }
 });
