@@ -117,6 +117,15 @@ const Header = () => {
     navigate('/login');
   };
 
+  // 1. Añade la ruta de tu icono personalizado de corona (por ejemplo, en public/icons/corona.svg)
+  const iconCorona = "/icons/premiun.svg";
+  // 1. Importa tus iconos personalizados (ejemplo SVG en public)
+  const iconInicio = "/icons/inicio.svg";
+  const iconCapsulas = "/icons/capsulas.svg";
+  const iconCompartidas = "/icons/compartidas.svg";
+  const iconExplorar = "/icons/explorar.svg";
+  const iconAyuda = "/icons/ayuda.svg";
+
   return (
     <nav className="bg-[#2E2E7A] p-4 shadow-lg sticky top-0 z-50 animate-fade-in">
       <div className="container mx-auto flex justify-between items-center">
@@ -265,9 +274,10 @@ const Header = () => {
                           onError={e => { e.target.style.display = 'none'; }}
                         />
                         {plan === 'Premium' && (
-                          <FontAwesomeIcon
-                            icon={faCrown}
-                            className="absolute -top-2 -right-2 text-yellow-400 text-2xl drop-shadow-lg animate-bounce-slow"
+                          <img
+                            src={iconCorona}
+                            alt="Usuario Premium"
+                            className="absolute -top-2 -right-2 w-8 h-8 drop-shadow-lg animate-bounce-slow"
                             title="Usuario Premium"
                             style={{ zIndex: 2, filter: 'drop-shadow(0 2px 4px #0008)' }}
                           />
@@ -277,7 +287,12 @@ const Header = () => {
                   })()}
                   {/* Si NO hay foto, muestra la corona junto al nombre */}
                   {!user.profilePicture && plan === 'Premium' && (
-                    <FontAwesomeIcon icon={faCrown} className="ml-2 text-yellow-400 animate-bounce-slow" title="Usuario Premium" />
+                    <img
+                      src={iconCorona}
+                      alt="Usuario Premium"
+                      className="ml-2 w-6 h-6 animate-bounce-slow"
+                      title="Usuario Premium"
+                    />
                   )}
                 </span>
                 <FontAwesomeIcon icon={faChevronDown} className="ml-1" />
@@ -361,31 +376,31 @@ const Header = () => {
             <ul className="flex flex-col gap-4">
               <li>
                 <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
-                  <FontAwesomeIcon icon={faHome} className="mr-2" />
+                  <img src={iconInicio} alt="Inicio" className="mr-2 w-6 h-6 inline" />
                   Inicio
                 </Link>
               </li>
               <li>
                 <Link to="/capsulas" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
-                  <FontAwesomeIcon icon={faBoxArchive} className="mr-2" />
+                  <img src={iconCapsulas} alt="Mis Cápsulas" className="mr-2 w-6 h-6 inline" />
                   Mis Cápsulas
                 </Link>
               </li>
               <li>
                 <Link to="/compartidas" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
-                  <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                  <img src={iconCompartidas} alt="Compartidas conmigo" className="mr-2 w-6 h-6 inline" />
                   Compartidas conmigo
                 </Link>
               </li>
               <li>
                 <Link to="/explorar" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
-                  <FontAwesomeIcon icon={faCompass} className="mr-2" />
+                  <img src={iconExplorar} alt="Explorar" className="mr-2 w-6 h-6 inline" />
                   Explorar
                 </Link>
               </li>
               <li>
                 <Link to="/ayuda" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold text-lg">
-                  <FontAwesomeIcon icon={faQuestionCircle} className="mr-2" />
+                  <img src={iconAyuda} alt="Ayuda" className="mr-2 w-6 h-6 inline" />
                   Ayuda
                 </Link>
               </li>
