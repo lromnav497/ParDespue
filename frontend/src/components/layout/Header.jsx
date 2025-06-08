@@ -384,7 +384,10 @@ const Header = () => {
             <div className="relative">
               <button
                 className="flex items-center text-white hover:text-[#F5E050] transition-colors font-semibold"
-                onClick={() => setMenuOpen(v => !v)}
+                onClick={() => {
+                  setMenuOpen(v => !v);
+                  setNotifOpen(false); // Cierra el otro desplegable
+                }}
               >
                 {/* Solo muestra el icono si NO hay foto */}
                 {!user.profilePicture && (
