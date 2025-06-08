@@ -865,7 +865,7 @@ const EditarCapsula = () => {
                   // Si la cápsula antes NO era privada y ahora SÍ, y el campo está vacío, deshabilita guardar
                   form.Privacy === 'private' &&
                   capsula.Privacy !== 'private' &&
-                  !form.Password
+                  (!form.Password || form.Password.trim() === '')
                 }
               >
                 <FontAwesomeIcon icon={faSave} />
