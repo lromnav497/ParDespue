@@ -184,7 +184,7 @@ const Explorar = () => {
         ) : (
           <div className="relative my-8">
             <FloatingStars />
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in-up">
               {capsulas.length === 0 ? (
                 <div className="col-span-3 text-center text-gray-400 animate-fade-in-up">No se encontraron cápsulas.</div>
               ) : (
@@ -214,28 +214,28 @@ const Explorar = () => {
                         {/* Cuerpo de la cápsula espacial */}
                         <div className="relative flex flex-col items-center w-full">
                           {/* Cúpula */}
-                          <div className="w-24 h-8 bg-gradient-to-b from-[#F5E050] to-[#3d3d9e] rounded-t-full shadow-lg z-10" />
+                          <div className="w-36 h-12 bg-gradient-to-b from-[#F5E050] to-[#3d3d9e] rounded-t-full shadow-lg z-10" />
                           {/* Imagen de portada como ventana grande */}
-                          <div className="relative w-24 h-24 flex items-center justify-center -mt-6 z-20">
+                          <div className="relative w-36 h-36 flex items-center justify-center -mt-8 z-20">
                             <div className="absolute w-full h-full rounded-full border-4 border-[#F5E050] bg-[#23235b] shadow-inner" />
                             <img
                               src={getImageUrl(capsula)}
                               alt={capsula.titulo}
-                              className="w-20 h-20 object-cover rounded-full border-2 border-[#3d3d9e] shadow-lg"
+                              className="w-32 h-32 object-cover rounded-full border-2 border-[#3d3d9e] shadow-lg"
                             />
                           </div>
                           {/* Cuerpo principal */}
-                          <div className="w-28 bg-gradient-to-br from-[#23235b] via-[#2E2E7A] to-[#1a1a4a] border-2 border-[#F5E050] rounded-b-3xl rounded-t-xl shadow-2xl flex flex-col items-center pt-4 pb-4 px-3 relative z-10 -mt-2">
-                            <h3 className="text-[#F5E050] passero-font text-base mb-1 text-center group-hover:underline transition-all">
+                          <div className="w-44 bg-gradient-to-br from-[#23235b] via-[#2E2E7A] to-[#1a1a4a] border-2 border-[#F5E050] rounded-b-3xl rounded-t-xl shadow-2xl flex flex-col items-center pt-6 pb-6 px-4 relative z-10 -mt-4">
+                            <h3 className="text-[#F5E050] passero-font text-lg mb-2 text-center group-hover:underline transition-all">
                               {capsula.titulo}
                             </h3>
-                            <p className="text-gray-300 text-xs mb-1 line-clamp-2 text-center">{capsula.descripcion}</p>
-                            <div className="flex flex-wrap gap-1 mb-1 justify-center">
+                            <p className="text-gray-300 text-sm mb-2 line-clamp-2 text-center">{capsula.descripcion}</p>
+                            <div className="flex flex-wrap gap-1 mb-2 justify-center">
                               {capsula.tags?.map(tag => (
-                                <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-0.5 rounded text-[10px] animate-fade-in">{tag}</span>
+                                <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-0.5 rounded text-xs animate-fade-in">{tag}</span>
                               ))}
                             </div>
-                            <div className="flex justify-between items-center text-xs text-gray-400 w-full mb-1">
+                            <div className="flex justify-between items-center text-sm text-gray-400 w-full mb-2">
                               <span className="bg-[#3d3d9e] text-white px-2 py-0.5 rounded">{capsula.categoria}</span>
                               <span className="flex items-center">
                                 <FontAwesomeIcon icon={faHeart} className="mr-1 text-pink-500 animate-fade-in" />
@@ -246,7 +246,7 @@ const Explorar = () => {
                                 {capsula.views ?? capsula.Views ?? 0}
                               </span>
                             </div>
-                            <div className="flex justify-between items-center text-[10px] text-gray-400 w-full">
+                            <div className="flex justify-between items-center text-xs text-gray-400 w-full">
                               <span>
                                 {new Date(capsula.fechaCreacion).toLocaleDateString()}
                               </span>
@@ -254,12 +254,12 @@ const Explorar = () => {
                                 {apertura.toLocaleDateString()}
                               </span>
                             </div>
-                            <div className="mt-1 text-[10px] text-[#F5E050] font-semibold text-center">
+                            <div className="mt-2 text-xs text-[#F5E050] font-semibold text-center">
                               {capsula.autor || 'Desconocido'}
                             </div>
                           </div>
                           {/* Fuego de propulsión */}
-                          <div className="w-10 h-8 bg-gradient-to-b from-[#F5E050] via-[#e6d047] to-transparent rounded-b-full blur-sm opacity-80 animate-capsule-fire -mt-2" />
+                          <div className="w-16 h-10 bg-gradient-to-b from-[#F5E050] via-[#e6d047] to-transparent rounded-b-full blur-sm opacity-80 animate-capsule-fire -mt-3" />
                         </div>
                         {/* Overlay de bloqueo */}
                         {disabled && (
