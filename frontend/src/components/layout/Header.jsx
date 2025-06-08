@@ -148,31 +148,31 @@ const Header = () => {
           <ul className="hidden md:flex space-x-6">
             <li>
               <Link to="/" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <img src={iconInicio} alt="Inicio" className="mr-2 w-6 h-6 inline filter invert brightness-0" />
+                <img src={iconInicio} alt="Inicio" className="mr-2 w-8 h-8 inline filter invert brightness-0" />
                 Inicio
               </Link>
             </li>
             <li>
               <Link to="/capsulas" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <img src={iconCapsulas} alt="Mis Cápsulas" className="mr-2 w-6 h-6 inline filter invert brightness-0" />
+                <img src={iconCapsulas} alt="Mis Cápsulas" className="mr-2 w-8 h-8 inline filter invert brightness-0" />
                 Mis Cápsulas
               </Link>
             </li>
             <li>
               <Link to="/compartidas" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <img src={iconCompartidas} alt="Compartidas conmigo" className="mr-2 w-6 h-6 inline filter invert brightness-0" />
+                <img src={iconCompartidas} alt="Compartidas conmigo" className="mr-2 w-8 h-8 inline filter invert brightness-0" />
                 Compartidas conmigo
               </Link>
             </li>
             <li>
               <Link to="/explorar" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <img src={iconExplorar} alt="Explorar" className="mr-2 w-6 h-6 inline filter invert brightness-0" />
+                <img src={iconExplorar} alt="Explorar" className="mr-2 w-8 h-8 inline filter invert brightness-0" />
                 Explorar
               </Link>
             </li>
             <li>
               <Link to="/ayuda" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
-                <img src={iconAyuda} alt="Ayuda" className="mr-2 w-6 h-6 inline filter invert brightness-0" />
+                <img src={iconAyuda} alt="Ayuda" className="mr-2 w-8 h-8 inline filter invert brightness-0" />
                 Ayuda
               </Link>
             </li>
@@ -277,9 +277,9 @@ const Header = () => {
                           <img
                             src={iconCorona}
                             alt="Usuario Premium"
-                            className="absolute -top-2 -right-2 w-8 h-8 drop-shadow-lg animate-bounce-slow"
+                            className="absolute -top-2 -right-2 w-10 h-10 drop-shadow-lg animate-bounce-slow filter invert brightness-0"
                             title="Usuario Premium"
-                            style={{ zIndex: 2, filter: 'drop-shadow(0 2px 4px #0008)' }}
+                            style={{ zIndex: 2, filter: 'drop-shadow(0 2px 4px #0008) invert(1) brightness(0)' }}
                           />
                         )}
                       </span>
@@ -290,7 +290,7 @@ const Header = () => {
                     <img
                       src={iconCorona}
                       alt="Usuario Premium"
-                      className="ml-2 w-6 h-6 animate-bounce-slow"
+                      className="ml-2 w-8 h-8 animate-bounce-slow filter invert brightness-0"
                       title="Usuario Premium"
                     />
                   )}
