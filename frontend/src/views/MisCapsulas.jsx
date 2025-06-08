@@ -382,7 +382,7 @@ const MisCapsulas = () => {
                         ? 'border-4 border-yellow-400 animate-shake'
                         : ''
                       }
-                      ${disabled ? 'opacity-60 pointer-events-none select-none' : 'hover:scale-105'}
+                      ${disabled ? 'grayscale-[0.2]' : 'hover:scale-105'}
                     `}
                     tabIndex={-1}
                   >
