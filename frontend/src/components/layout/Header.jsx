@@ -270,7 +270,7 @@ const Header = () => {
                           src={imgUrl}
                           alt="Foto de perfil"
                           className="w-14 h-14 rounded-full object-cover border-4 border-[#F5E050] shadow-xl transition-transform duration-200 group-hover:scale-105 group-hover:ring-4 group-hover:ring-[#F5E050]/50 bg-white"
-                          style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.18)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}
+                          style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}
                           onError={e => { e.target.style.display = 'none'; }}
                         />
                         {plan === 'Premium' && (
@@ -279,7 +279,10 @@ const Header = () => {
                             alt="Usuario Premium"
                             className="absolute -top-2 -right-2 w-10 h-10 drop-shadow-lg animate-bounce-slow"
                             title="Usuario Premium"
-                            style={{ zIndex: 2 }}
+                            style={{
+                              zIndex: 2,
+                              filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)'
+                            }}
                           />
                         )}
                       </span>
