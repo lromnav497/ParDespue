@@ -266,13 +266,15 @@ const MisCapsulas = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 md:px-4 py-8 min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] animate-fade-in">
       {/* Encabezado */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl text-[#F5E050] passero-font">Mis Cápsulas del Tiempo</h1>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 animate-fade-in-down">
+        <h1 className="text-3xl md:text-4xl text-[#F5E050] passero-font drop-shadow-lg text-center md:text-left">
+          Mis Cápsulas del Tiempo
+        </h1>
         <button
           className="bg-[#F5E050] text-[#2E2E7A] px-6 py-3 rounded-full 
-            hover:bg-[#e6d047] transition-all flex items-center gap-2"
+            hover:bg-[#e6d047] transition-all flex items-center gap-2 shadow-lg font-bold scale-100 hover:scale-105"
           onClick={() => navigate('/crear-capsula')}
         >
           <FontAwesomeIcon icon={faPlus} />
@@ -281,15 +283,15 @@ const MisCapsulas = () => {
       </div>
 
       {/* Filtros */}
-      <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
+      <div className="flex gap-2 md:gap-4 mb-8 overflow-x-auto pb-2 animate-fade-in-up">
         {filtros.map(filtro => (
           <button
             key={filtro.value}
             onClick={() => setActiveFilter(filtro.value)}
-            className={`px-4 py-2 rounded-full whitespace-nowrap
+            className={`px-4 py-2 rounded-full whitespace-nowrap font-semibold transition-all duration-200
               ${activeFilter === filtro.value 
-                ? 'bg-[#F5E050] text-[#2E2E7A]' 
-                : 'bg-[#1a1a4a] text-white hover:bg-[#3d3d9e]'}`}
+                ? 'bg-[#F5E050] text-[#2E2E7A] scale-105 shadow-lg'
+                : 'bg-[#1a1a4a] text-white hover:bg-[#3d3d9e] hover:scale-105'}`}
           >
             {filtro.label}
           </button>
@@ -298,11 +300,11 @@ const MisCapsulas = () => {
 
       {/* Grid de cápsulas */}
       {loading ? (
-        <div className="text-center text-[#F5E050]">Cargando cápsulas...</div>
+        <div className="text-center text-[#F5E050] animate-pulse py-10">Cargando cápsulas...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
           {filteredCapsulas.length === 0 ? (
-            <div className="col-span-3 text-center text-gray-400">No tienes cápsulas.</div>
+            <div className="col-span-3 text-center text-gray-400 animate-fade-in-up">No tienes cápsulas.</div>
           ) : (
             filteredCapsulas.map((capsula, idx) => {
               const ahora = new Date();
@@ -319,7 +321,6 @@ const MisCapsulas = () => {
 
               // Permisos para editar/eliminar
               const isPremium = plan && plan.toLowerCase() === 'premium';
-              // Premium: puede editar/eliminar siempre. Básico: solo eliminar si abierta.
               const puedeEditar = isPremium && disabled;
               const puedeEliminar = isPremium || !disabled;
 
@@ -327,73 +328,73 @@ const MisCapsulas = () => {
                 <div
                   key={capsula.Capsule_ID}
                   data-capsule-id={capsula.Capsule_ID}
-                  className={`bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-default relative ${
+                  className={`bg-[#2E2E7A] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-default relative group ${
                     String(capsula.Capsule_ID) === localStorage.getItem('highlight_capsule')
                       ? 'border-4 border-yellow-400 animate-shake'
                       : ''
                   }`}
-                  // No onClick aquí, para que no sea clickable nunca el card
                   tabIndex={-1}
                 >
                   <div className="relative">
                     <img 
                       src={imageUrl}
                       alt={capsula.Title}
-                      className={`w-full h-48 object-cover ${disabled ? 'opacity-60' : ''}`}
+                      className={`w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105 ${disabled ? 'opacity-60' : ''}`}
                       draggable={false}
                       style={{ userSelect: 'none', pointerEvents: 'none' }}
                     />
-                    {/* Overlay de "No disponible" solo visual, no bloquea botones */}
+                    {/* Overlay de "No disponible" */}
                     {disabled && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10 select-none pointer-events-none">
-                        <FontAwesomeIcon icon={faLock} className="text-4xl text-[#F5E050] mb-2" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-10 select-none pointer-events-none animate-fade-in">
+                        <FontAwesomeIcon icon={faLock} className="text-4xl text-[#F5E050] mb-2 animate-bounce-slow" />
                         <span className="text-[#F5E050] text-sm font-bold flex items-center gap-2">
                           No disponible hasta {apertura.toLocaleDateString()}
                         </span>
                       </div>
                     )}
-                    {/* Botones SIEMPRE por encima del overlay y sin opacidad */}
+                    {/* Botones de acción */}
                     <div className="absolute top-4 right-4 flex gap-2 z-30">
-                      {/* CAPSULA CERRADA: solo premium puede editar/eliminar */}
                       {disabled && isPremium && (
                         <>
                           <button
-                            className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e] shadow-lg"
+                            className="p-2 bg-[#1a1a4a] rounded-full text-[#F5E050] hover:bg-[#3d3d9e] shadow-lg transition-all scale-100 hover:scale-110"
                             style={{ opacity: 1, pointerEvents: 'auto' }}
                             onClick={e => {
                               e.stopPropagation();
                               handleProtectedAction('editar', capsula);
                             }}
+                            title="Editar"
                           >
                             <FontAwesomeIcon icon={faEdit} />
                           </button>
                           <button
-                            className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e] shadow-lg"
+                            className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e] shadow-lg transition-all scale-100 hover:scale-110"
                             style={{ opacity: 1, pointerEvents: 'auto' }}
                             onClick={e => {
                               e.stopPropagation();
                               handleDelete(capsula.Capsule_ID);
                             }}
+                            title="Eliminar"
                           >
                             <FontAwesomeIcon icon={faTrash} />
                           </button>
                         </>
                       )}
-                      {/* CAPSULA ABIERTA: cualquier usuario puede eliminar, nadie puede editar */}
                       {!disabled && capsula.Creator_User_ID === userId && (
                         <button
-                          className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e] shadow-lg"
+                          className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e] shadow-lg transition-all scale-100 hover:scale-110"
                           style={{ opacity: 1, pointerEvents: 'auto' }}
                           onClick={e => {
                             e.stopPropagation();
                             handleDelete(capsula.Capsule_ID);
                           }}
+                          title="Eliminar"
                         >
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
                       )}
                     </div>
-                    {/* Solo puedes ver la cápsula si está abierta o eres premium */}
+                    {/* Botón invisible para ver la cápsula */}
                     {(!disabled || isPremium) && (
                       <button
                         className="absolute inset-0 w-full h-full z-10"
@@ -409,12 +410,10 @@ const MisCapsulas = () => {
                       />
                     )}
                   </div>
-                  
                   <div className="p-4">
-                    <h3 className="text-[#F5E050] passero-font text-xl mb-2">
+                    <h3 className="text-[#F5E050] passero-font text-xl mb-2 group-hover:underline transition-all">
                       {capsula.Title}
                     </h3>
-                    
                     <div className="space-y-2 text-sm text-gray-300">
                       <p className="flex items-center gap-2">
                         <FontAwesomeIcon icon={faClock} />
@@ -460,24 +459,35 @@ const MisCapsulas = () => {
         <div>{modal.message}</div>
       </Modal>
 
-      {/* Agrega animación shake */}
+      {/* Animaciones */}
       <style>
       {`
-@keyframes shake {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-8px); }
-  40% { transform: translateX(8px); }
-  60% { transform: translateX(-8px); }
-  80% { transform: translateX(8px); }
-  100% { transform: translateX(0); }
-}
-.animate-shake {
-  animation: shake 0.7s;
-  box-shadow: 0 0 0 4px #F5E050;
-  z-index: 10;
-}
-`}
-</style>
+        .animate-fade-in { animation: fadeIn 1s; }
+        .animate-fade-in-down { animation: fadeInDown 1s; }
+        .animate-fade-in-up { animation: fadeInUp 1s; }
+        .animate-bounce-slow { animation: bounce 2s infinite; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0);}
+          50% { transform: translateY(-10px);}
+        }
+        @keyframes shake {
+          0% { transform: translateX(0); }
+          20% { transform: translateX(-8px); }
+          40% { transform: translateX(8px); }
+          60% { transform: translateX(-8px); }
+          80% { transform: translateX(8px); }
+          100% { transform: translateX(0); }
+        }
+        .animate-shake {
+          animation: shake 0.7s;
+          box-shadow: 0 0 0 4px #F5E050;
+          z-index: 10;
+        }
+      `}
+      </style>
     </div>
   );
 };

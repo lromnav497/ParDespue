@@ -117,34 +117,34 @@ const Header = () => {
   };
 
   return (
-    <nav className="bg-[#2E2E7A] p-4">
+    <nav className="bg-[#2E2E7A] p-4 shadow-lg sticky top-0 z-50 animate-fade-in">
       <div className="container mx-auto flex justify-between items-center">
+        {/* Logo y navegación principal */}
         <div className="flex items-center gap-8">
-          <Link to="/" className="text-[#F5E050] passero-font text-2xl">
+          <Link to="/" className="text-[#F5E050] passero-font text-2xl drop-shadow-lg transition-transform hover:scale-105">
             ParDespue
           </Link>
-          
           <ul className="hidden md:flex space-x-6">
             <li>
-              <Link to="/" className="text-white hover:text-[#F5E050] transition-colors flex items-center">
+              <Link to="/" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
                 <FontAwesomeIcon icon={faHome} className="mr-2" />
                 Inicio
               </Link>
             </li>
             <li>
-              <Link to="/capsulas" className="text-white hover:text-[#F5E050] transition-colors flex items-center">
+              <Link to="/capsulas" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
                 <FontAwesomeIcon icon={faBoxArchive} className="mr-2" />
                 Mis Cápsulas
               </Link>
             </li>
             <li>
-              <Link to="/explorar" className="text-white hover:text-[#F5E050] transition-colors flex items-center">
+              <Link to="/explorar" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
                 <FontAwesomeIcon icon={faCompass} className="mr-2" />
                 Explorar
               </Link>
             </li>
             <li>
-              <Link to="/ayuda" className="text-white hover:text-[#F5E050] transition-colors flex items-center">
+              <Link to="/ayuda" className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold">
                 <FontAwesomeIcon icon={faQuestionCircle} className="mr-2" />
                 Ayuda
               </Link>
@@ -152,23 +152,24 @@ const Header = () => {
           </ul>
         </div>
 
+        {/* Acciones de usuario */}
         <div className="flex gap-4 items-center">
           {user && (
             <div className="relative">
               <button
-                className="text-white hover:text-[#F5E050] relative"
+                className="text-white hover:text-[#F5E050] relative transition-colors"
                 onClick={handleBellClick}
                 aria-label="Notificaciones"
               >
-                <FontAwesomeIcon icon={faBell} />
+                <FontAwesomeIcon icon={faBell} className="text-xl" />
                 {showBadge && (
-                  <span className="absolute -top-2 -right-2 bg-[#F5E050] text-[#2E2E7A] rounded-full px-2 text-xs font-bold">
+                  <span className="absolute -top-2 -right-2 bg-[#F5E050] text-[#2E2E7A] rounded-full px-2 text-xs font-bold animate-bounce-slow shadow-lg">
                     {notifications.length}
                   </span>
                 )}
               </button>
               {notifOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-[#2E2E7A] rounded-lg shadow-lg z-50 p-4">
+                <div className="absolute right-0 mt-2 w-80 bg-[#2E2E7A] rounded-lg shadow-2xl z-50 p-4 animate-fade-in-up border border-[#F5E050]/30">
                   <h4 className="text-[#F5E050] font-bold mb-2">Notificaciones</h4>
                   {notifications.length === 0 ? (
                     <div className="text-white">No tienes notificaciones recientes.</div>
@@ -177,7 +178,7 @@ const Header = () => {
                       {notifications.map(n => (
                         <li
                           key={n.Notification_ID}
-                          className="text-white border-b border-[#3d3d9e] py-2 cursor-pointer hover:bg-[#1a1a4a]"
+                          className="text-white border-b border-[#3d3d9e] py-2 cursor-pointer hover:bg-[#1a1a4a] transition-all"
                           onClick={() => {
                             if (n.Capsule_ID) {
                               localStorage.setItem('highlight_capsule', n.Capsule_ID);
@@ -193,7 +194,7 @@ const Header = () => {
                     </ul>
                   )}
                   <button
-                    className="mt-2 text-[#F5E050] underline"
+                    className="mt-2 text-[#F5E050] underline hover:text-white transition-all"
                     onClick={() => { setNotifOpen(false); navigate('/notificaciones'); }}
                   >
                     Ver todas
@@ -203,18 +204,19 @@ const Header = () => {
             </div>
           )}
 
+          {/* Botones login/registro o menú usuario */}
           {!user ? (
             <>
               <Link 
                 to="/login" 
-                className="text-white hover:text-[#F5E050] transition-colors flex items-center"
+                className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold"
               >
                 <FontAwesomeIcon icon={faUser} className="mr-2" />
                 Iniciar Sesión
               </Link>
               <Link 
                 to="/register" 
-                className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full hover:bg-[#e6d047] transition-colors"
+                className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full hover:bg-[#e6d047] transition-all font-bold shadow"
               >
                 Registrarse
               </Link>
@@ -222,7 +224,7 @@ const Header = () => {
           ) : (
             <div className="relative">
               <button
-                className="flex items-center text-white hover:text-[#F5E050] transition-colors"
+                className="flex items-center text-white hover:text-[#F5E050] transition-colors font-semibold"
                 onClick={() => setMenuOpen(v => !v)}
               >
                 {/* Solo muestra el icono si NO hay foto */}
@@ -247,7 +249,7 @@ const Header = () => {
                         {plan === 'Premium' && (
                           <FontAwesomeIcon
                             icon={faCrown}
-                            className="absolute -top-2 -right-2 text-yellow-400 text-2xl drop-shadow-lg"
+                            className="absolute -top-2 -right-2 text-yellow-400 text-2xl drop-shadow-lg animate-bounce-slow"
                             title="Usuario Premium"
                             style={{ zIndex: 2, filter: 'drop-shadow(0 2px 4px #0008)' }}
                           />
@@ -257,37 +259,37 @@ const Header = () => {
                   })()}
                   {/* Si NO hay foto, muestra la corona junto al nombre */}
                   {!user.profilePicture && plan === 'Premium' && (
-                    <FontAwesomeIcon icon={faCrown} className="ml-2 text-yellow-400" title="Usuario Premium" />
+                    <FontAwesomeIcon icon={faCrown} className="ml-2 text-yellow-400 animate-bounce-slow" title="Usuario Premium" />
                   )}
                 </span>
-                <FontAwesomeIcon icon={faChevronDown} />
+                <FontAwesomeIcon icon={faChevronDown} className="ml-1" />
               </button>
               {menuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-[#2E2E7A] rounded-lg shadow-lg z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-[#2E2E7A] rounded-lg shadow-2xl z-50 animate-fade-in-up border border-[#F5E050]/30">
                   <Link
                     to="/mi-cuenta"
-                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a]"
+                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
                     onClick={() => setMenuOpen(false)}
                   >
                     Mi Perfil
                   </Link>
                   <Link
                     to="/mi-cuenta?suscripciones"
-                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a]"
+                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
                     onClick={() => setMenuOpen(false)}
                   >
                     Mis Suscripciones
                   </Link>
                   <Link
                     to="/mi-cuenta?capsulas"
-                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a]"
+                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
                     onClick={() => setMenuOpen(false)}
                   >
                     Mis Cápsulas
                   </Link>
                   <Link
                     to="/mi-cuenta?configuracion"
-                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a]"
+                    className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
                     onClick={() => setMenuOpen(false)}
                   >
                     Configuración
@@ -297,14 +299,14 @@ const Header = () => {
                     <>
                       <Link
                         to="/todas-capsulas"
-                        className="block px-4 py-2 text-[#F5E050] hover:bg-[#1a1a4a] font-bold"
+                        className="block px-4 py-2 text-[#F5E050] hover:bg-[#1a1a4a] font-bold transition-all"
                         onClick={() => setMenuOpen(false)}
                       >
                         Todas las Cápsulas
                       </Link>
                       <Link
                         to="/panel-moderacion"
-                        className="block px-4 py-2 text-[#F5E050] hover:bg-[#1a1a4a] font-bold"
+                        className="block px-4 py-2 text-[#F5E050] hover:bg-[#1a1a4a] font-bold transition-all"
                         onClick={() => setMenuOpen(false)}
                       >
                         Panel Moderación
@@ -313,7 +315,7 @@ const Header = () => {
                   )}
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-white hover:bg-[#1a1a4a] flex items-center"
+                    className="w-full text-left px-4 py-2 text-white hover:bg-[#1a1a4a] flex items-center transition-all"
                   >
                     <FontAwesomeIcon icon={faRightFromBracket} className="mr-2" />
                     Cerrar sesión
@@ -324,6 +326,19 @@ const Header = () => {
           )}
         </div>
       </div>
+      <style>
+        {`
+          .animate-fade-in { animation: fadeIn 1s; }
+          .animate-fade-in-up { animation: fadeInUp 0.7s; }
+          .animate-bounce-slow { animation: bounce 2s infinite; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0);}
+            50% { transform: translateY(-10px);}
+          }
+        `}
+      </style>
     </nav>
   );
 };

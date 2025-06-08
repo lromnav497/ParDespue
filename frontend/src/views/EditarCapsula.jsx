@@ -348,11 +348,11 @@ const EditarCapsula = () => {
     navigate(-1);
   };
 
-  if (loading) return <div className="text-center text-[#F5E050] py-10">Cargando cápsula...</div>;
+  if (loading) return <div className="text-center text-[#F5E050] py-10 animate-pulse">Cargando cápsula...</div>;
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="bg-[#1a1a4a] text-[#F5E050] p-8 rounded-lg shadow-lg text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b]">
+        <div className="bg-[#1a1a4a] text-[#F5E050] p-8 rounded-lg shadow-lg text-center animate-fade-in-down">
           <h2 className="text-2xl font-bold mb-4">No se puede editar la cápsula</h2>
           <p>
             {error.includes('abierta')
@@ -360,7 +360,7 @@ const EditarCapsula = () => {
               : error}
           </p>
           <button
-            className="mt-6 px-4 py-2 bg-[#F5E050] text-[#2E2E7A] rounded hover:bg-[#e6d047]"
+            className="mt-6 px-4 py-2 bg-[#F5E050] text-[#2E2E7A] rounded hover:bg-[#e6d047] transition-all"
             onClick={() => window.history.back()}
           >
             Volver atrás
@@ -369,25 +369,25 @@ const EditarCapsula = () => {
       </div>
     );
   }
-  if (!capsula) return <div className="text-center text-red-500 py-10">No se encontró la cápsula.</div>;
+  if (!capsula) return <div className="text-center text-red-500 py-10 animate-fade-in-up">No se encontró la cápsula.</div>;
 
   return (
-    <div className="min-h-screen bg-gray-900 py-8">
-      <div className="container mx-auto px-4">
-        <div className="bg-[#2E2E7A] rounded-xl p-8 shadow-lg max-w-3xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl text-[#F5E050] passero-font">Editar Cápsula</h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] py-8 animate-fade-in">
+      <div className="container mx-auto px-2 md:px-4">
+        <div className="bg-[#2E2E7A] rounded-xl p-6 md:p-8 shadow-2xl max-w-3xl mx-auto animate-fade-in-up">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h1 className="text-3xl text-[#F5E050] passero-font drop-shadow-lg">Editar Cápsula</h1>
             <div className="flex gap-2">
               <button
                 onClick={handleCancelar}
-                className="px-4 py-2 bg-[#1a1a4a] text-white rounded-full hover:bg-[#3d3d9e] flex items-center gap-2"
+                className="px-4 py-2 bg-[#1a1a4a] text-white rounded-full hover:bg-[#3d3d9e] flex items-center gap-2 transition-all shadow"
               >
                 <FontAwesomeIcon icon={faArrowLeft} />
                 Cancelar
               </button>
               <button
                 onClick={handleGuardar}
-                className="px-4 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full hover:bg-[#e6d047] flex items-center gap-2"
+                className="px-4 py-2 bg-[#F5E050] text-[#2E2E7A] rounded-full hover:bg-[#e6d047] flex items-center gap-2 transition-all shadow font-bold"
               >
                 <FontAwesomeIcon icon={faSave} />
                 Guardar
@@ -404,7 +404,7 @@ const EditarCapsula = () => {
                   name="Title"
                   value={form.Title}
                   onChange={handleChange}
-                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
                 />
               </div>
               <div>
@@ -414,7 +414,7 @@ const EditarCapsula = () => {
                   name="Opening_Date"
                   value={form.Opening_Date}
                   onChange={handleChange}
-                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
                 />
               </div>
               <div>
@@ -423,7 +423,7 @@ const EditarCapsula = () => {
                   name="Category_ID"
                   value={form.Category_ID}
                   onChange={handleChange}
-                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
                 >
                   <option value="">Selecciona una categoría</option>
                   {categorias.map(cat => (
@@ -439,7 +439,7 @@ const EditarCapsula = () => {
                   name="Privacy"
                   value={form.Privacy}
                   onChange={handleChange}
-                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
                 >
                   <option value="private">Privada</option>
                   <option value="public">Pública</option>
@@ -453,7 +453,7 @@ const EditarCapsula = () => {
                 name="Description"
                 value={form.Description}
                 onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
                 rows={3}
               />
             </div>
@@ -464,7 +464,7 @@ const EditarCapsula = () => {
                 name="Tags"
                 value={form.Tags}
                 onChange={handleChange}
-                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
                 placeholder="ej: futuro, familia, trabajo"
               />
             </div>
@@ -477,7 +477,7 @@ const EditarCapsula = () => {
                   name="Password"
                   value={form.Password || ''}
                   onChange={handleChange}
-                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white"
+                  className="w-full bg-[#1a1a4a] border border-[#3d3d9e] rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#F5E050] transition-all"
                   placeholder="Dejar vacío para no cambiar"
                 />
               </div>
@@ -485,7 +485,7 @@ const EditarCapsula = () => {
             {/* Imagen de portada */}
             <div>
               <label className="block text-white mb-2">Imagen de portada</label>
-              <div className="flex items-center gap-6">
+              <div className="flex flex-col sm:flex-row items-center gap-6">
                 <div>
                   <input
                     type="file"
@@ -520,7 +520,7 @@ const EditarCapsula = () => {
                 {coverPreview && (
                   <button
                     type="button"
-                    className="ml-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-400"
+                    className="ml-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-400 transition-all"
                     onClick={async () => {
                       setCoverImage(null);
                       setCoverPreview('');
@@ -546,12 +546,12 @@ const EditarCapsula = () => {
               <h3 className="text-xl text-[#F5E050] mb-4">Archivos actuales</h3>
               <div className="flex flex-wrap gap-6">
                 {archivos.length === 0 && (
-                  <div className="text-gray-400">No hay archivos en esta cápsula.</div>
+                  <div className="text-gray-400 animate-fade-in-up">No hay archivos en esta cápsula.</div>
                 )}
                 {archivos.map((archivo, idx) => (
                   <div
                     key={archivo.id || archivo.Content_ID || idx}
-                    className="w-40 h-40 bg-[#F5E050] rounded-lg flex flex-col items-center justify-center overflow-hidden relative group shadow"
+                    className="w-40 h-40 bg-[#F5E050] rounded-lg flex flex-col items-center justify-center overflow-hidden relative group shadow transition-transform duration-200 hover:scale-105 animate-fade-in"
                   >
                     {archivo.type === 'image' && archivo.url && (
                       <img
@@ -585,7 +585,7 @@ const EditarCapsula = () => {
                     )}
                     <button
                       type="button"
-                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 hover:bg-red-400"
+                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 hover:bg-red-400 transition-all"
                       onClick={() => handleRemoveArchivo(archivo.id || archivo.Content_ID)}
                       title="Eliminar"
                     >
@@ -599,10 +599,10 @@ const EditarCapsula = () => {
             <div>
               <h3 className="text-xl text-[#F5E050] mb-4 mt-8">Agregar nuevos archivos</h3>
               <div
-                className="border-2 border-dashed border-[#3d3d9e] rounded-lg p-8 text-center cursor-pointer"
+                className="border-2 border-dashed border-[#3d3d9e] rounded-lg p-8 text-center cursor-pointer hover:border-[#F5E050] transition-all animate-fade-in"
                 onClick={() => fileInputRef.current.click()}
               >
-                <FontAwesomeIcon icon={faFileAlt} className="text-[#F5E050] text-4xl mb-4" />
+                <FontAwesomeIcon icon={faFileAlt} className="text-[#F5E050] text-4xl mb-4 animate-bounce-slow" />
                 <p className="text-white">Arrastra archivos aquí o haz clic para seleccionar</p>
                 <input
                   type="file"
@@ -616,7 +616,7 @@ const EditarCapsula = () => {
                 {nuevosArchivos.map((archivo, idx) => (
                   <div
                     key={idx}
-                    className="w-40 h-40 bg-[#F5E050] rounded-lg flex flex-col items-center justify-center overflow-hidden relative group shadow"
+                    className="w-40 h-40 bg-[#F5E050] rounded-lg flex flex-col items-center justify-center overflow-hidden relative group shadow transition-transform duration-200 hover:scale-105 animate-fade-in"
                   >
                     {archivo.type.startsWith('image') && (
                       <img
@@ -649,7 +649,7 @@ const EditarCapsula = () => {
                     )}
                     <button
                       type="button"
-                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 hover:bg-red-400"
+                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 hover:bg-red-400 transition-all"
                       onClick={() => handleRemoveNuevoArchivo(idx)}
                       title="Eliminar"
                     >
@@ -696,6 +696,21 @@ const EditarCapsula = () => {
           error={passwordError}
         />
       )}
+      <style>
+        {`
+          .animate-fade-in { animation: fadeIn 1s; }
+          .animate-fade-in-down { animation: fadeInDown 1s; }
+          .animate-fade-in-up { animation: fadeInUp 1s; }
+          .animate-bounce-slow { animation: bounce 2s infinite; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0);}
+            50% { transform: translateY(-10px);}
+          }
+        `}
+      </style>
     </div>
   );
 };

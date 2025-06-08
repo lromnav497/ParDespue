@@ -63,11 +63,11 @@ const Account = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] flex animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] flex flex-col md:flex-row animate-fade-in">
       {/* Sidebar */}
-      <div className="w-64 bg-[#2E2E7A] time-capsule shadow-2xl animate-fade-in-down">
+      <aside className="w-full md:w-64 bg-[#2E2E7A] time-capsule shadow-2xl animate-fade-in-down flex-shrink-0">
         <div className="p-6">
-          <h2 className="text-[#F5E050] passero-font text-xl mb-6 drop-shadow">Mi Cuenta</h2>
+          <h2 className="text-[#F5E050] passero-font text-xl mb-6 drop-shadow text-center md:text-left">Mi Cuenta</h2>
           <nav className="space-y-2">
             {menuItems.map(item => (
               <button
@@ -92,14 +92,14 @@ const Account = () => {
             ))}
           </nav>
         </div>
-      </div>
+      </aside>
 
       {/* Content Area */}
-      <div className="flex-1 p-8">
-        <div className="bg-[#2E2E7A] time-capsule rounded-xl p-6 min-h-[calc(100vh-4rem)] shadow-2xl animate-fade-in-up">
+      <main className="flex-1 p-2 md:p-8 flex flex-col items-center">
+        <div className="w-full max-w-4xl bg-[#2E2E7A] time-capsule rounded-xl p-4 md:p-6 min-h-[calc(100vh-4rem)] shadow-2xl animate-fade-in-up">
           {renderContent()}
         </div>
-      </div>
+      </main>
       <style>
         {`
           .animate-fade-in { animation: fadeIn 1s; }
