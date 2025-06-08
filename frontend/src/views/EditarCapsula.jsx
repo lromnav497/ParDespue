@@ -243,11 +243,13 @@ const EditarCapsula = () => {
     }
 
     // Detectar si se requiere contraseña
-    const cambiandoPrivacidad = capsula.Privacy === 'private' && form.Privacy !== 'private';
-    const cambiandoPassword = capsula.Password && form.Privacy === 'private' && form.Password && form.Password !== capsula.Password;
+    const eraPrivada = capsula.Privacy === 'private';
+    const ahoraPrivada = form.Privacy === 'private';
+    const cambiandoPrivacidadDePrivada = eraPrivada && !ahoraPrivada;
+    const cambiandoPassword = eraPrivada && ahoraPrivada && form.Password && form.Password !== capsula.Password;
 
-    if (!passwordValidated && (cambiandoPrivacidad || cambiandoPassword)) {
-      setPendingAction(cambiandoPrivacidad ? 'changePrivacy' : 'changePassword');
+    if (!passwordValidated && (cambiandoPrivacidadDePrivada || cambiandoPassword)) {
+      setPendingAction(cambiandoPrivacidadDePrivada ? 'changePrivacy' : 'changePassword');
       setShowPasswordModal(true);
       setLoading(false);
       return;
