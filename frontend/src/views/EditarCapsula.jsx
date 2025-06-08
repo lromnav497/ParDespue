@@ -358,27 +358,12 @@ const EditarCapsula = () => {
       }
 
       // ...después de actualizar la cápsula y archivos...
-      if (form.Privacy === 'group') {
-        // 1. Elimina todos los destinatarios actuales
+      // Elimina todos los destinatarios si la cápsula era de grupo y ahora NO es grupo
+      if (capsula.Privacy === 'group' && form.Privacy !== 'group') {
         await fetch(`/api/recipients/all/${id}`, { method: 'DELETE' });
-        // 2. Añade los nuevos destinatarios
-        const roleMap = { 'Reader': 2, 'Collaborator': 3 };
-        for (const recipient of recipients) {
-          const resUser = await fetch(`/api/users/email/${recipient.email}`);
-          const userData = await resUser.json();
-          if (resUser.ok && userData.User_ID) {
-            await fetch('/api/recipients', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                User_ID: userData.User_ID,
-                Capsule_ID: id,
-                Role_ID: roleMap[recipient.role]
-              }),
-            });
-          }
-        }
       }
+
+      // Si la cápsula es de grupo, solo gestiona los cambios individuales (ya lo haces en el frontend)
 
       setModal({
         open: true,
