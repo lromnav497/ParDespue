@@ -23,8 +23,8 @@ const swaggerDocument = yaml.load('./src/docs/swagger.yaml');
 const app = express();
 
 // Middleware para parsear JSON
-app.use(express.json({ limit: '200mb' }));
-app.use(express.urlencoded({ limit: '200mb', extended: true }));
+app.use(express.json({ limit: '1000mb' }));
+app.use(express.urlencoded({ limit: '1000mb', extended: true }));
 app.use(cors({
   origin: [
     'http://localhost:5173',
