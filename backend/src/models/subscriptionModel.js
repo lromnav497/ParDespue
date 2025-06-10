@@ -89,6 +89,62 @@ const SubscriptionModel = {
     return rows[0].count;
   },
 
+  // Obtiene todas las suscripciones del usuario
+  getUserSubscriptions: async (userId) => {
+    const [rows] = await db.execute(
+      `SELECT Subscription_ID as id, Type as nombre, End_Date as fecha_fin
+       FROM Subscriptions WHERE User_ID = ? ORDER BY End_Date DESC`, [userId]
+    );
+    return rows;
+  },
+
+  // Obtiene todas las transacciones del usuario
+  getUserTransactions: async (userId) => {
+    const [rows] = await db.execute(
+      `SELECT t.Transaction_ID as id, t.Date as fecha, t.Amount as monto, t.Status as estado, s.Type as descripcion
+       FROM Transactions t
+       JOIN Subscriptions s ON t.Subscription_ID = s.Subscription_ID
+       WHERE s.User_ID = ? ORDER BY t.Date DESC`, [userId]
+    );
+    return rows;
+  },
+
+  // Obtiene el Stripe_Subscription_ID para cancelar en Stripe
+  getStripeSubscriptionId: async (subId, userId) => {
+    const [rows] = await db.execute(
+      'SELECT Stripe_Subscription_ID FROM Subscriptions WHERE Subscription_ID = ? AND User_ID = ?',
+      [subId, userId]
+    );
+    if (rows.length && rows[0].Stripe_Subscription_ID) {
+      return rows[0].Stripe_Subscription_ID;
+    }
+    return null;
+  },
+
+  // Lógica de activación premium (antes estaba en el controlador)
+  activatePremium: async (userId, billing) => {
+    // Cancela cualquier suscripción activa anterior
+    await db.execute(
+      `UPDATE Subscriptions SET Status = 'canceled' WHERE User_ID = ? AND Status = 'active'`,
+      [userId]
+    );
+    // Crea la nueva suscripción
+    const [result] = await db.execute(
+      `INSERT INTO Subscriptions (User_ID, Type, Start_Date, End_Date, Status)
+       VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 1 ${billing === 'monthly' ? 'MONTH' : 'YEAR'}), 'active')`,
+      [userId, 'premium']
+    );
+    const subscriptionId = result.insertId;
+    // Crea la transacción
+    const amount = billing === 'monthly' ? 9.99 : 99.99;
+    await SubscriptionModel.createTransaction(
+      subscriptionId,
+      amount,
+      'card',
+      'completed'
+    );
+  },
+
   db
 };
 

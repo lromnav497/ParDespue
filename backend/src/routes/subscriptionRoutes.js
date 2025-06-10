@@ -29,7 +29,7 @@ router.post('/cancel/:id', authMiddleware, SubscriptionController.cancelSubscrip
 // Crear sesión de checkout de Stripe
 router.post('/create-checkout-session', authMiddleware, async (req, res) => {
   const { plan, billing } = req.body;
-  // Define los precios de tus productos según el plan y billing
+  // Define los precios de tus productos según el plan y tiempo de facturación
   const priceId = (plan === 'Premium' && billing === 'monthly')
     ? process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID
     : process.env.STRIPE_PREMIUM_ANNUAL_PRICE_ID;
@@ -44,7 +44,7 @@ router.post('/create-checkout-session', authMiddleware, async (req, res) => {
       mode: 'subscription',
       success_url: `${process.env.FRONTEND_URL}/suscripciones?success=1`,
       cancel_url: `${process.env.FRONTEND_URL}/suscripciones?canceled=1`,
-      customer_email: req.user.email, // si usas autenticación
+      customer_email: req.user.email, 
     });
     res.json({ url: session.url });
   } catch (err) {
@@ -52,7 +52,7 @@ router.post('/create-checkout-session', authMiddleware, async (req, res) => {
   }
 });
 
-// NUEVA RUTA: Obtener precios de Stripe
+// Obtener precios de Stripe
 router.get('/stripe-prices', async (req, res) => {
   try {
     const prices = await stripe.prices.list({
@@ -66,7 +66,7 @@ router.get('/stripe-prices', async (req, res) => {
   }
 });
 
-// NUEVA RUTA: Activar plan premium
+// Activar plan premium
 router.post('/activate-premium', authMiddleware, SubscriptionController.activatePremium);
 
 module.exports = router;

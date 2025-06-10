@@ -15,40 +15,60 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import CapsuleCreatedModal from '../components/modals/CapsuleCreatedModal';
 import Modal from '../components/modals/Modal';
-import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 const CrearCapsula = () => {
+  // Obtiene el usuario actual desde localStorage
   const user = JSON.parse(localStorage.getItem('user'));
   const userId = user?.id;
+
+  // Estado para el paso actual del formulario
   const [currentStep, setCurrentStep] = useState(0);
+
+  // Estado principal del formulario con todos los campos necesarios
   const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    fechaApertura: '',
-    categoriaId: '',
-    archivos: [],
-    privacidad: 'privada',
-    notificaciones: false,
-    tema: 'default',
-    tags: [],
-    password: '',
-    recipients: []
+    nombre: '',            // Nombre de la cápsula
+    descripcion: '',       // Descripción de la cápsula
+    fechaApertura: '',     // Fecha de apertura
+    categoriaId: '',       // Categoría seleccionada
+    archivos: [],          // Archivos subidos
+    privacidad: 'privada', // Tipo de privacidad
+    notificaciones: false, // Si se notificará antes de la apertura
+    tema: 'default',       // Tema visual (no usado aquí)
+    tags: [],              // Lista de tags
+    password: '',          // Contraseña (si es privada)
+    recipients: []         // Destinatarios (si es de grupo)
   });
+
+  // Estado para el input de tags
   const [tagInput, setTagInput] = useState('');
+  // Estado para el email del destinatario (privacidad grupo)
   const [recipientEmail, setRecipientEmail] = useState('');
+  // Estado para el rol del destinatario (privacidad grupo)
   const [recipientRole, setRecipientRole] = useState('Reader');
+  // Referencia al input de archivos
   const fileInputRef = useRef();
+  // Estado para mostrar el modal de éxito
   const [showModal, setShowModal] = useState(false);
+  // Estado para los archivos del carrusel del modal
   const [carruselArchivos, setCarruselArchivos] = useState([]);
+  // Estado para las categorías disponibles
   const [categorias, setCategorias] = useState([]);
+  // Estado para saber si el usuario puede crear cápsulas según su plan
   const [puedeCrear, setPuedeCrear] = useState(true);
+  // Estado para el plan actual del usuario
   const [plan, setPlan] = useState('Básico');
+  // Mensaje relacionado al plan
   const [planMsg, setPlanMsg] = useState('');
+  // Estado para la imagen de portada
   const [coverImage, setCoverImage] = useState(null);
+  // Estado para el ID de la cápsula creada
   const [createdCapsuleId, setCreatedCapsuleId] = useState(null);
+  // Estado para mostrar errores en un modal
   const [errorModal, setErrorModal] = useState({ open: false, message: '' });
+  // Estado para errores de validación por campo
   const [fieldErrors, setFieldErrors] = useState({});
 
+  // Carga las categorías al montar el componente
   useEffect(() => {
     fetch('/api/categories')
       .then(res => res.json())
@@ -56,16 +76,19 @@ const CrearCapsula = () => {
       .catch(() => setCategorias([]));
   }, []);
 
+  // Carga el plan del usuario y si puede crear cápsulas
   useEffect(() => {
     const fetchPlan = async () => {
       const user = JSON.parse(localStorage.getItem('user'));
       const token = user?.token;
       if (!token) return;
+      // Obtiene el plan actual
       const resPlan = await fetch('/api/subscriptions/my-plan', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const dataPlan = await resPlan.json();
       setPlan(dataPlan.plan || 'Básico');
+      // Verifica si puede crear cápsulas
       const res = await fetch('/api/subscriptions/can-create-capsule', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -76,6 +99,7 @@ const CrearCapsula = () => {
     fetchPlan();
   }, []);
 
+  // Definición de los pasos del formulario
   const steps = [
     { id: 0, title: 'Información', icon: faBoxArchive },
     { id: 1, title: 'Contenido', icon: faFileAlt },
@@ -83,21 +107,23 @@ const CrearCapsula = () => {
     { id: 3, title: 'Revisión', icon: faCheck }
   ];
 
-  // Validaciones por paso
+  // Validación de campos por paso
   const validateStep = () => {
     let errors = {};
     if (currentStep === 0) {
+      // Validaciones para el paso de información
       if (!formData.nombre.trim()) errors.nombre = 'El nombre es obligatorio';
       if (!formData.descripcion.trim()) errors.descripcion = 'La descripción es obligatoria';
       if (!formData.fechaApertura) errors.fechaApertura = 'La fecha de apertura es obligatoria';
       if (!formData.categoriaId) errors.categoriaId = 'Selecciona una categoría';
-      // Portada obligatoria
       if (!coverImage) errors.coverImage = 'La portada es obligatoria';
     }
     if (currentStep === 1) {
+      // Validación de archivos
       if (formData.archivos.length === 0) errors.archivos = 'Debes añadir al menos un archivo';
     }
     if (currentStep === 2) {
+      // Validaciones de privacidad
       if (formData.privacidad === 'privada' && !formData.password) errors.password = 'La contraseña es obligatoria para cápsulas privadas';
       if (formData.privacidad === 'grupos' && (!formData.recipients || formData.recipients.length === 0)) errors.recipients = 'Agrega al menos un destinatario';
     }
@@ -105,6 +131,7 @@ const CrearCapsula = () => {
     return Object.keys(errors).length === 0;
   };
 
+  // Maneja cambios en los inputs del formulario
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -114,9 +141,11 @@ const CrearCapsula = () => {
     setFieldErrors(prev => ({ ...prev, [name]: undefined }));
   };
 
-  // TAGS LOGIC
+  // --- Lógica de tags ---
+  // Actualiza el input de tag
   const handleTagInputChange = (e) => setTagInput(e.target.value);
 
+  // Añade un tag a la lista
   const handleAddTag = (e) => {
     e.preventDefault();
     const newTag = tagInput.trim();
@@ -129,6 +158,7 @@ const CrearCapsula = () => {
     setTagInput('');
   };
 
+  // Elimina un tag de la lista
   const handleRemoveTag = (tagToRemove) => {
     setFormData(prev => ({
       ...prev,
@@ -136,27 +166,28 @@ const CrearCapsula = () => {
     }));
   };
 
+  // Elimina un archivo tanto del backend como del frontend
   const handleRemoveArchivo = async (index) => {
     const archivo = formData.archivos[index];
-    // Elimina del backend
     try {
+      // Elimina el archivo físico del backend
       await fetch('/api/upload/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filePath: archivo.path }),
       });
     } catch (err) {
-      // Opcional: mostrar error si falla el borrado físico
+      // Si falla, solo muestra error en consola
       console.error('No se pudo eliminar el archivo físico:', err);
     }
-    // Elimina del frontend
+    // Elimina del estado local
     setFormData(prev => ({
       ...prev,
       archivos: prev.archivos.filter((_, i) => i !== index)
     }));
   };
 
-  // Subida de archivos
+  // Maneja la subida de archivos
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -166,10 +197,10 @@ const CrearCapsula = () => {
       return;
     }
 
-    // Sube a carpeta temporal
+    // Sube el archivo a una carpeta temporal en el backend
     const formDataFile = new FormData();
-    formDataFile.append('userId', userId); // Primero el userId
-    formDataFile.append('file', file);     // Luego el archivo
+    formDataFile.append('userId', userId);
+    formDataFile.append('file', file);
 
     const resUpload = await fetch('/api/upload/tmp', {
       method: 'POST',
@@ -177,6 +208,7 @@ const CrearCapsula = () => {
     });
     const data = await resUpload.json();
 
+    // Añade el archivo al estado local
     setFormData(prev => ({
       ...prev,
       archivos: [
@@ -184,20 +216,23 @@ const CrearCapsula = () => {
         {
           type: file.type,
           name: file.name,
-          file, // para preview local si quieres
-          tmpPath: data.filePath // guarda el path temporal
+          file, // Para preview local
+          tmpPath: data.filePath // Path temporal en el backend
         }
       ]
     }));
     setFieldErrors(prev => ({ ...prev, archivos: undefined }));
   };
 
+  // Avanza al siguiente paso si la validación es correcta
   const nextStep = () => {
     if (validateStep()) setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
   };
 
+  // Retrocede al paso anterior
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
+  // Renderiza el contenido de cada paso del formulario
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
@@ -652,9 +687,11 @@ const CrearCapsula = () => {
     }
   };
 
+  // Maneja la creación final de la cápsula
   const handleCreateCapsule = async () => {
     if (!validateStep()) return;
     try {
+      // Mapea la privacidad a los valores esperados por el backend
       const privacyMap = {
         'privada': 'private',
         'grupos': 'group',
@@ -663,10 +700,14 @@ const CrearCapsula = () => {
       const privacyValue = privacyMap[formData.privacidad] || 'private';
       const fechaCreacion = new Date();
       const fechaApertura = new Date(formData.fechaApertura);
+
+      // Valida que la fecha de apertura sea posterior a la de creación
       if (fechaApertura <= fechaCreacion) {
         setErrorModal({ open: true, message: 'La fecha de apertura debe ser posterior a la fecha de creación.' });
         return;
       }
+
+      // Prepara los datos para enviar al backend
       const formDataCapsule = new FormData();
       formDataCapsule.append('Title', formData.nombre);
       formDataCapsule.append('Description', formData.descripcion);
@@ -681,6 +722,8 @@ const CrearCapsula = () => {
       if (coverImage) {
         formDataCapsule.append('cover_image', coverImage);
       }
+
+      // Envía la solicitud para crear la cápsula
       const token = localStorage.getItem('token');
       const resCapsule = await fetch('/api/capsules', {
         method: 'POST',
@@ -692,6 +735,8 @@ const CrearCapsula = () => {
       if (!resCapsule.ok || !capsuleId) {
         throw new Error(capsuleData.message || 'Error al crear cápsula (ID no recibido)');
       }
+
+      // Mueve los archivos temporales a la cápsula y los registra en la base de datos
       for (const archivo of formData.archivos) {
         const resMove = await fetch('/api/upload/move', {
           method: 'POST',
@@ -706,6 +751,7 @@ const CrearCapsula = () => {
         if (resMove.ok) {
           archivo.path = data.filePath;
           delete archivo.tmpPath;
+          // Registra el contenido en la base de datos
           await fetch('/api/contents', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -718,12 +764,16 @@ const CrearCapsula = () => {
           });
         }
       }
+
+      // Si la cápsula es de grupo, añade los destinatarios
       if (privacyValue === 'group' && formData.recipients && formData.recipients.length > 0) {
         const roleMap = { 'Reader': 2, 'Collaborator': 3 };
         for (const recipient of formData.recipients) {
+          // Busca el usuario por email
           const resUser = await fetch(`/api/users/email/${recipient.email}`);
           const userData = await resUser.json();
           if (resUser.ok && userData.User_ID) {
+            // Añade el destinatario a la cápsula
             await fetch('/api/recipients', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -736,6 +786,8 @@ const CrearCapsula = () => {
           }
         }
       }
+
+      // Muestra el modal de éxito y guarda los archivos para el carrusel
       setCreatedCapsuleId(capsuleId);
       setCarruselArchivos(formData.archivos);
       setShowModal(true);
@@ -744,6 +796,7 @@ const CrearCapsula = () => {
     }
   };
 
+  // Devuelve el tipo de archivo a partir del mime
   function getTypeFromMime(mime) {
     if (mime.startsWith('image/')) return 'image';
     if (mime.startsWith('video/')) return 'video';

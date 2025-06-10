@@ -2,16 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faEdit,
   faFileAlt,
   faMusic,
   faLock,
-  faClock,
   faUser,
   faBoxArchive,
   faDownload,
-  faImage,
-  faVideo,
   faEye,
   faEyeSlash,
   faHeart
@@ -29,27 +25,32 @@ function getImageUrl(capsula) {
   return "https://picsum.photos/400/300";
 }
 
+// Componente para ver el detalle de una cápsula, sus archivos, comentarios e interacciones
 const VerCapsula = () => {
+  // Obtiene el parámetro de la URL (ID de la cápsula)
   const { id } = useParams();
   const navigate = useNavigate();
-  const [capsula, setCapsula] = useState(null);
-  const [archivos, setArchivos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(0);
-  const [likeLoading, setLikeLoading] = useState(false);
 
-  // Nuevo estado para comentarios
-  const [comentarios, setComentarios] = useState([]);
-  const [nuevoComentario, setNuevoComentario] = useState('');
-  const [comentLoading, setComentLoading] = useState(false);
-  const [editandoId, setEditandoId] = useState(null);
-  const [comentarioEditado, setComentarioEditado] = useState('');
-  const [modal, setModal] = useState({ open: false, title: '', message: '' });
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [miRol, setMiRol] = useState(null);
+  // Estados principales del componente
+  const [capsula, setCapsula] = useState(null); // Datos de la cápsula
+  const [archivos, setArchivos] = useState([]); // Archivos asociados a la cápsula
+  const [loading, setLoading] = useState(true); // Estado de carga
+  const [showPassword, setShowPassword] = useState(false); // Mostrar/ocultar contraseña
+  const [liked, setLiked] = useState(false); // Si el usuario dio like
+  const [likes, setLikes] = useState(0); // Número de likes
+  const [likeLoading, setLikeLoading] = useState(false); // Estado de carga para like
 
+  // Estados para comentarios
+  const [comentarios, setComentarios] = useState([]); // Lista de comentarios
+  const [nuevoComentario, setNuevoComentario] = useState(''); // Texto del nuevo comentario
+  const [comentLoading, setComentLoading] = useState(false); // Estado de carga para comentar
+  const [editandoId, setEditandoId] = useState(null); // ID del comentario en edición
+  const [comentarioEditado, setComentarioEditado] = useState(''); // Texto editado
+  const [modal, setModal] = useState({ open: false, title: '', message: '' }); // Modal de mensajes
+  const [deleteTarget, setDeleteTarget] = useState(null); // ID del comentario a eliminar
+  const [miRol, setMiRol] = useState(null); // Rol del usuario en la cápsula
+
+  // Efecto: carga los datos de la cápsula al montar o cambiar el ID
   useEffect(() => {
     const fetchCapsula = async () => {
       setLoading(true);
@@ -80,6 +81,7 @@ const VerCapsula = () => {
     fetchCapsula();
   }, [id]);
 
+  // Efecto: carga los archivos de la cápsula
   useEffect(() => {
     const fetchArchivos = async () => {
       try {
@@ -93,15 +95,15 @@ const VerCapsula = () => {
     fetchArchivos();
   }, [id]);
 
+  // Efecto: suma una visualización al cargar la cápsula
   useEffect(() => {
-    // Sumar una visualización al cargar
     fetch(`/api/capsules/${id}/view`, { method: 'POST' });
   }, [id]);
 
+  // Efecto: actualiza likes y si el usuario ya dio like
   useEffect(() => {
     if (capsula) {
       setLikes(capsula.Likes ?? capsula.likes ?? 0);
-      // Saber si el usuario ya dio like
       const user = JSON.parse(localStorage.getItem('user'));
       if (user) {
         fetchWithAuth(`/api/capsules/${id}/liked`)
@@ -111,7 +113,7 @@ const VerCapsula = () => {
     }
   }, [capsula, id]);
 
-  // Cargar comentarios al montar
+  // Efecto: carga los comentarios de la cápsula
   useEffect(() => {
     const fetchComentarios = async () => {
       try {
@@ -125,6 +127,7 @@ const VerCapsula = () => {
     fetchComentarios();
   }, [id]);
 
+  // Efecto: obtiene el rol del usuario en la cápsula (colaborador o lector)
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) return;
@@ -136,6 +139,7 @@ const VerCapsula = () => {
       });
   }, [id]);
 
+  // Handler para dar o quitar like a la cápsula
   const handleLike = async () => {
     if (likeLoading) return;
     const user = JSON.parse(localStorage.getItem('user'));
@@ -143,6 +147,7 @@ const VerCapsula = () => {
     setLikeLoading(true);
     let newLiked = liked;
     if (liked) {
+      // Si ya dio like, lo quita
       const res = await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'DELETE' });
       if (res.ok) {
         setLiked(false);
@@ -150,6 +155,7 @@ const VerCapsula = () => {
         newLiked = false;
       }
     } else {
+      // Si no ha dado like, lo agrega
       const res = await fetchWithAuth(`/api/capsules/${id}/like`, { method: 'POST' });
       if (res.ok) {
         setLiked(true);
@@ -160,7 +166,7 @@ const VerCapsula = () => {
     setLikeLoading(false);
   };
 
-  // Función para enviar comentario
+  // Handler para enviar un nuevo comentario
   const handleComentar = async (e) => {
     e.preventDefault();
     if (!nuevoComentario.trim()) return;
@@ -171,6 +177,7 @@ const VerCapsula = () => {
       setComentLoading(false);
       return;
     }
+    // Envía el comentario al backend
     const res = await fetch('/api/comments', {
       method: 'POST',
       headers: {
@@ -186,21 +193,24 @@ const VerCapsula = () => {
     });
     if (res.ok) {
       setNuevoComentario('');
-      // Recarga comentarios
+      // Agrega el comentario a la lista local sin recargar todo
       const data = await res.json();
       setComentarios(prev => [...prev, { ...data, Name: user.name }]);
     }
     setComentLoading(false);
   };
 
+  // Muestra un mensaje de carga mientras se obtienen los datos
   if (loading) {
     return <div className="text-center text-[#F5E050] py-10">Cargando cápsula...</div>;
   }
 
+  // Si no se encontró la cápsula
   if (!capsula) {
     return <div className="text-center text-red-500 py-10">No se encontró la cápsula.</div>;
   }
 
+  // Si la cápsula está protegida y el usuario no tiene acceso
   if (capsula && capsula.error === 'forbidden') {
     return (
       <div className="text-center text-[#F5E050] py-10">
@@ -209,7 +219,7 @@ const VerCapsula = () => {
     );
   }
 
-  // Validación de fecha de apertura
+  // Valida si la cápsula está programada para el futuro
   const ahora = new Date();
   const apertura = new Date(capsula.Opening_Date);
   if (apertura > ahora) {
@@ -221,7 +231,7 @@ const VerCapsula = () => {
     );
   }
 
-  // Obtén el usuario actual
+  // Obtiene el usuario actual y verifica si es el creador
   const user = JSON.parse(localStorage.getItem('user'));
   const isOwner = user && capsula && user.id === capsula.Creator_User_ID;
 
@@ -229,7 +239,7 @@ const VerCapsula = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] py-8 animate-fade-in">
       <div className="container mx-auto px-4">
         <div className="space-y-8 text-white">
-          {/* Información */}
+          {/* Sección de información general de la cápsula */}
           <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-xl animate-fade-in-down transition-transform duration-300 hover:scale-[1.01]">
             <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
               <FontAwesomeIcon icon={faBoxArchive} /> Información
@@ -240,6 +250,7 @@ const VerCapsula = () => {
                 <p><span className="text-[#F5E050]">Descripción:</span> {capsula.Description || 'Sin descripción'}</p>
                 <p><span className="text-[#F5E050]">Fecha de apertura:</span> {new Date(capsula.Opening_Date).toLocaleDateString()}</p>
                 <p><span className="text-[#F5E050]">Fecha de creación:</span> {new Date(capsula.Creation_Date).toLocaleDateString()}</p>
+                {/* Muestra los tags asociados */}
                 <div className="flex items-center gap-2">
                   <span className="text-[#F5E050]">Tags:</span>
                   <div className="flex flex-wrap gap-2">
@@ -265,6 +276,7 @@ const VerCapsula = () => {
                   {capsula.Category?.Name || capsula.Category || capsula.Category_Name || 'Sin categoría'}
                 </p>
               </div>
+              {/* Muestra el creador de la cápsula */}
               <div className="flex flex-col items-center mt-4 md:mt-0">
                 <FontAwesomeIcon icon={faUser} className="text-4xl text-[#F5E050] animate-bounce-slow" />
                 <span className="text-sm mt-2 text-gray-300">Creador: Usuario #{capsula.Creator_User_ID}</span>
@@ -272,7 +284,7 @@ const VerCapsula = () => {
             </div>
           </div>
 
-          {/* Contenido */}
+          {/* Sección de archivos y contenidos de la cápsula */}
           <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-xl animate-fade-in-up transition-transform duration-300 hover:scale-[1.01]">
             <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
               <FontAwesomeIcon icon={faFileAlt} /> Contenido
@@ -281,11 +293,13 @@ const VerCapsula = () => {
               <p className="text-gray-400">No hay archivos en esta cápsula.</p>
             ) : (
               <div className="flex flex-wrap gap-6">
+                {/* Renderiza cada archivo según su tipo */}
                 {Array.isArray(archivos) && archivos.map(archivo => (
                   <div
                     key={archivo.Content_ID}
                     className="w-40 h-40 bg-[#F5E050] rounded-lg flex flex-col items-center justify-center overflow-hidden relative group shadow-lg transition-transform duration-200 hover:scale-105"
                   >
+                    {/* Imagen */}
                     {archivo.Type === 'image' && archivo.Path ? (
                       <img
                         src={`/api${archivo.Path.startsWith('/') ? archivo.Path : '/' + archivo.Path}`}
@@ -293,6 +307,7 @@ const VerCapsula = () => {
                         className="object-cover w-full h-full"
                       />
                     ) : archivo.Type === 'video' && archivo.Path ? (
+                      // Video
                       <video
                         src={`/api${archivo.Path.startsWith('/') ? archivo.Path : '/' + archivo.Path}`}
                         className="object-cover w-full h-full"
@@ -300,6 +315,7 @@ const VerCapsula = () => {
                         poster="https://placehold.co/160x160?text=Video"
                       />
                     ) : archivo.Type === 'audio' && archivo.Path ? (
+                      // Audio
                       <div className="flex flex-col items-center justify-center w-full h-full">
                         <FontAwesomeIcon icon={faMusic} className="text-4xl text-[#2E2E7A] mb-2 animate-fade-in" />
                         <audio controls className="w-full">
@@ -308,6 +324,7 @@ const VerCapsula = () => {
                         </audio>
                       </div>
                     ) : archivo.Path ? (
+                      // Otros archivos descargables
                       <a
                         href={`/api${archivo.Path.startsWith('/') ? archivo.Path : '/' + archivo.Path}`}
                         download
@@ -317,12 +334,14 @@ const VerCapsula = () => {
                         <span className="text-xs text-[#2E2E7A]">{archivo.Name || 'Archivo'}</span>
                       </a>
                     ) : (
+                      // Si no hay archivo válido
                       <span className="text-[#2E2E7A] font-bold text-xs text-center px-2">
                         {archivo.Name || 'ARCHIVO'}<br />
                         <span className="block">{archivo.Type}</span>
                         <span className="block">{archivo.Path}</span>
                       </span>
                     )}
+                    {/* Tooltip con el nombre del archivo */}
                     <span
                       className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-[#2E2E7A] text-[#F5E050] text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10"
                       style={{ whiteSpace: 'nowrap' }}
@@ -335,12 +354,13 @@ const VerCapsula = () => {
             )}
           </div>
 
-          {/* Configuración */}
+          {/* Sección de configuración y privacidad */}
           <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-xl animate-fade-in-up transition-transform duration-300 hover:scale-[1.01]">
             <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
               <FontAwesomeIcon icon={faLock} /> Configuración
             </h3>
             <p><span className="text-[#F5E050]">Privacidad:</span> {capsula.Privacy}</p>
+            {/* Si es privada, muestra la contraseña (solo para el dueño) */}
             {capsula.Privacy === 'private' && (
               <p className="flex items-center gap-2">
                 <span className="text-[#F5E050]">Contraseña:</span>
@@ -372,12 +392,13 @@ const VerCapsula = () => {
             )}
           </div>
 
-          {/* Interacciones */}
+          {/* Sección de interacciones: likes y vistas */}
           <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-xl animate-fade-in-up transition-transform duration-300 hover:scale-[1.01]">
             <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
               <FontAwesomeIcon icon={faHeart} /> Interacciones
             </h3>
             <div className="flex items-center gap-4 mt-2">
+              {/* Botón de like */}
               <button
                 className={`flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-200 shadow-lg ${
                   liked ? 'bg-pink-500 text-white scale-105' : 'bg-gray-700 text-pink-500 hover:bg-pink-600 hover:text-white'
@@ -388,6 +409,7 @@ const VerCapsula = () => {
                 <FontAwesomeIcon icon={faHeart} />
                 {likes}
               </button>
+              {/* Número de vistas */}
               <span className="flex items-center gap-1 text-gray-400">
                 <FontAwesomeIcon icon={faEye} />
                 {capsula.Views ?? capsula.views ?? 0}
@@ -395,11 +417,12 @@ const VerCapsula = () => {
             </div>
           </div>
 
-          {/* Comentarios */}
+          {/* Sección de comentarios */}
           <div className="bg-[#1a1a4a] p-6 rounded-lg space-y-2 shadow-xl mt-8 animate-fade-in-up transition-transform duration-300 hover:scale-[1.01]">
             <h3 className="text-lg font-bold text-[#F5E050] mb-2 flex items-center gap-2">
               Comentarios
             </h3>
+            {/* Formulario para agregar comentario */}
             <form onSubmit={handleComentar} className="flex gap-2 mb-4">
               <input
                 type="text"
@@ -417,6 +440,7 @@ const VerCapsula = () => {
                 Comentar
               </button>
             </form>
+            {/* Lista de comentarios */}
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {comentarios.length === 0 && (
                 <div className="text-gray-400">Sé el primero en comentar.</div>
@@ -426,6 +450,7 @@ const VerCapsula = () => {
                   <span className="font-bold text-[#F5E050]">{com.Name || `Usuario #${com.User_ID}`}</span>
                   <span className="ml-2 text-gray-400">{new Date(com.Creation_Date).toLocaleString()}</span>
                   <div className="mt-1 text-white">
+                    {/* Si está editando este comentario, muestra input */}
                     {editandoId === com.Comment_ID ? (
                       <form
                         onSubmit={async e => {
@@ -460,6 +485,7 @@ const VerCapsula = () => {
                       <>{com.Content}</>
                     )}
                   </div>
+                  {/* Botones de editar/eliminar solo para el autor */}
                   {user && user.id === com.User_ID && editandoId !== com.Comment_ID && (
                     <div className="flex gap-2 mt-1">
                       <button
@@ -486,15 +512,7 @@ const VerCapsula = () => {
         </div>
       </div>
 
-      {/* Modal de confirmación */}
-      <Modal
-        isOpen={modal.open}
-        onClose={() => setModal({ ...modal, open: false })}
-        title={modal.title}
-      >
-        <div>{modal.message}</div>
-      </Modal>
-
+      {/* Modal de confirmación para eliminar comentario */}
       <Modal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
@@ -520,6 +538,15 @@ const VerCapsula = () => {
           </button>
         </div>
       </Modal>
+      {/* Modal para mensajes generales */}
+      <Modal
+        isOpen={modal.open}
+        onClose={() => setModal({ ...modal, open: false })}
+        title={modal.title}
+      >
+        <div>{modal.message}</div>
+      </Modal>
+      {/* Estilos y animaciones para efectos visuales */}
       <style>
         {`
           .animate-fade-in { animation: fadeIn 1s; }

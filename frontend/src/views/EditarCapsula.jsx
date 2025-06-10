@@ -6,7 +6,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import PasswordModal from '../components/modals/PasswordModal';
 import Modal from '../components/modals/Modal';
-import { fetchWithAuth } from '../helpers/fetchWithAuth';
 
 function toMySQLDateTime(dateString) {
   if (!dateString) return null;
@@ -805,23 +804,25 @@ const EditarCapsula = () => {
                           className="ml-2 text-red-500 hover:text-red-700 font-bold"
                           title="Eliminar destinatario"
                           onClick={async () => {
-                            // 1. Busca el usuario y el rol
+                            // 1. Busca el usuario por email para obtener su User_ID
                             const resUser = await fetch(`/api/users/email/${r.email}`);
                             const userData = await resUser.json();
-                            // 2. Mapea el rol a su ID
+                            // 2. Mapea el rol textual a su ID numérico para la base de datos
                             const roleMap = { 'Reader': 2, 'Collaborator': 3 };
                             const roleId = roleMap[r.role];
+                            // 3. Si el usuario y el rol existen, elimina el destinatario en el backend
                             if (resUser.ok && userData.User_ID && roleId) {
                               await fetch(`/api/recipients`, {
                                 method: 'DELETE',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
-                                  User_ID: userData.User_ID,
-                                  Capsule_ID: id,
-                                  Role_ID: roleId
+                                  User_ID: userData.User_ID, // ID del usuario a eliminar
+                                  Capsule_ID: id,            // ID de la cápsula actual
+                                  Role_ID: roleId            // ID del rol (2: Reader, 3: Collaborator)
                                 }),
                               });
                             }
+                            // 4. Elimina el destinatario del estado local para actualizar la UI
                             setRecipients(prev => prev.filter((_, i) => i !== idx));
                           }}
                         >
@@ -835,6 +836,7 @@ const EditarCapsula = () => {
             )}
             {form.Privacy === 'group' && isCollaborator && (
               <div className="mt-4">
+                {/* Si el usuario es colaborador, solo puede ver la lista de destinatarios, no editar */}
                 <span className="text-[#F5E050]">Destinatarios:</span>
                 <ul className="ml-4 list-disc">
                   {recipients.map((r, idx) => (
@@ -844,11 +846,12 @@ const EditarCapsula = () => {
                   ))}
                 </ul>
                 <span className="text-xs text-[#F5E050] block mt-1">
+                  {/* Mensaje informativo para colaboradores */}
                   No puedes modificar los destinatarios siendo colaborador.
                 </span>
               </div>
             )}
-            {/* Botones de acción */}
+            {/* Botones de acción: Guardar y Cancelar */}
             <div className="flex gap-2 justify-end">
               <button
                 type="button"

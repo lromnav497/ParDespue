@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom'; // <-- Importa useLocation
+import { useNavigate, useLocation } from 'react-router-dom'; // Hook para navegación y lectura de estado de la ruta
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faPlus, 
@@ -10,18 +10,24 @@ import {
   faUnlock,
   faBoxArchive
 } from '@fortawesome/free-solid-svg-icons';
-import PasswordModal from '../components/modals/PasswordModal'; // importa el modal
-import Modal from '../components/modals/Modal';
-import { fetchWithAuth } from '../helpers/fetchWithAuth';
-import starIcon from '/icons/star.svg'; // Usa la ruta pública
+import PasswordModal from '../components/modals/PasswordModal'; // Modal para pedir contraseña
+import Modal from '../components/modals/Modal'; // Modal genérico para mensajes
+import { fetchWithAuth } from '../helpers/fetchWithAuth'; // Helper para peticiones autenticadas
+import starIcon from '/icons/star.svg'; // Icono de estrella para animación de fondo
 
+// Número de estrellas flotantes en el fondo
 const NUM_STARS = 20;
+
+// Función auxiliar para obtener un número aleatorio entre min y max
 function getRandom(min, max) {
   return Math.random() * (max - min) + min;
 }
+
+// Componente de estrellas flotantes animadas de fondo
 const FloatingStars = () => (
   <div className="pointer-events-none absolute inset-0 z-0">
     {Array.from({ length: NUM_STARS }).map((_, i) => {
+      // Calcula posición, tamaño y animación aleatoria para cada estrella
       const top = getRandom(0, 95);
       const left = getRandom(0, 95);
       const size = getRandom(12, 32);
@@ -55,16 +61,26 @@ const FloatingStars = () => (
 );
 
 const MisCapsulas = () => {
+  // Estado para el filtro activo (todas, abiertas, programadas)
   const [activeFilter, setActiveFilter] = useState('todas');
+  // Estado para la lista de cápsulas del usuario
   const [capsulas, setCapsulas] = useState([]);
+  // Estado de carga
   const [loading, setLoading] = useState(true);
+  // Estado para mostrar el modal de contraseña
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  // Estado para mostrar error de contraseña
   const [passwordError, setPasswordError] = useState('');
+  // Estado para guardar la acción pendiente (ver, editar, eliminar) y la cápsula asociada
   const [pendingAction, setPendingAction] = useState(null); // { type, capsula }
+  // Estado para el plan del usuario (premium, básico, etc)
   const [plan, setPlan] = useState(null);
+  // Estado para el modal general (confirmaciones, errores, etc)
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
+  // Hook para navegación programática
   const navigate = useNavigate();
-  const location = useLocation(); // <-- Hook para leer el state
+  // Hook para leer el estado de la ruta (por ejemplo, para resaltar una cápsula)
+  const location = useLocation();
 
   // Al montar, si viene filtro en location.state, actívalo
   useEffect(() => {
@@ -73,18 +89,21 @@ const MisCapsulas = () => {
     }
   }, [location.state]);
 
-  const user = JSON.parse(localStorage.getItem('user')); // Asegúrate que la clave sea 'user'
-  const userId = user?.id; // Esto será 8 si el usuario está logueado
+  // Obtiene el usuario actual desde localStorage
+  const user = JSON.parse(localStorage.getItem('user'));
+  const userId = user?.id;
 
+  // Efecto para cargar las cápsulas del usuario al montar o cambiar userId
   useEffect(() => {
     const fetchCapsulas = async () => {
       setLoading(true);
       try {
+        // Obtiene las cápsulas del usuario autenticado
         const res = await fetchWithAuth(`/api/capsules/user/${userId}`);
-        if (!res) return; // Ya redirigió si expiró
+        if (!res) return; // Si expiró el token, ya redirigió
         const data = await res.json();
         setCapsulas(data);
-        console.log('Cápsulas recibidas:', data); // <-- Agrega esto
+        console.log('Cápsulas recibidas:', data); // Debug
       } catch (err) {
         setCapsulas([]);
       }
@@ -93,7 +112,7 @@ const MisCapsulas = () => {
     fetchCapsulas();
   }, [userId]);
 
-  // Efecto para obtener el plan del usuario (igual que en Header)
+  // Efecto para obtener el plan del usuario (premium, básico, etc)
   useEffect(() => {
     const fetchPlan = async () => {
       const user = JSON.parse(localStorage.getItem('user'));
@@ -105,7 +124,7 @@ const MisCapsulas = () => {
         });
         if (!res.ok) return setPlan(null);
         const data = await res.json();
-        // Si tu backend devuelve { suscripcion: { nombre: 'premium', ... } }
+        // Normaliza el nombre del plan según la respuesta del backend
         if (data.suscripcion && data.suscripcion.nombre) {
           setPlan(
             data.suscripcion.nombre.charAt(0).toUpperCase() +
@@ -125,6 +144,7 @@ const MisCapsulas = () => {
     fetchPlan();
   }, [userId]);
 
+  // Determina el estado de la cápsula (abierta o programada)
   function getEstado(capsula) {
     const ahora = new Date();
     const apertura = new Date(capsula.Opening_Date);
@@ -132,16 +152,19 @@ const MisCapsulas = () => {
     return 'abierta';
   }
 
+  // Filtra las cápsulas según el filtro activo
   const filteredCapsulas = activeFilter === 'todas'
     ? capsulas
     : capsulas.filter(c => getEstado(c) === activeFilter);
 
+  // Opciones de filtro para mostrar en la UI
   const filtros = [
     { value: 'todas', label: 'Todas' },
     { value: 'abierta', label: 'Abiertas' },
     { value: 'programada', label: 'Programadas' }
   ];
 
+  // Maneja la eliminación de una cápsula (con confirmación)
   const handleDelete = async (capsuleId) => {
     setModal({
       open: true,
@@ -160,7 +183,7 @@ const MisCapsulas = () => {
               className="bg-red-500 text-white px-4 py-2 rounded"
               onClick={async () => {
                 const token = localStorage.getItem('token');
-                // Primero elimina los contenidos relacionados
+                // Elimina primero los contenidos relacionados
                 await fetch(`/api/contents/by-capsule/${capsuleId}`, {
                   method: 'DELETE',
                   headers: {
@@ -168,7 +191,7 @@ const MisCapsulas = () => {
                     'Content-Type': 'application/json'
                   }
                 });
-                // Luego sí elimina la cápsula
+                // Luego elimina la cápsula
                 const res = await fetch(`/api/capsules/${capsuleId}`, {
                   method: 'DELETE',
                   headers: {
@@ -177,6 +200,7 @@ const MisCapsulas = () => {
                   }
                 });
                 if (res.ok) {
+                  // Si se eliminó correctamente, actualiza la lista y muestra mensaje
                   setCapsulas(prev => prev.filter(c => c.Capsule_ID !== capsuleId));
                   setModal({
                     open: true,
@@ -185,6 +209,7 @@ const MisCapsulas = () => {
                   });
                   setTimeout(() => setModal({ open: false, title: '', message: '' }), 1500);
                 } else {
+                  // Si hubo error, muestra mensaje de error
                   const data = await res.json();
                   setModal({
                     open: true,
@@ -202,9 +227,8 @@ const MisCapsulas = () => {
     });
   };
 
-  // Función para verificar contraseña (puedes hacer un endpoint real, aquí es ejemplo)
+  // Verifica la contraseña de una cápsula privada (petición al backend)
   const checkPassword = async (capsula, password) => {
-    // Simula petición al backend
     const res = await fetch(`/api/capsules/${capsula.Capsule_ID}/check-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -215,10 +239,11 @@ const MisCapsulas = () => {
     return data.valid;
   };
 
-  // Handler general para acciones protegidas
+  // Handler general para acciones protegidas (ver, editar, eliminar)
   const handleProtectedAction = (type, capsula) => {
     const ahora = new Date();
     const apertura = new Date(capsula.Opening_Date);
+    // Si la cápsula aún no está disponible, muestra mensaje
     if (type === 'ver' && apertura > ahora) {
       setModal({
         open: true,
@@ -237,25 +262,25 @@ const MisCapsulas = () => {
       });
       return;
     }
-    // Si tiene contraseña, pide contraseña
+    // Si tiene contraseña, pide contraseña antes de continuar
     if (capsula.Password) {
       setPendingAction({ type, capsula });
       setShowPasswordModal(true);
       setPasswordError('');
       return;
     }
-    // Si no, ejecuta la acción directamente
+    // Si no requiere contraseña, ejecuta la acción directamente
     ejecutarAccion(type, capsula);
   };
 
-  // Ejecuta la acción después de validar contraseña
+  // Ejecuta la acción (ver, editar, eliminar) después de validar contraseña
   const ejecutarAccion = (type, capsula) => {
     if (type === 'ver') navigate(`/vercapsula/${capsula.Capsule_ID}`);
     if (type === 'editar') navigate(`/editarcapsula/${capsula.Capsule_ID}`);
     if (type === 'eliminar') handleDelete(capsula.Capsule_ID);
   };
 
-  // Cuando el usuario envía la contraseña
+  // Cuando el usuario envía la contraseña en el modal
   const handlePasswordSubmit = async (password) => {
     const { type, capsula } = pendingAction;
     const ok = await checkPassword(capsula, password);
@@ -267,7 +292,7 @@ const MisCapsulas = () => {
     }
   };
 
-  // Efecto para resaltar cápsula si viene de notificación
+  // Efecto para resaltar una cápsula si viene de una notificación (por ejemplo, desde otra vista)
   useEffect(() => {
     const highlightId = localStorage.getItem('highlight_capsule');
     if (highlightId) {
@@ -280,14 +305,15 @@ const MisCapsulas = () => {
     }
   }, [filteredCapsulas]);
 
+  // Efecto para quitar el highlight después de 2 segundos
   useEffect(() => {
-    // Quita el highlight después de 2 segundos
     const timer = setTimeout(() => {
       localStorage.removeItem('highlight_capsule');
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
 
+  // Imágenes aleatorias de respaldo para cápsulas sin portada
   const randomImages = [
     "https://picsum.photos/id/1015/400/300",
     "https://picsum.photos/id/1016/400/300",
@@ -301,8 +327,10 @@ const MisCapsulas = () => {
     "https://picsum.photos/id/1043/400/300"
   ];
 
+  // Set para evitar repetir imágenes aleatorias
   const usedImages = new Set();
 
+  // Devuelve una imagen aleatoria no repetida
   function getUniqueRandomImage() {
     let available = randomImages.filter(img => !usedImages.has(img));
     if (available.length === 0) {
@@ -316,7 +344,7 @@ const MisCapsulas = () => {
 
   return (
     <div className="container mx-auto px-2 md:px-4 py-8 min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] animate-fade-in">
-      {/* Encabezado */}
+      {/* Encabezado con título y botón para crear nueva cápsula */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 animate-fade-in-down">
         <h1 className="text-3xl md:text-4xl text-[#F5E050] passero-font drop-shadow-lg text-center md:text-left">
           Mis Cápsulas del Tiempo
@@ -331,7 +359,7 @@ const MisCapsulas = () => {
         </button>
       </div>
 
-      {/* Filtros */}
+      {/* Filtros para mostrar todas, abiertas o programadas */}
       <div className="flex gap-2 md:gap-4 mb-8 overflow-x-auto pb-2 animate-fade-in-up">
         {filtros.map(filtro => (
           <button
@@ -352,15 +380,18 @@ const MisCapsulas = () => {
         <div className="text-center text-[#F5E050] animate-pulse py-10">Cargando cápsulas...</div>
       ) : (
         <div className="relative my-8">
+          {/* Estrellas flotantes de fondo */}
           <FloatingStars />
           <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in-up">
             {filteredCapsulas.length === 0 ? (
               <div className="col-span-3 text-center text-gray-400 animate-fade-in-up">No tienes cápsulas.</div>
             ) : (
               filteredCapsulas.map((capsula, idx) => {
+                // Determina si la cápsula está abierta o programada
                 const ahora = new Date();
                 const apertura = new Date(capsula.Opening_Date);
                 const disabled = apertura > ahora;
+                // Determina la imagen de portada (personalizada o aleatoria)
                 let imageUrl;
                 if (capsula.Cover_Image) {
                   imageUrl = capsula.Cover_Image.startsWith('http')
@@ -369,7 +400,9 @@ const MisCapsulas = () => {
                 } else {
                   imageUrl = getUniqueRandomImage();
                 }
+                // Determina si el usuario tiene plan premium
                 const isPremium = plan && plan.toLowerCase() === 'premium';
+                // Permisos para editar/eliminar según plan y estado
                 const puedeEditar = isPremium && disabled;
                 const puedeEliminar = isPremium || !disabled;
 
@@ -387,9 +420,9 @@ const MisCapsulas = () => {
                     tabIndex={-1}
                   >
                     <div className="relative flex flex-col items-center w-full">
-                      {/* Cúpula */}
+                      {/* Cúpula decorativa superior */}
                       <div className="w-36 h-12 bg-gradient-to-b from-[#F5E050] to-[#3d3d9e] rounded-t-full shadow-lg z-10" />
-                      {/* Imagen de portada como ventana grande */}
+                      {/* Imagen de portada en círculo */}
                       <div className="relative w-36 h-36 flex items-center justify-center -mt-8 z-20">
                         <div className="absolute w-full h-full rounded-full border-4 border-[#F5E050] bg-[#23235b] shadow-inner z-0" />
                         <img
@@ -399,7 +432,7 @@ const MisCapsulas = () => {
                           style={{ backgroundColor: "#23235b" }}
                         />
                       </div>
-                      {/* Cuerpo principal */}
+                      {/* Cuerpo principal de la cápsula */}
                       <div className="w-44 bg-gradient-to-br from-[#23235b] via-[#2E2E7A] to-[#1a1a4a] border-2 border-[#F5E050] rounded-b-3xl rounded-t-xl shadow-2xl flex flex-col items-center pt-6 pb-6 px-4 relative z-10 -mt-4">
                         <h3 className="text-[#F5E050] passero-font text-lg mb-2 text-center group-hover:underline transition-all">
                           {capsula.Title}
@@ -425,10 +458,10 @@ const MisCapsulas = () => {
                           <p className="text-gray-400">{capsula.Content}</p>
                         </div>
                       </div>
-                      {/* Fuego de propulsión */}
+                      {/* Fuego de propulsión decorativo */}
                       <div className="w-16 h-10 bg-gradient-to-b from-[#F5E050] via-[#e6d047] to-transparent rounded-b-full blur-sm opacity-80 animate-capsule-fire -mt-3" />
 
-                      {/* Overlay de bloqueo - SOLO sobre la cápsula, no cuadrado */}
+                      {/* Overlay de bloqueo si la cápsula está programada */}
                       {disabled && (
                         <div
                           className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl pointer-events-none"
@@ -444,7 +477,7 @@ const MisCapsulas = () => {
                         </div>
                       )}
 
-                      {/* Botones de acción - SIEMPRE encima del overlay */}
+                      {/* Botones de acción (editar, eliminar) según permisos */}
                       <div className="absolute top-4 right-4 flex gap-2 z-30">
                         {disabled && isPremium && (
                           <>
@@ -472,6 +505,7 @@ const MisCapsulas = () => {
                             </button>
                           </>
                         )}
+                        {/* Si está abierta y es el creador, puede eliminar */}
                         {!disabled && capsula.Creator_User_ID === userId && (
                           <button
                             className="p-2 bg-[#1a1a4a] rounded-full text-red-500 hover:bg-[#3d3d9e] shadow-lg transition-all scale-100 hover:scale-110"
@@ -486,7 +520,7 @@ const MisCapsulas = () => {
                           </button>
                         )}
                       </div>
-                      {/* Botón invisible para ver la cápsula */}
+                      {/* Botón invisible para ver la cápsula (toda la tarjeta es clickeable) */}
                       {(!disabled || isPremium) && (
                         <button
                           className="absolute inset-0 w-full h-full z-10"
@@ -510,7 +544,7 @@ const MisCapsulas = () => {
         </div>
       )}
 
-      {/* Modal de contraseña */}
+      {/* Modal para pedir contraseña si la cápsula está protegida */}
       <PasswordModal
         isOpen={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
@@ -518,7 +552,7 @@ const MisCapsulas = () => {
         error={passwordError}
       />
 
-      {/* Modal general */}
+      {/* Modal general para mensajes y confirmaciones */}
       <Modal
         isOpen={modal.open}
         onClose={() => setModal({ open: false, title: '', message: '' })}
@@ -527,7 +561,7 @@ const MisCapsulas = () => {
         <div>{modal.message}</div>
       </Modal>
 
-      {/* Animaciones */}
+      {/* Animaciones CSS para transiciones y efectos */}
       <style>
       {`
         .animate-fade-in { animation: fadeIn 1s; }

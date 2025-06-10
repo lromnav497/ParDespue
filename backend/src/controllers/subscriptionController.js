@@ -38,21 +38,13 @@ const SubscriptionController = {
     }
   },
 
+  // Cambiado: ahora usa métodos del modelo para obtener datos
   getUserData: async (req, res) => {
     try {
       const userId = req.user.id;
-      // Suscripciones activas
-      const [subs] = await SubscriptionModel.db.execute(
-        `SELECT Subscription_ID as id, Type as nombre, End_Date as fecha_fin
-         FROM Subscriptions WHERE User_ID = ? ORDER BY End_Date DESC`, [userId]
-      );
-      // Transacciones
-      const [txs] = await SubscriptionModel.db.execute(
-        `SELECT t.Transaction_ID as id, t.Date as fecha, t.Amount as monto, t.Status as estado, s.Type as descripcion
-         FROM Transactions t
-         JOIN Subscriptions s ON t.Subscription_ID = s.Subscription_ID
-         WHERE s.User_ID = ? ORDER BY t.Date DESC`, [userId]
-      );
+      // Obtiene suscripciones y transacciones desde el modelo
+      const subs = await SubscriptionModel.getUserSubscriptions(userId);
+      const txs = await SubscriptionModel.getUserTransactions(userId);
       res.json({
         suscripciones: subs,
         transacciones: txs
@@ -85,14 +77,11 @@ const SubscriptionController = {
       const userId = req.user.id;
       const subId = req.params.id;
 
-      // Busca el Stripe Subscription ID en tu BD
-      const [rows] = await SubscriptionModel.db.execute(
-        'SELECT Stripe_Subscription_ID FROM Subscriptions WHERE Subscription_ID = ? AND User_ID = ?',
-        [subId, userId]
-      );
-      if (rows.length && rows[0].Stripe_Subscription_ID) {
+      // Busca el Stripe Subscription ID en el modelo
+      const stripeSubId = await SubscriptionModel.getStripeSubscriptionId(subId, userId);
+      if (stripeSubId) {
         // Cancela en Stripe
-        await stripe.subscriptions.update(rows[0].Stripe_Subscription_ID, { cancel_at_period_end: true });
+        await stripe.subscriptions.update(stripeSubId, { cancel_at_period_end: true });
       }
 
       // Cancela en tu BD
@@ -107,26 +96,8 @@ const SubscriptionController = {
     try {
       const userId = req.user.id;
       const { billing } = req.body; // 'monthly' o 'annual'
-      // Cancela cualquier suscripción activa anterior
-      await SubscriptionModel.db.execute(
-        `UPDATE Subscriptions SET Status = 'canceled' WHERE User_ID = ? AND Status = 'active'`,
-        [userId]
-      );
-      // Crea la nueva suscripción
-      const [result] = await SubscriptionModel.db.execute(
-        `INSERT INTO Subscriptions (User_ID, Type, Start_Date, End_Date, Status)
-         VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 1 ${billing === 'monthly' ? 'MONTH' : 'YEAR'}), 'active')`,
-        [userId, 'premium']
-      );
-      const subscriptionId = result.insertId;
-      // Crea la transacción (puedes ajustar el monto según tu lógica)
-      const amount = billing === 'monthly' ? 9.99 : 99.99;
-      await SubscriptionModel.createTransaction(
-        subscriptionId,
-        amount,
-        'card',
-        'completed'
-      );
+      // Lógica de activación delegada al modelo
+      await SubscriptionModel.activatePremium(userId, billing);
       res.json({ success: true });
     } catch (err) {
       res.status(500).json({ message: err.message || 'Error al activar suscripción' });

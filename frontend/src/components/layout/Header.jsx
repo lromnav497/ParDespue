@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faUser, faHome, faBoxArchive, faCompass, faQuestionCircle,
-  faChevronDown, faRightFromBracket, faCrown, faBell, faUsers
+  faUser,
+  faChevronDown, faRightFromBracket, faBell
 } from '@fortawesome/free-solid-svg-icons';
 import { fetchWithAuth } from '../../helpers/fetchWithAuth';
 
@@ -234,6 +234,7 @@ const Header = () => {
           {/* Botones login/registro o menú usuario */}
           {!user ? (
             <>
+              {/* Botón para ir a la página de inicio de sesión */}
               <Link 
                 to="/login" 
                 className="text-white hover:text-[#F5E050] transition-colors flex items-center font-semibold"
@@ -241,6 +242,7 @@ const Header = () => {
                 <FontAwesomeIcon icon={faUser} className="mr-2" />
                 Iniciar Sesión
               </Link>
+              {/* Botón para ir a la página de registro */}
               <Link 
                 to="/register" 
                 className="bg-[#F5E050] text-[#2E2E7A] px-4 py-2 rounded-full hover:bg-[#e6d047] transition-all font-bold shadow"
@@ -249,17 +251,20 @@ const Header = () => {
               </Link>
             </>
           ) : (
+            // Si el usuario está autenticado, muestra el menú de usuario
             <div className="relative">
               <button
                 className="flex items-center text-white hover:text-[#F5E050] transition-colors font-semibold"
                 onClick={() => setMenuOpen(v => !v)}
               >
-                {/* Solo muestra el icono si NO hay foto */}
+                {/* Solo muestra el icono si NO hay foto de perfil */}
                 {!user.profilePicture && (
                   <FontAwesomeIcon icon={faUser} className="mr-2" />
                 )}
                 <span className="mr-2 flex items-center">
+                  {/* Muestra el nombre del usuario */}
                   {user.name}
+                  {/* Si hay foto de perfil, la muestra junto al nombre */}
                   {user.profilePicture && (() => {
                     const imgUrl = user.profilePicture.startsWith('http')
                       ? user.profilePicture
@@ -273,6 +278,7 @@ const Header = () => {
                           style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}
                           onError={e => { e.target.style.display = 'none'; }}
                         />
+                        {/* Si el usuario es Premium, muestra la corona sobre la foto */}
                         {plan === 'Premium' && (
                           <img
                             src={iconCorona}
@@ -288,7 +294,7 @@ const Header = () => {
                       </span>
                     );
                   })()}
-                  {/* Si NO hay foto, muestra la corona junto al nombre */}
+                  {/* Si NO hay foto, muestra la corona junto al nombre si es Premium */}
                   {!user.profilePicture && plan === 'Premium' && (
                     <img
                       src={iconCorona}
@@ -298,10 +304,13 @@ const Header = () => {
                     />
                   )}
                 </span>
+                {/* Flecha para indicar menú desplegable */}
                 <FontAwesomeIcon icon={faChevronDown} className="ml-1" />
               </button>
+              {/* Menú desplegable de usuario */}
               {menuOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-[#2E2E7A] rounded-lg shadow-2xl z-50 animate-fade-in-up border border-[#F5E050]/30">
+                  {/* Enlace al perfil */}
                   <Link
                     to="/mi-cuenta"
                     className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
@@ -309,6 +318,7 @@ const Header = () => {
                   >
                     Mi Perfil
                   </Link>
+                  {/* Enlace a suscripciones */}
                   <Link
                     to="/mi-cuenta?suscripciones"
                     className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
@@ -316,6 +326,7 @@ const Header = () => {
                   >
                     Mis Suscripciones
                   </Link>
+                  {/* Enlace a cápsulas */}
                   <Link
                     to="/mi-cuenta?capsulas"
                     className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
@@ -323,6 +334,7 @@ const Header = () => {
                   >
                     Mis Cápsulas
                   </Link>
+                  {/* Enlace a configuración */}
                   <Link
                     to="/mi-cuenta?configuracion"
                     className="block px-4 py-2 text-white hover:bg-[#1a1a4a] transition-all"
@@ -330,7 +342,7 @@ const Header = () => {
                   >
                     Configuración
                   </Link>
-                  {/* Botones solo para administrador */}
+                  {/* Opciones solo para administrador */}
                   {user?.role === 'administrator' && (
                     <>
                       <Link
@@ -349,6 +361,7 @@ const Header = () => {
                       </Link>
                     </>
                   )}
+                  {/* Botón para cerrar sesión */}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-white hover:bg-[#1a1a4a] flex items-center transition-all"

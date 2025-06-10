@@ -1,3 +1,4 @@
+// Importa hooks y utilidades de React y librerías externas
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,15 +11,21 @@ import {
   faEye
 } from '@fortawesome/free-solid-svg-icons';
 import Modal from '../components/modals/Modal';
-import starIcon from '/icons/star.svg'; // Usa la ruta pública
+import starIcon from '/icons/star.svg'; 
 
+// Número de estrellas flotantes en el fondo
 const NUM_STARS = 20;
+
+// Función auxiliar para obtener un número aleatorio entre min y max
 function getRandom(min, max) {
   return Math.random() * (max - min) + min;
 }
+
+// Componente para renderizar estrellas flotantes animadas en el fondo
 const FloatingStars = () => (
   <div className="pointer-events-none absolute inset-0 z-0">
     {Array.from({ length: NUM_STARS }).map((_, i) => {
+      // Calcula posición, tamaño y animación aleatoria para cada estrella
       const top = getRandom(0, 95);
       const left = getRandom(0, 95);
       const size = getRandom(12, 32);
@@ -51,17 +58,24 @@ const FloatingStars = () => (
   </div>
 );
 
+// Componente principal para mostrar las cápsulas compartidas con el usuario
 const CompartidasConmigo = () => {
+  // Estado para la lista de cápsulas compartidas
   const [capsulas, setCapsulas] = useState([]);
+  // Estado de carga
   const [loading, setLoading] = useState(true);
+  // Estado para el modal de mensajes
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
+  // Estado para el plan del usuario (premium, básico, etc.)
   const [plan, setPlan] = useState(null);
+  // Hook para navegación programática
   const navigate = useNavigate();
 
+  // Obtiene el usuario actual desde localStorage
   const user = JSON.parse(localStorage.getItem('user'));
   const userId = user?.id;
 
-  // Obtener el plan del usuario
+  // Efecto para obtener el plan del usuario desde el backend
   useEffect(() => {
     const fetchPlan = async () => {
       const token = localStorage.getItem('token') || user?.token;
@@ -86,6 +100,7 @@ const CompartidasConmigo = () => {
     fetchPlan();
   }, [user]);
 
+  // Efecto para obtener las cápsulas compartidas con el usuario
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
@@ -95,6 +110,7 @@ const CompartidasConmigo = () => {
       .finally(() => setLoading(false));
   }, [userId]);
 
+  // Función auxiliar para determinar el estado de la cápsula (abierta o programada)
   function getEstado(capsula) {
     const ahora = new Date();
     const apertura = new Date(capsula.Opening_Date);
@@ -102,7 +118,7 @@ const CompartidasConmigo = () => {
     return 'abierta';
   }
 
-  // Visual igual que MisCapsulas
+  // Lista de imágenes aleatorias para cápsulas sin portada
   const randomImages = [
     "https://picsum.photos/id/1015/400/300",
     "https://picsum.photos/id/1016/400/300",
@@ -115,6 +131,7 @@ const CompartidasConmigo = () => {
     "https://picsum.photos/id/1041/400/300",
     "https://picsum.photos/id/1043/400/300"
   ];
+  // Set para evitar repetir imágenes hasta que se usen todas
   const usedImages = new Set();
   function getUniqueRandomImage() {
     let available = randomImages.filter(img => !usedImages.has(img));
@@ -129,24 +146,32 @@ const CompartidasConmigo = () => {
 
   return (
     <div className="container mx-auto px-2 md:px-4 py-8 min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] animate-fade-in">
+      {/* Título de la página */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 animate-fade-in-down">
         <h1 className="text-3xl md:text-4xl text-[#F5E050] passero-font drop-shadow-lg text-center md:text-left">
           Cápsulas compartidas conmigo
         </h1>
       </div>
+      {/* Muestra un mensaje de carga mientras se obtienen las cápsulas */}
       {loading ? (
         <div className="text-center text-[#F5E050] animate-pulse py-10">Cargando cápsulas...</div>
       ) : (
         <div className="relative my-8">
+          {/* Fondo animado de estrellas */}
           <FloatingStars />
+          {/* Grid de cápsulas compartidas */}
           <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in-up">
             {capsulas.length === 0 ? (
+              // Si no hay cápsulas compartidas, muestra un mensaje
               <div className="col-span-3 text-center text-gray-400 animate-fade-in-up">No tienes cápsulas compartidas.</div>
             ) : (
+              // Mapea cada cápsula a una tarjeta visual
               capsulas.map((capsula, idx) => {
+                // Calcula si la cápsula está abierta o programada
                 const ahora = new Date();
                 const apertura = new Date(capsula.Opening_Date);
                 const disabled = apertura > ahora;
+                // Determina la imagen de portada (si no hay, usa una aleatoria)
                 let imageUrl;
                 if (capsula.Cover_Image) {
                   imageUrl = capsula.Cover_Image.startsWith('http')
@@ -155,6 +180,7 @@ const CompartidasConmigo = () => {
                 } else {
                   imageUrl = getUniqueRandomImage();
                 }
+                // Solo los colaboradores premium pueden editar cápsulas programadas
                 const puedeEditar = capsula.RoleName === 'Collaborator' && plan === 'premium';
                 // --- VISUAL: Cápsula espacial ---
                 return (
@@ -166,9 +192,9 @@ const CompartidasConmigo = () => {
                     tabIndex={-1}
                   >
                     <div className="relative flex flex-col items-center w-full">
-                      {/* Cúpula */}
+                      {/* Cúpula decorativa superior */}
                       <div className="w-36 h-12 bg-gradient-to-b from-[#F5E050] to-[#3d3d9e] rounded-t-full shadow-lg z-10" />
-                      {/* Imagen de portada como ventana grande */}
+                      {/* Imagen de portada en círculo */}
                       <div className="relative w-36 h-36 flex items-center justify-center -mt-8 z-20">
                         <div className="absolute w-full h-full rounded-full border-4 border-[#F5E050] bg-[#23235b] shadow-inner z-0" />
                         <img
@@ -178,11 +204,12 @@ const CompartidasConmigo = () => {
                           style={{ backgroundColor: "#23235b" }}
                         />
                       </div>
-                      {/* Cuerpo principal */}
+                      {/* Cuerpo principal de la cápsula */}
                       <div className="w-44 bg-gradient-to-br from-[#23235b] via-[#2E2E7A] to-[#1a1a4a] border-2 border-[#F5E050] rounded-b-3xl rounded-t-xl shadow-2xl flex flex-col items-center pt-6 pb-6 px-4 relative z-10 -mt-4">
                         <h3 className="text-[#F5E050] passero-font text-lg mb-2 text-center group-hover:underline transition-all">
                           {capsula.Title}
                         </h3>
+                        {/* Información de la cápsula: fechas, categoría, rol, contenido */}
                         <div className="space-y-2 text-sm text-gray-300 text-center">
                           <p className="flex items-center gap-2 justify-center">
                             <FontAwesomeIcon icon={faClock} />
@@ -208,9 +235,9 @@ const CompartidasConmigo = () => {
                           <p className="text-gray-400">{capsula.Content}</p>
                         </div>
                       </div>
-                      {/* Fuego de propulsión */}
+                      {/* Fuego de propulsión decorativo */}
                       <div className="w-16 h-10 bg-gradient-to-b from-[#F5E050] via-[#e6d047] to-transparent rounded-b-full blur-sm opacity-80 animate-capsule-fire -mt-3" />
-                      {/* Overlay de bloqueo - SOLO sobre el cuerpo principal */}
+                      {/* Overlay de bloqueo si la cápsula está programada */}
                       {disabled && (
                         <div
                           className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl pointer-events-none"
@@ -225,7 +252,7 @@ const CompartidasConmigo = () => {
                           </span>
                         </div>
                       )}
-                      {/* Botones de acción SIEMPRE encima */}
+                      {/* Botones de acción (editar solo para colaboradores premium en cápsulas programadas) */}
                       <div className="absolute top-4 right-4 flex gap-2 z-30">
                         {capsula.RoleName === 'Collaborator' && plan !== 'premium' && (
                           <span className="bg-yellow-400 text-[#2E2E7A] px-3 py-1 rounded-full font-bold text-xs">
@@ -246,7 +273,7 @@ const CompartidasConmigo = () => {
                           </button>
                         )}
                       </div>
-                      {/* Botón invisible para ver la cápsula */}
+                      {/* Botón invisible para ver la cápsula (solo si está abierta) */}
                       {!disabled && (
                         <button
                           className="absolute inset-0 w-full h-full z-10"
@@ -266,6 +293,7 @@ const CompartidasConmigo = () => {
           </div>
         </div>
       )}
+      {/* Modal para mostrar mensajes de error o información */}
       <Modal
         isOpen={modal.open}
         onClose={() => setModal({ open: false, title: '', message: '' })}
@@ -273,6 +301,7 @@ const CompartidasConmigo = () => {
       >
         <div>{modal.message}</div>
       </Modal>
+      {/* Estilos y animaciones para efectos visuales */}
       <style>
         {`
           .animate-fade-in { animation: fadeIn 1s; }

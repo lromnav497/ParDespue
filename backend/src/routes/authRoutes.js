@@ -202,25 +202,26 @@ router.post('/resend-verification', async (req, res) => {
 router.post('/recover-password', async (req, res) => {
   const { email } = req.body;
   try {
+    // Busca el usuario por email (no revela si existe o no para seguridad)
     const user = await userModel.findByEmail(email);
     if (!user) {
-      // No reveles si el correo existe o no
+      // No reveles si el correo existe o no (respuesta genérica)
       return res.json({ message: 'Si el correo existe, recibirás instrucciones para recuperar tu contraseña' });
     }
-    // Genera un token de recuperación
+    // Genera un token de recuperación seguro y una fecha de expiración (1 hora)
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenExpires = new Date(Date.now() + 1000 * 60 * 60); // 1 hora
 
-    // Guarda el token y expiración en la base de datos
+    // Guarda el token y su expiración en la base de datos del usuario
     await pool.query(
       'UPDATE Users SET ResetToken = ?, ResetTokenExpires = ? WHERE Email = ?',
       [resetToken, resetTokenExpires, email]
     );
 
-    // Enlace de recuperación (ajusta la URL a tu frontend)
+    // Construye el enlace de recuperación de contraseña (ajusta la URL a tu frontend)
     const resetUrl = `http://44.209.31.187/reset-password?token=${resetToken}`;
 
-    // Envía el correo
+    // Envía el correo de recuperación usando Mailjet
     await mailjet.post('send', { version: 'v3.1' }).request({
       Messages: [
         {
@@ -238,8 +239,10 @@ router.post('/recover-password', async (req, res) => {
       ]
     });
 
+    // Respuesta genérica para evitar revelar si el correo existe
     res.json({ message: 'Si el correo existe, recibirás instrucciones para recuperar tu contraseña' });
   } catch (error) {
+    // Manejo de errores generales
     res.status(500).json({ error: error.message });
   }
 });

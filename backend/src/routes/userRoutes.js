@@ -4,7 +4,7 @@ const createGeneralRouter = require('./generalRoutes');
 const userModel = require('../models/userModel');
 const { authMiddleware, roleMiddleware } = require('../middleware/authMiddleware');
 const bcrypt = require('bcryptjs');
-const db = require('../config/db'); // Asegúrate de tener la configuración de la base de datos
+const db = require('../config/db');
 const multer = require('multer');
 const path = require('path');
 
@@ -22,8 +22,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-
-// RUTAS PERSONALIZADAS PRIMERO
 
 // Buscar usuario por email usando el modelo y controlador
 router.get('/email/:email', UserController.findByEmail);
@@ -155,7 +153,7 @@ router.post('/me/export', authMiddleware, async (req, res) => {
   }
 });
 
-// LUEGO agrega las rutas generales
+// Agrega las rutas generales
 router.use('/', createGeneralRouter('Users'));
 
 module.exports = router;

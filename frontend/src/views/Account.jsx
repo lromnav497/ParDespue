@@ -7,20 +7,21 @@ import {
 import RenewSubscriptionModal from '../components/modals/RenewSubscriptionModal';
 import ConfirmCancelSubscriptionModal from '../components/modals/ConfirmCancelSubscriptionModal';
 import MisCapsulas from './MisCapsulas';
-import { fetchWithAuth } from '../helpers/fetchWithAuth';
 import Modal from '../components/modals/Modal';
 import PasswordModal from '../components/modals/PasswordModal';
-// Quita file-saver y csv
 
-// Agrega jsPDF y autoTable
+// Agrega jsPDF y autoTable para exportar datos en PDF
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+// Componente principal de la página de cuenta de usuario
 const Account = () => {
+  // Estado para la sección activa del menú lateral
   const [activeSection, setActiveSection] = useState('general');
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Cambia la sección activa según los parámetros de la URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.has('suscripciones')) setActiveSection('suscripciones');
@@ -29,6 +30,7 @@ const Account = () => {
     else setActiveSection('general');
   }, [location.search]);
 
+  // Opciones del menú lateral con iconos y títulos
   const menuItems = [
     { id: 'general', title: 'Información General', icon: '/icons/user.svg' },
     { id: 'suscripciones', title: 'Mis Suscripciones', icon: '/icons/suscription.svg' },
@@ -36,6 +38,7 @@ const Account = () => {
     { id: 'configuracion', title: 'Configuración', icon: '/icons/configuration.svg' }
   ];
 
+  // Cambia la sección activa y actualiza la URL
   const handleSectionChange = (id) => {
     setActiveSection(id);
     let search = '';
@@ -43,6 +46,7 @@ const Account = () => {
     navigate({ pathname: location.pathname, search });
   };
 
+  // Renderiza el contenido de la sección seleccionada
   const renderContent = () => {
     switch (activeSection) {
       case 'general':
@@ -60,7 +64,7 @@ const Account = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] flex animate-fade-in">
-      {/* Sidebar */}
+      {/* Sidebar de navegación de la cuenta */}
       <div className="w-64 bg-[#2E2E7A] time-capsule shadow-2xl animate-fade-in-down">
         <div className="p-6">
           <h2 className="text-[#F5E050] passero-font text-xl mb-6 drop-shadow">Mi Cuenta</h2>
@@ -94,12 +98,13 @@ const Account = () => {
         </div>
       </div>
 
-      {/* Content Area */}
+      {/* Área de contenido principal, cambia según la sección seleccionada */}
       <div className="flex-1 p-8">
         <div className="bg-[#2E2E7A] time-capsule rounded-xl p-6 min-h-[calc(100vh-4rem)] shadow-2xl animate-fade-in-up">
           {renderContent()}
         </div>
       </div>
+      {/* Animaciones CSS para transiciones visuales */}
       <style>
         {`
           .animate-fade-in { animation: fadeIn 1s; }
@@ -114,46 +119,52 @@ const Account = () => {
   );
 };
 
+// Función auxiliar para obtener el usuario almacenado en localStorage y normalizar sus campos
 const getStoredUser = () => {
   try {
     const userStr = localStorage.getItem('user');
     if (!userStr) return null;
     const user = JSON.parse(userStr);
-    // Normaliza claves
+    // Normaliza claves para compatibilidad
     return {
       id: user.id || user.User_ID,
       name: user.name || user.Name,
       email: user.email || user.Email,
       role: user.role || user.Role,
-      profilePicture: user.profilePicture || user.Profile_Picture || '', // <-- AGREGA ESTA LÍNEA
+      profilePicture: user.profilePicture || user.Profile_Picture || '', // <-- Foto de perfil
     };
   } catch {
     return null;
   }
 };
 
-// Componentes de contenido
+// =================== COMPONENTE: INFORMACIÓN GENERAL ===================
 const InformacionGeneral = () => {
   const navigate = useNavigate();
+  // Estados para los datos del usuario
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  // Estados para cambio de contraseña
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
+  // Estados para la foto de perfil
   const [profilePicture, setProfilePicture] = useState('');
   const [newProfilePic, setNewProfilePic] = useState(null);
+  // Modal para mostrar mensajes de éxito/error
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
+  // Estados para exportar datos
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [exportError, setExportError] = useState('');
   const [password, setPassword] = useState('');
 
-  // Sincroniza con localStorage al montar
+  // Al montar, carga los datos del usuario desde localStorage
   useEffect(() => {
     const storedUser = getStoredUser();
     if (!storedUser) {
@@ -166,6 +177,7 @@ const InformacionGeneral = () => {
     setLoading(false);
   }, [navigate]);
 
+  // Maneja el guardado de los datos del usuario (nombre, email, foto)
   const handleSave = async (e) => {
     e.preventDefault();
     setSuccess('');
@@ -174,7 +186,7 @@ const InformacionGeneral = () => {
     try {
       const storedUser = getStoredUser();
       const token = localStorage.getItem('token');
-      // Si hay nueva foto, primero súbela
+      // Si hay nueva foto, primero súbela al backend
       let updatedProfilePicture = profilePicture;
       if (newProfilePic) {
         const formData = new FormData();
@@ -190,7 +202,7 @@ const InformacionGeneral = () => {
           setProfilePicture(updatedProfilePicture);
         }
       }
-      // Ahora actualiza los datos de usuario
+      // Ahora actualiza los datos de usuario (nombre y correo)
       const res = await fetch(`/api/users/${storedUser.id}`, {
         method: 'PUT',
         headers: {
@@ -218,7 +230,7 @@ const InformacionGeneral = () => {
       setName(updatedUser.name);
       setEmail(updatedUser.email);
       setSuccess('Datos actualizados correctamente');
-      window.dispatchEvent(new Event('user-updated'));
+      window.dispatchEvent(new Event('user-updated')); // Notifica a otros componentes (ej: Header)
       setNewProfilePic(null);
       setLoading(false);
     } catch (err) {
@@ -227,11 +239,13 @@ const InformacionGeneral = () => {
     }
   };
 
+  // Maneja el cambio de contraseña del usuario
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     setPasswordSuccess('');
     setPasswordError('');
 
+    // Validaciones básicas de los campos
     if (!currentPassword || !newPassword || !repeatPassword) {
       setPasswordError('Completa todos los campos');
       return;
@@ -277,8 +291,7 @@ const InformacionGeneral = () => {
     }
   };
 
-  console.log(localStorage.getItem('user'));
-
+  // Muestra un spinner mientras carga los datos
   if (loading) {
     return (
       <div className="flex justify-center items-center h-40">
@@ -310,6 +323,7 @@ const InformacionGeneral = () => {
                   className="w-32 h-32 rounded-full object-cover border-4 border-[#F5E050] shadow-lg transition-transform duration-200 group-hover:scale-105 bg-white"
                 />
               ) : (
+                // Si no hay foto, muestra un círculo con icono de usuario
                 <div className="w-32 h-32 rounded-full bg-[#F5E050] flex items-center justify-center">
                   <FontAwesomeIcon icon={faUser} className="text-[#2E2E7A] text-5xl" />
                 </div>
@@ -327,8 +341,10 @@ const InformacionGeneral = () => {
               </span>
             </label>
           </div>
+          {/* Mensajes de éxito o error */}
           {error && <div className="text-red-400 mb-2">{error}</div>}
           {success && <div className="text-green-400 mb-2">{success}</div>}
+          {/* Campos de nombre y correo */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-gray-400 text-sm mb-1">Nombre</label>
@@ -351,6 +367,7 @@ const InformacionGeneral = () => {
               />
             </div>
           </div>
+          {/* Botón para guardar cambios */}
           <button
             type="submit"
             className="mt-4 bg-[#F5E050] text-[#2E2E7A] px-6 py-2 rounded-full font-bold"
@@ -361,7 +378,7 @@ const InformacionGeneral = () => {
         </div>
       </form>
 
-      {/* Cambiar contraseña */}
+      {/* Sección para cambiar contraseña */}
       <div className="bg-[#1a1a4a] p-6 rounded-lg mt-8">
         <h4 className="text-lg font-semibold mb-4">Cambiar contraseña</h4>
         {passwordError && <div className="text-red-400 mb-2">{passwordError}</div>}
@@ -407,6 +424,7 @@ const InformacionGeneral = () => {
         </form>
       </div>
 
+      {/* Modal para mostrar mensajes de error o éxito */}
       <Modal
         isOpen={modal.open}
         onClose={() => setModal({ open: false, title: '', message: '' })}
@@ -418,11 +436,14 @@ const InformacionGeneral = () => {
   );
 };
 
+// =================== COMPONENTE: MIS SUSCRIPCIONES ===================
 const MisSuscripciones = () => {
+  // Estados para la suscripción y transacciones del usuario
   const [suscripcion, setSuscripcion] = useState(null);
   const [transacciones, setTransacciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // Estados para los modales de renovar y cancelar suscripción
   const [showRenewModal, setShowRenewModal] = useState(false);
   const [renewMonths, setRenewMonths] = useState(1);
   const [renewLoading, setRenewLoading] = useState(false);
@@ -430,6 +451,7 @@ const MisSuscripciones = () => {
   const [cancelLoading, setCancelLoading] = useState(false);
   const storedUser = getStoredUser();
 
+  // Al montar, obtiene la suscripción y transacciones del usuario
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -437,7 +459,7 @@ const MisSuscripciones = () => {
       try {
         const token = localStorage.getItem('token') || (storedUser && storedUser.token);
 
-        // Plan y suscripción activa
+        // Obtiene el plan y la suscripción activa
         const planRes = await fetch(`/api/subscriptions/my-plan`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -445,7 +467,7 @@ const MisSuscripciones = () => {
         if (!planRes.ok) throw new Error(planData.message || 'Error al obtener el plan');
         setSuscripcion(planData.suscripcion || null);
 
-        // Transacciones
+        // Obtiene las transacciones del usuario
         const txRes = await fetch(`/api/transactions/my-transactions`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -460,12 +482,12 @@ const MisSuscripciones = () => {
     if (storedUser) fetchData();
   }, [storedUser && storedUser.id]);
 
-  // Abrir modal al pulsar Renovar
+  // Abre el modal de renovación
   const handleRenew = () => {
     setShowRenewModal(true);
   };
 
-  // Confirmar renovación
+  // Confirma la renovación de la suscripción
   const handleRenewConfirm = async () => {
     if (!suscripcion?.id) return;
     setRenewLoading(true);
@@ -492,12 +514,12 @@ const MisSuscripciones = () => {
     }
   };
 
-  // Cambiar el botón Cancelar para abrir el modal
+  // Abre el modal de cancelación
   const handleCancel = () => {
     setShowCancelModal(true);
   };
 
-  // Nueva función para confirmar cancelación
+  // Confirma la cancelación de la suscripción
   const handleCancelConfirm = async () => {
     if (!suscripcion?.id) return;
     setCancelLoading(true);
@@ -519,12 +541,14 @@ const MisSuscripciones = () => {
     }
   };
 
+  // Muestra mensajes de carga o error
   if (loading) return <div className="text-white">Cargando...</div>;
   if (error) return <div className="text-red-400">{error}</div>;
 
   return (
     <div className="text-white">
       <h3 className="text-2xl passero-font text-[#F5E050] mb-6">Mis Suscripciones</h3>
+      {/* Muestra información de la suscripción activa */}
       {suscripcion ? (
         <div className="mb-4 flex flex-col md:flex-row md:items-center md:gap-4">
           <div>
@@ -573,6 +597,7 @@ const MisSuscripciones = () => {
         loading={cancelLoading}
       />
 
+      {/* Tabla de transacciones */}
       <h4 className="text-xl mt-8 mb-4">Transacciones</h4>
       <div className="bg-[#1a1a4a] p-6 rounded-lg">
         {transacciones.length === 0 ? (
@@ -604,21 +629,19 @@ const MisSuscripciones = () => {
   );
 };
 
+// =================== COMPONENTE: CONFIGURACIÓN (EXPORTAR DATOS) ===================
 const Configuracion = () => {
+  // Estados para el modal de contraseña y errores de exportación
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [exportError, setExportError] = useState('');
   const [password, setPassword] = useState('');
 
+  // Función para exportar los datos del usuario en PDF
   const handleExportPDF = async (pwd) => {
-    // --- PON AQUÍ LA FUNCIÓN ---
-    function esVerdadero(valor) {
-      if (!valor) return false;
-      const v = String(valor).trim().toLowerCase();
-      return ['1', 'true', 'activo', 'active', 'completed', 'yes', 'si', 'sí'].includes(v);
-    }
 
     try {
       const token = localStorage.getItem('token');
+      // Solicita los datos al backend, autenticado y protegido por contraseña
       const res = await fetch('/api/users/me/export', {
         method: 'POST',
         headers: {
@@ -644,6 +667,7 @@ const Configuracion = () => {
         return;
       }
 
+      // Crea el documento PDF
       const doc = new jsPDF();
 
       // Portada
@@ -651,7 +675,7 @@ const Configuracion = () => {
       doc.rect(0, 0, 210, 297, 'F'); // A4 completo (mm)
       doc.setTextColor(245, 224, 80); // Amarillo
       doc.setFontSize(32);
-      doc.setFont('helvetica', 'bold'); // <-- Usa solo helvetica
+      doc.setFont('helvetica', 'bold'); 
       doc.text('ParDespue', 105, 80, { align: 'center' });
       doc.setFontSize(18);
       doc.setTextColor(255,255,255);
@@ -678,7 +702,7 @@ const Configuracion = () => {
         if (profilePicUrl) {
           try {
             let imgUrl = profilePicUrl;
-            // Si la URL es relativa, prepéndele el dominio de tu backend (ajusta si tu ruta es diferente)
+    
             if (!imgUrl.startsWith('http')) {
               imgUrl = `http://44.209.31.187:3000/api${imgUrl}`;
             }
@@ -700,12 +724,6 @@ const Configuracion = () => {
         }
 
         // Tabla de datos de usuario
-        // Función auxiliar robusta
-        function esVerdadero(valor) {
-          if (!valor) return false;
-          const v = String(valor).trim().toLowerCase();
-          return ['1', 'true', 'activo', 'active', 'completed', 'yes', 'si', 'sí'].includes(v);
-        }
 
         autoTable(doc, {
           startY: 38,
@@ -759,7 +777,7 @@ const Configuracion = () => {
             extraerCampo(s.Description, 'Type'),
             extraerCampo(s.Description, 'Start_Date'),
             extraerCampo(s.Description, 'End_Date'),
-            extraerCampo(s.Description, 'Status') // <-- Solo muestra el valor del backend
+            extraerCampo(s.Description, 'Status') 
           ]),
           styles: { fontSize: 10 },
           headStyles: { fillColor: [245, 224, 80], textColor: [46, 46, 122] }
@@ -857,7 +875,7 @@ const Configuracion = () => {
       }
 
       doc.save('mis_datos.pdf');
-      setShowPasswordModal(false); // <-- Cierra el modal después de descargar
+      setShowPasswordModal(false);
       console.log('[PDF] PDF generado y descargado');
     } catch (err) {
       console.error('[PDF][ERROR]', err);
@@ -879,6 +897,7 @@ const Configuracion = () => {
           </button>
           {exportError && <div className="text-red-400 mt-2">{exportError}</div>}
         </div>
+        {/* Modal para pedir la contraseña antes de exportar */}
         <PasswordModal
           isOpen={showPasswordModal}
           onClose={() => setShowPasswordModal(false)}
@@ -890,6 +909,7 @@ const Configuracion = () => {
   );
 };
 
+// Función auxiliar para limpiar caracteres especiales de los textos
 function limpiarTexto(texto) {
   if (!texto) return '';
   // Reemplaza caracteres problemáticos

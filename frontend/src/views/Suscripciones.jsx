@@ -6,16 +6,24 @@ import { useLocation } from 'react-router-dom';
 import Modal from '../components/modals/Modal';
 
 const Suscripciones = () => {
+  // Estado para el tipo de facturación: mensual o anual
   const [billing, setBilling] = useState('monthly');
+  // Estado para el plan seleccionado por el usuario (al hacer clic en un botón)
   const [selectedPlan, setSelectedPlan] = useState(null);
+  // Mensaje informativo para mostrar al usuario (éxito, error, etc.)
   const [mensaje, setMensaje] = useState('');
+  // Estado de carga para deshabilitar botones mientras se procesa la suscripción
   const [loading, setLoading] = useState(false);
+  // Plan actual del usuario ("Básico" o "Premium")
   const [currentPlan, setCurrentPlan] = useState('Básico');
+  // Precios obtenidos desde Stripe para los planes
   const [stripePrices, setStripePrices] = useState([]);
+  // Estado para el modal de mensajes (errores, avisos)
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
+  // Hook para obtener la ubicación actual (para leer parámetros de la URL)
   const location = useLocation();
 
-  // Obtiene los precios de Stripe al montar
+  // Obtiene los precios de Stripe al montar el componente
   useEffect(() => {
     fetch('/api/subscriptions/stripe-prices')
       .then(res => res.json())
@@ -24,7 +32,7 @@ const Suscripciones = () => {
       });
   }, []);
 
-  // Consulta el plan actual del usuario al montar
+  // Consulta el plan actual del usuario al montar el componente
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token') || user?.token;
@@ -40,6 +48,7 @@ const Suscripciones = () => {
       });
   }, []);
 
+  // Efecto para mostrar mensajes según parámetros de la URL (ej: éxito/cancelación de pago)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('success')) {
@@ -62,7 +71,7 @@ const Suscripciones = () => {
     }
   }, [location.search]);
 
-  // Mapea los precios de Stripe a tus planes
+  // Función auxiliar: busca el precio de Stripe según el intervalo (mes/año)
   const getStripePrice = (interval) => {
     const price = stripePrices.find(
       p => p.recurring && p.recurring.interval === interval
@@ -76,6 +85,7 @@ const Suscripciones = () => {
       : null;
   };
 
+  // Definición de los planes disponibles
   const plans = [
     {
       name: "Básico",
@@ -105,14 +115,17 @@ const Suscripciones = () => {
     }
   ];
 
+  // Handler para suscribirse a un plan (Premium o Básico)
   const handleSubscribe = async (plan) => {
-    setLoading(true);
+    setLoading(true); // Activa el estado de carga
     setMensaje('');
     setSelectedPlan(plan.name);
 
+    // Obtiene el usuario y token de autenticación
     const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token') || user?.token;
 
+    // Si no hay token, muestra un modal pidiendo iniciar sesión
     if (!token) {
       setModal({
         open: true,
@@ -123,8 +136,10 @@ const Suscripciones = () => {
       return;
     }
 
+    // Si el usuario selecciona Premium, inicia el proceso de pago con Stripe
     if (plan.name === "Premium") {
       try {
+        // Llama al backend para crear la sesión de pago de Stripe
         const res = await fetchWithAuth('/api/subscriptions/create-checkout-session', {
           method: 'POST',
           headers: {
@@ -139,6 +154,7 @@ const Suscripciones = () => {
         });
         const data = await res.json();
         if (res.ok && data.url) {
+          // Redirige al usuario a la página de pago de Stripe
           window.location.href = data.url;
         } else {
           setModal({
@@ -159,6 +175,7 @@ const Suscripciones = () => {
       return;
     }
 
+    // Si el usuario selecciona Básico y ya lo tiene, muestra un aviso
     setTimeout(() => {
       setModal({
         open: true,
@@ -169,6 +186,7 @@ const Suscripciones = () => {
     }, 1000);
   };
 
+  // Si aún no se ha cargado el precio de Premium, muestra un mensaje de carga
   if (plans[1].name === "Premium" && !plans[1].price) {
     return <div className="text-center text-white animate-fade-in">Cargando precios de Stripe...</div>;
   }
@@ -176,7 +194,7 @@ const Suscripciones = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] py-16">
       <div className="container mx-auto px-4">
-        {/* Header */}
+        {/* Header principal de la página de suscripciones */}
         <div className="text-center mb-16 animate-fade-in-down">
           <h1 className="text-4xl md:text-5xl text-[#F5E050] passero-font mb-6 drop-shadow-lg">
             Planes y Precios
@@ -185,7 +203,7 @@ const Suscripciones = () => {
             Elige el plan perfecto para preservar tus recuerdos más valiosos
           </p>
 
-          {/* Billing Toggle */}
+          {/* Toggle para cambiar entre facturación mensual y anual */}
           <div className="flex items-center justify-center gap-4 mb-2">
             <span className={`text-lg ${billing === 'monthly' ? 'text-[#F5E050]' : 'text-gray-400'} transition-colors`}>
               Mensual
@@ -205,14 +223,14 @@ const Suscripciones = () => {
           </div>
         </div>
 
-        {/* Mensaje de compra */}
+        {/* Mensaje de compra o error */}
         {mensaje && (
           <div className="max-w-xl mx-auto mb-8 text-center animate-fade-in-up">
             <div className="bg-[#1a1a4a] text-[#F5E050] p-4 rounded-lg shadow-lg">{mensaje}</div>
           </div>
         )}
 
-        {/* Plans Grid */}
+        {/* Grid de planes de suscripción */}
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto animate-fade-in-up">
           {plans.map((plan, index) => (
             <div
@@ -221,6 +239,7 @@ const Suscripciones = () => {
                 plan.popular ? 'transform md:-translate-y-4 ring-4 ring-[#F5E050]/40' : ''
               }`}
             >
+              {/* Etiqueta de "Más Popular" para el plan Premium */}
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
                   <span className="bg-[#F5E050] text-[#2E2E7A] px-4 py-1 rounded-full text-sm font-semibold shadow">
@@ -229,6 +248,7 @@ const Suscripciones = () => {
                 </div>
               )}
 
+              {/* Icono y nombre del plan */}
               <div className="text-center mb-8">
                 <FontAwesomeIcon
                   icon={plan.icon}
@@ -237,6 +257,7 @@ const Suscripciones = () => {
                 <h3 className="text-2xl text-[#F5E050] passero-font mb-4 drop-shadow">
                   {plan.name}
                 </h3>
+                {/* Precio del plan */}
                 <div className="text-white mb-4">
                   {plan.name === "Básico" ? (
                     <span className="text-4xl font-bold">Gratis</span>
@@ -255,6 +276,7 @@ const Suscripciones = () => {
                 </div>
               </div>
 
+              {/* Lista de características del plan */}
               <ul className="space-y-4 mb-8">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-center text-gray-300">
@@ -267,7 +289,7 @@ const Suscripciones = () => {
                 ))}
               </ul>
 
-              {/* Botón: deshabilita si ya tiene el plan */}
+              {/* Botón para suscribirse o cambiar de plan */}
               <button
                 className={`w-full py-3 rounded-full transition-all duration-200 font-bold shadow-lg ${
                   plan.popular
@@ -293,7 +315,7 @@ const Suscripciones = () => {
           ))}
         </div>
 
-        {/* FAQ Section */}
+        {/* Sección de preguntas frecuentes (FAQ) */}
         <div className="max-w-3xl mx-auto mt-24 animate-fade-in-up">
           <h2 className="text-3xl text-[#F5E050] passero-font text-center mb-8 drop-shadow-lg">
             Preguntas Frecuentes
@@ -329,7 +351,7 @@ const Suscripciones = () => {
           </div>
         </div>
 
-        {/* Modal general */}
+        {/* Modal general para mostrar mensajes de error o aviso */}
         <Modal
           isOpen={modal.open}
           onClose={() => setModal({ open: false, title: '', message: '' })}
@@ -338,6 +360,7 @@ const Suscripciones = () => {
           <div>{modal.message}</div>
         </Modal>
       </div>
+      {/* Estilos y animaciones para efectos visuales */}
       <style>
         {`
           .animate-fade-in { animation: fadeIn 1s; }

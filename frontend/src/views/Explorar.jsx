@@ -8,9 +8,10 @@ import {
   faLock
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
-import starIcon from '/icons/star.svg'; // Usa la ruta pública
-import galaxyIcon from '/icons/galaxy.svg'; // Agrega la galaxia
+import starIcon from '/icons/star.svg'; 
+import galaxyIcon from '/icons/galaxy.svg'; 
 
+// Lista de categorías disponibles para filtrar cápsulas
 const categorias = [
   { id: 'todas', nombre: 'Todas' },
   { id: 'Family', nombre: 'Familia' },
@@ -20,10 +21,13 @@ const categorias = [
   { id: 'Others', nombre: 'Otros' }
 ];
 
+// Número de cápsulas por página
 const PAGE_SIZE = 9;
 
+// Función auxiliar para obtener la URL de la imagen de portada de la cápsula
 function getImageUrl(capsula) {
   if (capsula.cover_image) {
+    // Si la imagen es una URL absoluta, la usa directamente; si es relativa, la completa con el dominio del backend
     return capsula.cover_image.startsWith('http')
       ? capsula.cover_image
       : `http://44.209.31.187:3000/api${capsula.cover_image}`;
@@ -33,19 +37,21 @@ function getImageUrl(capsula) {
   }
 }
 
-// Estrellas y galaxias flotantes SOLO en el fondo del grid de cápsulas
+// Número de estrellas y galaxias flotantes en el fondo
 const NUM_STARS = 24;
 const NUM_GALAXIES = 8;
 
+// Función auxiliar para obtener un número aleatorio entre min y max
 function getRandom(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-// Estrellas flotantes SOLO en el fondo del grid de cápsulas
+// Componente de estrellas y galaxias flotantes animadas de fondo
 const FloatingStars = () => (
   <div className="pointer-events-none absolute inset-0 z-0">
     {/* Estrellas */}
     {Array.from({ length: NUM_STARS }).map((_, i) => {
+      // Calcula posición, tamaño y animación aleatoria para cada estrella
       const top = getRandom(0, 95);
       const left = getRandom(0, 95);
       const size = getRandom(12, 32); // px
@@ -77,6 +83,7 @@ const FloatingStars = () => (
     })}
     {/* Galaxias */}
     {Array.from({ length: NUM_GALAXIES }).map((_, i) => {
+      // Calcula posición, tamaño y animación aleatoria para cada galaxia
       const top = getRandom(0, 95);
       const left = getRandom(0, 95);
       const size = getRandom(32, 56); // px
@@ -109,35 +116,46 @@ const FloatingStars = () => (
   </div>
 );
 
+// Componente principal para explorar cápsulas públicas
 const Explorar = () => {
+  // Estado para el término de búsqueda
   const [searchTerm, setSearchTerm] = useState('');
+  // Estado para la categoría seleccionada
   const [selectedCategory, setSelectedCategory] = useState('todas');
+  // Estado para la lista de cápsulas obtenidas del backend
   const [capsulas, setCapsulas] = useState([]);
+  // Estado para el total de páginas de resultados
   const [totalPages, setTotalPages] = useState(1);
+  // Estado para la página actual
   const [page, setPage] = useState(1);
+  // Estado de carga
   const [loading, setLoading] = useState(false);
 
-  // Fetch cápsulas públicas with filters and pagination
+  // Función para obtener cápsulas públicas desde el backend con filtros y paginación
   const fetchCapsulas = async () => {
     setLoading(true);
+    // Construye los parámetros de búsqueda
     const params = new URLSearchParams({
       page,
       pageSize: PAGE_SIZE,
       category: selectedCategory !== 'todas' ? selectedCategory : '',
       search: searchTerm
     });
+    // Realiza la petición al backend
     const res = await fetch(`/api/capsules/public?${params.toString()}`);
     const data = await res.json();
-    console.log(data.capsulas); // <-- Añade esto
+    console.log(data.capsulas); 
     setCapsulas(data.capsulas || []);
     setTotalPages(data.totalPages || 1);
     setLoading(false);
   };
 
+  // Efecto: actualiza la lista de cápsulas cuando cambian los filtros o la página
   useEffect(() => {
     fetchCapsulas();
   }, [searchTerm, selectedCategory, page]);
 
+  // Efecto: recarga las cápsulas si el usuario vuelve a la pestaña
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -150,6 +168,7 @@ const Explorar = () => {
     };
   }, [searchTerm, selectedCategory, page]);
 
+  // Efecto: recarga las cápsulas automáticamente cada 20 segundos
   useEffect(() => {
     const intervalId = setInterval(() => {
       fetchCapsulas();
@@ -158,29 +177,31 @@ const Explorar = () => {
     return () => clearInterval(intervalId);
   }, [searchTerm, selectedCategory, page]);
 
-  // Handler para el buscador
+  // Handler para el buscador: actualiza el término de búsqueda y reinicia la página
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setPage(1);
   };
 
-  // Handler para filtro de categoría
+  // Handler para filtro de categoría: actualiza la categoría y reinicia la página
   const handleCategory = (catId) => {
     setSelectedCategory(catId);
     setPage(1);
   };
 
+  // Obtiene el usuario actual desde localStorage para saber si es admin/premium
   const user = JSON.parse(localStorage.getItem('user'));
   const isAdmin = user?.role === 'administrator';
 
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen bg-gradient-to-br from-[#2E2E7A] via-[#1a1a4a] to-[#23235b] animate-fade-in">
-      {/* Fondo estrellado */}
+      {/* Fondo estrellado animado */}
       <FloatingStars />
       <div className="relative z-10">
         {/* Barra de búsqueda y filtros */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 justify-between items-center animate-fade-in-down">
+            {/* Buscador de texto */}
             <div className="relative w-full md:w-96">
               <FontAwesomeIcon 
                 icon={faSearch} 
@@ -195,6 +216,7 @@ const Explorar = () => {
                   text-white focus:outline-none focus:border-[#F5E050] shadow-inner focus:shadow-[#F5E050]/20 transition-all duration-200"
               />
             </div>
+            {/* Filtros de categoría */}
             <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto">
               {categorias.map(cat => (
                 <button
@@ -218,15 +240,18 @@ const Explorar = () => {
           <div className="text-center text-white py-10 animate-pulse">Cargando...</div>
         ) : (
           <div className="relative my-8">
+            {/* Fondo animado de estrellas y galaxias */}
             <FloatingStars />
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in-up">
               {capsulas.length === 0 ? (
                 <div className="col-span-3 text-center text-gray-400 animate-fade-in-up">No se encontraron cápsulas.</div>
               ) : (
                 capsulas.map(capsula => {
+                  // Determina si la cápsula está abierta o programada
                   const ahora = new Date();
                   const apertura = new Date(capsula.fechaApertura);
                   const disabled = apertura > ahora;
+                  // Determina si el usuario es premium o admin
                   const isPremium = user?.premium;
                   const puedeEditar = (isPremium && disabled) || isAdmin;
                   const puedeEliminar = isPremium || !disabled || isAdmin;
@@ -240,6 +265,7 @@ const Explorar = () => {
                       `}
                       style={{ textDecoration: 'none' }}
                     >
+                      {/* Toda la tarjeta es un enlace a la vista de la cápsula */}
                       <Link
                         to={`/vercapsula/${capsula.id}`}
                         tabIndex={disabled ? -1 : 0}
@@ -248,9 +274,9 @@ const Explorar = () => {
                       >
                         {/* Cuerpo de la cápsula espacial */}
                         <div className="relative flex flex-col items-center w-full">
-                          {/* Cúpula */}
+                          {/* Cúpula decorativa superior */}
                           <div className="w-36 h-12 bg-gradient-to-b from-[#F5E050] to-[#3d3d9e] rounded-t-full shadow-lg z-10" />
-                          {/* Imagen de portada como ventana grande */}
+                          {/* Imagen de portada en círculo */}
                           <div className="relative w-36 h-36 flex items-center justify-center -mt-8 z-20">
                             {/* Fondo circular detrás de la imagen */}
                             <div className="absolute w-full h-full rounded-full border-4 border-[#F5E050] bg-[#23235b] shadow-inner z-0" />
@@ -261,17 +287,19 @@ const Explorar = () => {
                               style={{ backgroundColor: "#23235b" }}
                             />
                           </div>
-                          {/* Cuerpo principal */}
+                          {/* Cuerpo principal de la cápsula */}
                           <div className="w-44 bg-gradient-to-br from-[#23235b] via-[#2E2E7A] to-[#1a1a4a] border-2 border-[#F5E050] rounded-b-3xl rounded-t-xl shadow-2xl flex flex-col items-center pt-6 pb-6 px-4 relative z-10 -mt-4">
                             <h3 className="text-[#F5E050] passero-font text-lg mb-2 text-center group-hover:underline transition-all">
                               {capsula.titulo}
                             </h3>
                             <p className="text-gray-300 text-sm mb-2 line-clamp-2 text-center">{capsula.descripcion}</p>
+                            {/* Muestra los tags de la cápsula */}
                             <div className="flex flex-wrap gap-1 mb-2 justify-center">
                               {capsula.tags?.map(tag => (
                                 <span key={tag} className="bg-[#F5E050] text-[#2E2E7A] px-2 py-0.5 rounded text-xs animate-fade-in">{tag}</span>
                               ))}
                             </div>
+                            {/* Muestra categoría, likes y vistas */}
                             <div className="flex justify-between items-center text-sm text-gray-400 w-full mb-2">
                               <span className="bg-[#3d3d9e] text-white px-2 py-0.5 rounded">{capsula.categoria}</span>
                               <span className="flex items-center">
@@ -283,6 +311,7 @@ const Explorar = () => {
                                 {capsula.views ?? capsula.Views ?? 0}
                               </span>
                             </div>
+                            {/* Fechas de creación y apertura */}
                             <div className="flex justify-between items-center text-xs text-gray-400 w-full">
                               <span>
                                 {new Date(capsula.fechaCreacion).toLocaleDateString()}
@@ -291,14 +320,15 @@ const Explorar = () => {
                                 {apertura.toLocaleDateString()}
                               </span>
                             </div>
+                            {/* Autor de la cápsula */}
                             <div className="mt-2 text-xs text-[#F5E050] font-semibold text-center">
                               {capsula.autor || 'Desconocido'}
                             </div>
                           </div>
-                          {/* Fuego de propulsión */}
+                          {/* Fuego de propulsión decorativo */}
                           <div className="w-16 h-10 bg-gradient-to-b from-[#F5E050] via-[#e6d047] to-transparent rounded-b-full blur-sm opacity-80 animate-capsule-fire -mt-3" />
                         </div>
-                        {/* Overlay de bloqueo */}
+                        {/* Overlay de bloqueo si la cápsula está programada */}
                         {disabled && (
                           <div
                             className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-20 animate-fade-in rounded-b-3xl rounded-t-xl pointer-events-none"
@@ -322,7 +352,7 @@ const Explorar = () => {
           </div>
         )}
 
-        {/* Paginación */}
+        {/* Paginación de resultados */}
         <div className="mt-8 flex justify-center gap-2 animate-fade-in-up">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
             <button
@@ -339,6 +369,7 @@ const Explorar = () => {
           ))}
         </div>
       </div>
+      {/* Estilos y animaciones para efectos visuales */}
       <style>
         {`
           .animate-fade-in { animation: fadeIn 1s; }

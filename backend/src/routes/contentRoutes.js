@@ -13,7 +13,7 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// NUEVA RUTA para eliminar todos los contenidos de una cápsula
+// Eliminar todos los contenidos de una cápsula
 router.delete('/by-capsule/:capsuleId', async (req, res) => {
   try {
     const { capsuleId } = req.params;

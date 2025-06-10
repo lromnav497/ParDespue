@@ -11,8 +11,7 @@ paths:
   /users:
     get:
       summary: Obtener todos los usuarios
-      tags:
-        - Users
+      tags: [Users]
       responses:
         '200':
           description: Lista de usuarios
@@ -26,8 +25,7 @@ paths:
           description: Error interno del servidor
     post:
       summary: Crear un nuevo usuario
-      tags:
-        - Users
+      tags: [Users]
       requestBody:
         required: true
         content:
@@ -49,14 +47,12 @@ paths:
   /users/{id}:
     get:
       summary: Obtener un usuario por ID
-      tags:
-        - Users
+      tags: [Users]
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: integer
+          schema: { type: integer }
           description: ID del usuario
       responses:
         '200':
@@ -71,15 +67,12 @@ paths:
           description: Error interno del servidor
     put:
       summary: Actualizar un usuario
-      tags:
-        - Users
+      tags: [Users]
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: integer
-          description: ID del usuario
+          schema: { type: integer }
       requestBody:
         required: true
         content:
@@ -97,15 +90,12 @@ paths:
           description: Error interno del servidor
     delete:
       summary: Eliminar un usuario
-      tags:
-        - Users
+      tags: [Users]
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: integer
-          description: ID del usuario
+          schema: { type: integer }
       responses:
         '200':
           description: Usuario eliminado exitosamente
@@ -114,11 +104,87 @@ paths:
         '500':
           description: Error interno del servidor
 
+  /users/{id}/password:
+    put:
+      summary: Cambiar contraseña de usuario
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentPassword: { type: string }
+                newPassword: { type: string }
+      responses:
+        '200':
+          description: Contraseña actualizada correctamente
+        '400':
+          description: Error de validación
+        '403':
+          description: No autorizado
+        '404':
+          description: Usuario no encontrado
+        '500':
+          description: Error interno del servidor
+
+  /users/{id}/profile-picture:
+    put:
+      summary: Actualizar foto de perfil
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                profile_picture:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Foto de perfil actualizada
+        '400':
+          description: No se subió ninguna imagen
+        '500':
+          description: Error interno del servidor
+
+  /users/me/export:
+    post:
+      summary: Exportar todos los datos del usuario autenticado
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password: { type: string }
+      responses:
+        '200':
+          description: Datos exportados correctamente
+        '401':
+          description: Contraseña incorrecta
+        '500':
+          description: Error interno del servidor
+
   /roles:
     get:
       summary: Obtener todos los roles
-      tags:
-        - Roles
+      tags: [Roles]
       responses:
         '200':
           description: Lista de roles
@@ -134,8 +200,7 @@ paths:
   /capsules:
     get:
       summary: Obtener todas las cápsulas
-      tags:
-        - Capsules
+      tags: [Capsules]
       responses:
         '200':
           description: Lista de cápsulas
@@ -149,12 +214,11 @@ paths:
           description: Error interno del servidor
     post:
       summary: Crear una nueva cápsula
-      tags:
-        - Capsules
+      tags: [Capsules]
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/CapsuleInput'
       responses:
@@ -169,11 +233,207 @@ paths:
         '500':
           description: Error interno del servidor
 
+  /capsules/public:
+    get:
+      summary: Obtener cápsulas públicas (exploración)
+      tags: [Capsules]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer }
+        - name: pageSize
+          in: query
+          schema: { type: integer }
+        - name: category
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de cápsulas públicas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capsulas:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Capsule'
+                  totalPages:
+                    type: integer
+        '500':
+          description: Error interno del servidor
+
+  /capsules/{id}:
+    get:
+      summary: Obtener una cápsula por ID
+      tags: [Capsules]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Cápsula encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Capsule'
+        '403':
+          description: No tienes acceso a esta cápsula
+        '404':
+          description: Cápsula no encontrada
+        '500':
+          description: Error interno del servidor
+    put:
+      summary: Actualizar una cápsula
+      tags: [Capsules]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapsuleInput'
+      responses:
+        '200':
+          description: Cápsula actualizada correctamente
+        '403':
+          description: No autorizado
+        '404':
+          description: Cápsula no encontrada
+        '500':
+          description: Error interno del servidor
+    delete:
+      summary: Eliminar una cápsula
+      tags: [Capsules]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Cápsula eliminada correctamente
+        '403':
+          description: No autorizado
+        '404':
+          description: Cápsula no encontrada
+        '500':
+          description: Error interno del servidor
+
+  /capsules/{id}/cover:
+    put:
+      summary: Subir o eliminar portada de cápsula
+      tags: [Capsules]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                cover_image:
+                  type: string
+                  format: binary
+                remove:
+                  type: boolean
+      responses:
+        '200':
+          description: Portada actualizada/eliminada
+        '400':
+          description: No se subió ninguna imagen
+        '500':
+          description: Error interno del servidor
+
+  /capsules/{id}/view:
+    post:
+      summary: Sumar una visualización a la cápsula
+      tags: [Capsules]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Visualización sumada
+        '500':
+          description: Error interno del servidor
+
+  /capsules/{id}/like:
+    post:
+      summary: Dar like a una cápsula
+      tags: [Capsules]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Like agregado
+        '401':
+          description: No autenticado
+        '500':
+          description: Error interno del servidor
+    delete:
+      summary: Quitar like a una cápsula
+      tags: [Capsules]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Like eliminado
+        '401':
+          description: No autenticado
+        '500':
+          description: Error interno del servidor
+
+  /capsules/{id}/liked:
+    get:
+      summary: Saber si el usuario autenticado dio like a la cápsula
+      tags: [Capsules]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Estado de like
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  liked:
+                    type: boolean
+        '401':
+          description: No autenticado
+        '500':
+          description: Error interno del servidor
+
   /contents:
     get:
       summary: Obtener todos los contenidos
-      tags:
-        - Contents
+      tags: [Contents]
       responses:
         '200':
           description: Lista de contenidos
@@ -185,12 +445,80 @@ paths:
                   $ref: '#/components/schemas/Content'
         '500':
           description: Error interno del servidor
+    post:
+      summary: Crear contenido (archivo) asociado a una cápsula
+      tags: [Contents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentInput'
+      responses:
+        '201':
+          description: Contenido creado exitosamente
+        '400':
+          description: Error de validación
+        '500':
+          description: Error interno del servidor
+
+  /contents/capsule/{capsuleId}:
+    get:
+      summary: Obtener todos los contenidos de una cápsula
+      tags: [Contents]
+      parameters:
+        - name: capsuleId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Lista de contenidos de la cápsula
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Content'
+        '500':
+          description: Error interno del servidor
+
+  /contents/{id}:
+    delete:
+      summary: Eliminar un contenido por ID
+      tags: [Contents]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Contenido eliminado
+        '404':
+          description: Contenido no encontrado
+        '500':
+          description: Error interno del servidor
+
+  /contents/by-capsule/{capsuleId}:
+    delete:
+      summary: Eliminar todos los contenidos de una cápsula
+      tags: [Contents]
+      parameters:
+        - name: capsuleId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Contenidos eliminados
+        '500':
+          description: Error interno del servidor
 
   /notifications:
     get:
       summary: Obtener todas las notificaciones
-      tags:
-        - Notifications
+      tags: [Notifications]
       responses:
         '200':
           description: Lista de notificaciones
@@ -206,8 +534,7 @@ paths:
   /categories:
     get:
       summary: Obtener todas las categorías
-      tags:
-        - Categories
+      tags: [Categories]
       responses:
         '200':
           description: Lista de categorías
@@ -223,8 +550,7 @@ paths:
   /subscriptions:
     get:
       summary: Obtener todas las suscripciones
-      tags:
-        - Subscriptions
+      tags: [Subscriptions]
       responses:
         '200':
           description: Lista de suscripciones
@@ -237,11 +563,108 @@ paths:
         '500':
           description: Error interno del servidor
 
+  /subscriptions/my-plan:
+    get:
+      summary: Obtener el plan actual del usuario autenticado
+      tags: [Subscriptions]
+      responses:
+        '200':
+          description: Plan actual del usuario
+        '401':
+          description: No autenticado
+        '500':
+          description: Error interno del servidor
+
+  /subscriptions/stripe-prices:
+    get:
+      summary: Obtener precios de Stripe para los planes
+      tags: [Subscriptions]
+      responses:
+        '200':
+          description: Lista de precios de Stripe
+        '500':
+          description: Error interno del servidor
+
+  /subscriptions/create-checkout-session:
+    post:
+      summary: Crear sesión de pago de Stripe para suscripción Premium
+      tags: [Subscriptions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plan: { type: string }
+                billing: { type: string }
+                priceId: { type: string }
+      responses:
+        '200':
+          description: URL de Stripe para el pago
+        '401':
+          description: No autenticado
+        '500':
+          description: Error interno del servidor
+
+  /subscriptions/activate-premium:
+    post:
+      summary: Activar plan premium después del pago
+      tags: [Subscriptions]
+      responses:
+        '200':
+          description: Premium activado correctamente
+        '401':
+          description: No autenticado
+        '500':
+          description: Error interno del servidor
+
+  /subscriptions/renew/{id}:
+    post:
+      summary: Renovar una suscripción
+      tags: [Subscriptions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                months: { type: integer }
+      responses:
+        '200':
+          description: Suscripción renovada
+        '401':
+          description: No autenticado
+        '500':
+          description: Error interno del servidor
+
+  /subscriptions/cancel/{id}:
+    post:
+      summary: Cancelar una suscripción
+      tags: [Subscriptions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Suscripción cancelada
+        '401':
+          description: No autenticado
+        '500':
+          description: Error interno del servidor
+
   /transactions:
     get:
       summary: Obtener todas las transacciones
-      tags:
-        - Transactions
+      tags: [Transactions]
       responses:
         '200':
           description: Lista de transacciones
@@ -254,47 +677,99 @@ paths:
         '500':
           description: Error interno del servidor
 
-  /recipients/{userId}/{capsuleId}/{roleId}:
+  /transactions/my-transactions:
     get:
-      summary: Obtener un destinatario por clave compuesta
-      tags:
-        - Recipients
+      summary: Obtener las transacciones del usuario autenticado
+      tags: [Transactions]
+      responses:
+        '200':
+          description: Lista de transacciones del usuario
+        '401':
+          description: No autenticado
+        '500':
+          description: Error interno del servidor
+
+  /recipients/capsule/{Capsule_ID}:
+    get:
+      summary: Obtener destinatarios de una cápsula
+      tags: [Recipients]
+      parameters:
+        - name: Capsule_ID
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Lista de destinatarios
+        '500':
+          description: Error interno del servidor
+
+  /recipients/capsule-shared/{userId}:
+    get:
+      summary: Obtener cápsulas compartidas con un usuario
+      tags: [Recipients]
       parameters:
         - name: userId
           in: path
           required: true
-          schema:
-            type: integer
-          description: ID del usuario
-        - name: capsuleId
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID de la cápsula
-        - name: roleId
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID del rol
+          schema: { type: integer }
       responses:
         '200':
-          description: Destinatario encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Recipient'
-        '404':
-          description: Destinatario no encontrado
+          description: Lista de cápsulas compartidas
+        '500':
+          description: Error interno del servidor
+
+  /recipients:
+    post:
+      summary: Añadir destinatario a una cápsula
+      tags: [Recipients]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipientInput'
+      responses:
+        '201':
+          description: Destinatario añadido
+        '400':
+          description: Error de validación
+        '500':
+          description: Error interno del servidor
+    delete:
+      summary: Eliminar destinatario de una cápsula
+      tags: [Recipients]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipientInput'
+      responses:
+        '200':
+          description: Destinatario eliminado
+        '500':
+          description: Error interno del servidor
+
+  /recipients/all/{Capsule_ID}:
+    delete:
+      summary: Eliminar todos los destinatarios de una cápsula
+      tags: [Recipients]
+      parameters:
+        - name: Capsule_ID
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Destinatarios eliminados
         '500':
           description: Error interno del servidor
 
   /comments:
     get:
       summary: Obtener todos los comentarios
-      tags:
-        - Comments
+      tags: [Comments]
       responses:
         '200':
           description: Lista de comentarios
@@ -306,131 +781,393 @@ paths:
                   $ref: '#/components/schemas/Comment'
         '500':
           description: Error interno del servidor
+    post:
+      summary: Crear un comentario
+      tags: [Comments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentInput'
+      responses:
+        '201':
+          description: Comentario creado
+        '400':
+          description: Error de validación
+        '500':
+          description: Error interno del servidor
+
+  /comments/{id}:
+    put:
+      summary: Editar un comentario
+      tags: [Comments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentInput'
+      responses:
+        '200':
+          description: Comentario actualizado
+        '404':
+          description: Comentario no encontrado
+        '500':
+          description: Error interno del servidor
+    delete:
+      summary: Eliminar un comentario
+      tags: [Comments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Comentario eliminado
+        '404':
+          description: Comentario no encontrado
+        '500':
+          description: Error interno del servidor
+
+  /auth/register:
+    post:
+      summary: Registrar un nuevo usuario
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                password: { type: string }
+                profile_picture:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Usuario registrado correctamente
+        '400':
+          description: Error de validación
+        '500':
+          description: Error interno del servidor
+
+  /auth/login:
+    post:
+      summary: Iniciar sesión
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+                remember: { type: boolean }
+      responses:
+        '200':
+          description: Login exitoso
+        '400':
+          description: Usuario o contraseña incorrectos
+        '403':
+          description: Usuario no verificado o baneado
+        '500':
+          description: Error interno del servidor
+
+  /auth/verify/{token}:
+    get:
+      summary: Verificar cuenta de usuario
+      tags: [Auth]
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Usuario verificado correctamente
+        '404':
+          description: Token inválido o expirado
+        '500':
+          description: Error interno del servidor
+
+  /auth/resend-verification:
+    post:
+      summary: Reenviar correo de verificación
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+      responses:
+        '200':
+          description: Correo de verificación reenviado
+        '404':
+          description: Usuario no encontrado
+        '400':
+          description: Usuario ya verificado
+        '500':
+          description: Error interno del servidor
+
+  /auth/forgot-password:
+    post:
+      summary: Solicitar restablecimiento de contraseña
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+      responses:
+        '200':
+          description: Instrucciones enviadas
+        '500':
+          description: Error interno del servidor
+
+  /auth/reset-password:
+    post:
+      summary: Restablecer contraseña con token
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Contraseña restablecida correctamente
+        '400':
+          description: Token inválido o expirado
+        '500':
+          description: Error interno del servidor
+
+  /upload:
+    post:
+      summary: Subir archivo definitivo a una cápsula
+      tags: [Upload]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                userId:
+                  type: integer
+                capsuleId:
+                  type: integer
+      responses:
+        '200':
+          description: Archivo subido correctamente
+        '400':
+          description: No se subió ningún archivo
+        '500':
+          description: Error interno del servidor
+
+  /upload/tmp:
+    post:
+      summary: Subir archivo temporal (antes de asociar a cápsula)
+      tags: [Upload]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                userId:
+                  type: integer
+      responses:
+        '200':
+          description: Archivo temporal subido correctamente
+        '400':
+          description: No se subió ningún archivo
+        '500':
+          description: Error interno del servidor
+
+  /upload/move:
+    post:
+      summary: Mover archivo temporal a carpeta definitiva de cápsula
+      tags: [Upload]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId: { type: integer }
+                capsuleId: { type: integer }
+                tmpPath: { type: string }
+      responses:
+        '200':
+          description: Archivo movido correctamente
+        '400':
+          description: Faltan datos requeridos
+        '500':
+          description: Error interno del servidor
+
+  /upload/delete:
+    delete:
+      summary: Eliminar archivo físico del sistema de archivos
+      tags: [Upload]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filePath: { type: string }
+      responses:
+        '200':
+          description: Archivo eliminado
+        '400':
+          description: Falta filePath
+        '500':
+          description: Error interno del servidor
 
 components:
   schemas:
     User:
       type: object
       properties:
-        id:
-          type: integer
-        name:
-          type: string
-        email:
-          type: string
-        role:
-          type: string
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string }
+        Profile_Picture: { type: string }
     UserInput:
       type: object
       properties:
-        name:
-          type: string
-        email:
-          type: string
-        password:
-          type: string
+        name: { type: string }
+        email: { type: string }
+        password: { type: string }
     Role:
       type: object
       properties:
-        id:
-          type: integer
-        name:
-          type: string
+        id: { type: integer }
+        name: { type: string }
     Capsule:
       type: object
       properties:
-        id:
-          type: integer
-        title:
-          type: string
-        creationDate:
-          type: string
-          format: date-time
-        openingDate:
-          type: string
-          format: date-time
-        privacy:
-          type: string
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        creationDate: { type: string, format: date-time }
+        openingDate: { type: string, format: date-time }
+        privacy: { type: string }
+        Cover_Image: { type: string }
+        Category_Name: { type: string }
+        Creator_User_ID: { type: integer }
     CapsuleInput:
       type: object
       properties:
-        title:
-          type: string
-        creationDate:
-          type: string
-          format: date-time
-        openingDate:
-          type: string
-          format: date-time
-        privacy:
-          type: string
+        title: { type: string }
+        description: { type: string }
+        creationDate: { type: string, format: date-time }
+        openingDate: { type: string, format: date-time }
+        privacy: { type: string }
+        cover_image: { type: string, format: binary }
+        Category_ID: { type: integer }
     Content:
       type: object
       properties:
-        id:
-          type: integer
-        type:
-          type: string
-        filePath:
-          type: string
+        id: { type: integer }
+        type: { type: string }
+        filePath: { type: string }
+        Name: { type: string }
+        Capsule_ID: { type: integer }
+    ContentInput:
+      type: object
+      properties:
+        type: { type: string }
+        filePath: { type: string }
+        Name: { type: string }
+        Capsule_ID: { type: integer }
     Notification:
       type: object
       properties:
-        id:
-          type: integer
-        message:
-          type: string
-        sentDate:
-          type: string
-          format: date-time
+        id: { type: integer }
+        message: { type: string }
+        sentDate: { type: string, format: date-time }
     Category:
       type: object
       properties:
-        id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
     Subscription:
       type: object
       properties:
-        id:
-          type: integer
-        type:
-          type: string
-        startDate:
-          type: string
-          format: date-time
-        endDate:
-          type: string
-          format: date-time
+        id: { type: integer }
+        type: { type: string }
+        startDate: { type: string, format: date-time }
+        endDate: { type: string, format: date-time }
+        Status: { type: string }
     Transaction:
       type: object
       properties:
-        id:
-          type: integer
-        amount:
-          type: number
-          format: float
-        paymentMethod:
-          type: string
+        id: { type: integer }
+        amount: { type: number, format: float }
+        paymentMethod: { type: string }
+        fecha: { type: string, format: date-time }
+        estado: { type: string }
+        descripcion: { type: string }
     Recipient:
       type: object
       properties:
-        userId:
-          type: integer
-        capsuleId:
-          type: integer
-        roleId:
-          type: integer
+        userId: { type: integer }
+        capsuleId: { type: integer }
+        roleId: { type: integer }
+        RoleName: { type: string }
+    RecipientInput:
+      type: object
+      properties:
+        userId: { type: integer }
+        capsuleId: { type: integer }
+        roleId: { type: integer }
     Comment:
       type: object
       properties:
-        id:
-          type: integer
-        content:
-          type: string
-        creationDate:
-          type: string
-          format: date-time
+        id: { type: integer }
+        content: { type: string }
+        creationDate: { type: string, format: date-time }
+        User_ID: { type: integer }
+        Capsule_ID: { type: integer }
+        Name: { type: string }
+    CommentInput:
+      type: object
+      properties:
+        content: { type: string }
+        creationDate: { type: string, format: date-time }
+        User_ID: { type: integer }
+        Capsule_ID: { type: integer }
