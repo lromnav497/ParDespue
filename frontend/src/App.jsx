@@ -5,7 +5,6 @@ import Home from './views/Home';
 import Login from './views/Login';
 import Register from './views/Register';
 import RecoverPassword from './views/RecoverPassword';
-import VerifyAccount from './views/VerifyAccount';
 import MiCuenta from './views/Account';
 import Explorar from './views/Explorar';
 import MisCapsulas from './views/MisCapsulas';
@@ -47,7 +46,6 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/recover-password" element={<RecoverPassword />} />
-          <Route path="/verify-account/:token" element={<VerifyAccount />} />
           <Route
             path="/mi-cuenta"
             element={
